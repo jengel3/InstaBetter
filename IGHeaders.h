@@ -1,6 +1,5 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import "substrate.h"
 
 @interface IGUser : NSObject
 	@property (strong, nonatomic) NSString *username;
@@ -25,9 +24,11 @@
 -(void)setIsHidden:(BOOL)hidden;
 -(id)initWithCoder:(id)fp8;
 -(id)init;
+-(id)buildLikersStyledStringForType:(unsigned int)type;
 @end
 
 @interface IGFeedItemActionCell
+-(BOOL)sponsoredPostAllowed;
 -(id)initWithFrame:(CGRect)frame;
 @end
 
@@ -38,6 +39,13 @@
 
 @interface IGMainFeedViewController
 -(BOOL)shouldHideFeedItem:(id)fp8;
+-(BOOL)isFirstFeedLoad;
+-(void)setIsFirstFeedLoad:(BOOL)first;
+@end
+
+@interface IGCollectionViewController
+-(void)onPullToRefresh:(id)fp8;
+-(void)finishRefreshFromPullToRefreshControl;
 @end
 
 @interface IGFeedViewController
@@ -61,16 +69,36 @@
 -(void)appendString:(id)str;
 @end
 
+@interface IGCoreTextView
+-(id)styledString;
+-(void)setStyledString:(id)styled;
+@end
+
 @interface IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item;
+-(IGCoreTextView*)coreTextView;
+-(void)layoutSubviews;
 @end
 
 @interface IGShakeWindow : UIWindow
-
 - (id)rootViewController;
-
 @end
 
 @interface IGActionSheet
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
+@end
+
+@interface IGFeedItemHeader
+-(BOOL)sponsoredPostAllowed;
+@end
+
+@interface IGFeedItemTimelineLayoutAttributes
+-(BOOL)sponsoredContext;
+@end
+
+@interface IGSponsoredPostInfo
+-(BOOL)showIcon;
+-(BOOL)hideCommentButton;
+-(BOOL)isHoldout;
+-(BOOL)hideComments;
 @end

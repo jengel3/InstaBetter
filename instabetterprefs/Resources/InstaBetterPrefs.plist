@@ -6,9 +6,15 @@
 	<array>
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>enabled</string>
 			<key>label</key>
-			<string>InstaBetterPrefs First Page</string>
+			<string>Enable</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -16,14 +22,28 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.jake0oo0.instabetterprefs</string>
+			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
-			<string>AwesomeSwitch1</string>
+			<string>show_percents</string>
 			<key>label</key>
-			<string>Awesome Switch 1</string>
+			<string>Show Like Percentages</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>detail</key>
+			<string>EditableListController</string>
+			<key>isController</key>
+        	<true/>
+			<key>key</key>
+			<string>muted_users</string>
+			<key>label</key>
+			<string>Muted Users</string>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>InstaBetterPrefs</string>
+	<string>InstaBetter</string>
 </dict>
 </plist>

@@ -37,18 +37,6 @@ static void loadPrefs() {
 
 %group instaHooks
 
-%hook IGUser
-+(void)fetchFollowStatusInBulk:(id)fp8 {
-	%orig;
-}
--(void)fetchAdditionalUserDataWithCompletion:(id)fp8 {
-	%orig;
-}
--(void)fetchFollowStatus {
-	%orig;
-}
-%end
-
 %hook IGActionSheet
 
 - (void)show {
@@ -80,29 +68,45 @@ static void loadPrefs() {
 		return %orig;
 	}
 }
-
 %end
 
-%hook IGFeedViewController
--(void)handleDidDisplayFeedItem:(IGFeedItem *)item {
-	// NSLog(@"CAlling!! --- %@", item.user.username);
+
+%hook IGCollectionViewController
+-(void)finishRefreshFromPullToRefreshControl {
+	[modded removeAllObjects];
+	%orig;
 }
 %end
+
 
 %hook IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
 	IGStyledString *styled = %orig;
+	NSLog(@"Caleddddddddzzzzzzz %@", [[styled attributedString]string]);
 	if (![modded containsObject:[item getMediaId]]) {
+		[modded addObject:[item getMediaId]];
 		if (item.user.followerCount) {
+
 			int followers = [item.user.followerCount intValue];
 			float percent = ((float)item.likeCount / (float)followers) * 100.0;
-			NSString *display = [NSString stringWithFormat:@"     %.02f%%", percent];
+			NSString *display = [NSString stringWithFormat:@" - %.01f%%", percent];
 			[styled appendString:display];
-			[modded addObject:[item getMediaId]];
+		} else {
+			dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+			dispatch_async(queue, ^{
+				[item.user fetchAdditionalUserDataWithCompletion:^(BOOL finished) {
+					int followers = [item.user.followerCount intValue];
+					float percent = ((float)item.likeCount / (float)followers) * 100.0;
+					NSString *display = [NSString stringWithFormat:@" - %.01f%%", percent];
+					[styled appendString:display];
+				}];
+			});
+	
 		}
 	}
 	return styled;
 }
+
 %end
 
 
@@ -125,6 +129,43 @@ static void loadPrefs() {
 	} else {
 		%orig;
 	}
+}
+%end
+
+/*
+	Hide sponsored posts
+*/
+
+%hook IGFeedItemTimelineLayoutAttributes
+-(BOOL)sponsoredContext {
+	return false;
+}
+%end
+
+%hook IGFeedItemHeader
+-(BOOL)sponsoredPostAllowed {
+	return false;
+}
+%end
+
+%hook IGFeedItemActionCell
+-(BOOL)sponsoredPostAllowed {
+	return false;
+}
+%end
+
+%hook IGSponsoredPostInfo
+-(BOOL)showIcon {
+	return false;
+}
+-(BOOL)hideCommentButton {
+	return true;
+}
+-(BOOL)isHoldout {
+	return true;
+}
+-(BOOL)hideComments {
+	return true;
 }
 %end
 
