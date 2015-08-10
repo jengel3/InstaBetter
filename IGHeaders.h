@@ -30,6 +30,7 @@
 @interface IGFeedItemActionCell
 -(BOOL)sponsoredPostAllowed;
 -(id)initWithFrame:(CGRect)frame;
+-(UIButton*)likeButton;
 @end
 
 @interface AppDelegate : NSObject
@@ -65,19 +66,21 @@
 @end
 
 @interface IGStyledString
--(id)attributedString;
+@property(retain, nonatomic) NSMutableAttributedString *attributedString;
 -(void)appendString:(id)str;
+-(void)appendAttributedString:(id)styled;
 @end
 
-@interface IGCoreTextView
--(id)styledString;
--(void)setStyledString:(id)styled;
+@interface IGCoreTextView : UIView
+@property(retain, nonatomic) IGStyledString *styledString;
 @end
 
 @interface IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item;
 -(IGCoreTextView*)coreTextView;
 -(void)layoutSubviews;
+-(int)accessibilityElementCount;
+-(id)accessibilityElementAtIndex:(int)index;
 @end
 
 @interface IGShakeWindow : UIWindow

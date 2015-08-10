@@ -5,6 +5,7 @@
 
 static NSMutableArray *muted = nil;
 static NSMutableArray *modded = nil;
+static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -82,9 +83,12 @@ static void loadPrefs() {
 %hook IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
 	IGStyledString *styled = %orig;
-	NSLog(@"Caleddddddddzzzzzzz %@", [[styled attributedString]string]);
-	if (![modded containsObject:[item getMediaId]]) {
-		[modded addObject:[item getMediaId]];
+	int likeCount = [[likesDict objectForKey:[item getMediaId]] intValue];
+	if (likeCount && likeCount == item.likeCount) {	
+		return styled;
+	} else {
+
+		[likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:[item getMediaId]];
 		if (item.user.followerCount) {
 
 			int followers = [item.user.followerCount intValue];
@@ -98,7 +102,17 @@ static void loadPrefs() {
 					int followers = [item.user.followerCount intValue];
 					float percent = ((float)item.likeCount / (float)followers) * 100.0;
 					NSString *display = [NSString stringWithFormat:@" - %.01f%%", percent];
-					[styled appendString:display];
+					// NSDictionary *attrs = @{
+					// 	NSForegroundColorAttributeName: [UIColor redColor]
+					// };
+					NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
+					NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
+					[attributes setObject:[UIColor redColor] forKey:NSForegroundColorAttributeName];
+					NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
+					[original appendAttributedString:formatted];
+					[self coreTextView].styledString.attributedString = original;
+					[[self coreTextView] setNeedsDisplay];
+					NSLog(@"We have %@", original);
 				}];
 			});
 	
@@ -106,7 +120,6 @@ static void loadPrefs() {
 	}
 	return styled;
 }
-
 %end
 
 
