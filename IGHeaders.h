@@ -77,7 +77,7 @@
 
 @interface IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item;
--(IGCoreTextView*)coreTextView;
+@property(retain, nonatomic) IGCoreTextView *coreTextView;
 -(void)layoutSubviews;
 -(int)accessibilityElementCount;
 -(id)accessibilityElementAtIndex:(int)index;
