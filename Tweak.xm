@@ -61,6 +61,17 @@ static void loadPrefs() {
 
 %end
 
+%hook IGFeedItem
+- (id)initWithDictionary:(id)arg1 {
+  id item = %orig;
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+        [self.user fetchAdditionalUserDataWithCompletion:nil];
+    });
+  return item;
+}
+%end
+
 %hook IGMainFeedViewController
 -(BOOL)shouldHideFeedItem:(IGFeedItem *)item {
     if ([muted containsObject:item.user.username] or [item isHidden]) {
@@ -80,22 +91,16 @@ static void loadPrefs() {
 %end
 
 
+
 %hook IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
     IGStyledString *styled = %orig;
-    IGCoreTextView *coreView = self.coreTextView;
-    NSLog(@"COUNT %d", (int)[likesDict count]);
     int likeCount = [[likesDict objectForKey:[item getMediaId]] intValue];
-    if (likeCount && likeCount == item.likeCount) { 
-        NSLog(@"ORIGINAL %@", [[styled attributedString] string]);
-        [coreView setNeedsDisplay];
-        return styled;
+    if (likeCount && likeCount == item.likeCount) {
+      return styled;
     } else {
-        NSLog(@"IG WILL REWRITE STRING %@", [[styled attributedString]string]);
-
+      if (item.user.followerCount) {
         [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:[item getMediaId]];
-        if (item.user.followerCount) {
-
             int followers = [item.user.followerCount intValue];
             float percent = ((float)item.likeCount / (float)followers) * 100.0;
             NSString *display = [NSString stringWithFormat:@" - %.01f%%", percent];
@@ -104,29 +109,8 @@ static void loadPrefs() {
             [attributes setObject:[UIColor redColor] forKey:NSForegroundColorAttributeName];
             NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
             [original appendAttributedString:formatted];
-            coreView.styledString.attributedString = original;
-            [coreView setNeedsDisplay]; 
-            NSLog(@"We have %@", original);
-        } else {
-            dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-            dispatch_async(queue, ^{
-                [item.user fetchAdditionalUserDataWithCompletion:^(BOOL finished) {
-                    int followers = [item.user.followerCount intValue];
-                    float percent = ((float)item.likeCount / (float)followers) * 100.0;
-                    NSString *display = [NSString stringWithFormat:@" - %.01f%%", percent];
-                    NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
-                    NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
-                    [attributes setObject:[UIColor redColor] forKey:NSForegroundColorAttributeName];
-                    NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
-                    [original appendAttributedString:formatted];
-                    coreView.styledString.attributedString = original;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [coreView setNeedsDisplay];  
-                    });
-                    NSLog(@"We have %@", original);
-                }];
-            });
-    
+            [styled setAttributedString:original];
+            return styled;
         }
     }
     return styled;

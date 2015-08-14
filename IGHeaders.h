@@ -8,6 +8,7 @@
 	-(id)followerCount;
 	-(void)fetchAdditionalUserDataWithCompletion:(id)fp8;
 	-(void)fetchFollowStatus;
+	- (id)initWithDictionary:(id)arg1;
 @end
 
 @interface IGPost : NSObject
@@ -24,7 +25,6 @@
 -(void)setIsHidden:(BOOL)hidden;
 -(id)initWithCoder:(id)fp8;
 -(id)init;
--(id)buildLikersStyledStringForType:(unsigned int)type;
 @end
 
 @interface IGFeedItemActionCell
@@ -51,6 +51,7 @@
 
 @interface IGFeedViewController
 -(void)handleDidDisplayFeedItem:(IGFeedItem*)item;
+-(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 @end
 
 @interface IGViewController : UIViewController
@@ -75,12 +76,18 @@
 @property(retain, nonatomic) IGStyledString *styledString;
 @end
 
-@interface IGFeedItemTextCell
+@interface IGSimpleTableViewCell : UITableViewCell
+@end
+
+@interface IGFeedItemTextCell : IGSimpleTableViewCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item;
+@property(retain, nonatomic) IGFeedItem *feedItem; // @synthesize feedItem=_feedItem;
 @property(retain, nonatomic) IGCoreTextView *coreTextView;
+@property(weak, nonatomic) UINavigationController *navigationController; 
 -(void)layoutSubviews;
 -(int)accessibilityElementCount;
 -(id)accessibilityElementAtIndex:(int)index;
+-(id)accessibleElements;
 @end
 
 @interface IGShakeWindow : UIWindow
@@ -104,4 +111,12 @@
 -(BOOL)hideCommentButton;
 -(BOOL)isHoldout;
 -(BOOL)hideComments;
+@end
+
+@interface IGCollectionView : UICollectionView
+@end
+@interface IGCollectionViewCell : UICollectionViewCell
+@end
+@interface IGInternalCollectionView
+-(id)visibleIndexPaths;
 @end
