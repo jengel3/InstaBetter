@@ -2,20 +2,20 @@
 #import <Foundation/Foundation.h>
 
 @interface IGUser : NSObject
-	@property (strong, nonatomic) NSString *username;
-	+(void)fetchFollowStatusInBulk:(id)fp8;
-	-(id)followingCount;
-	-(id)followerCount;
-	-(void)fetchAdditionalUserDataWithCompletion:(id)fp8;
-	-(void)fetchFollowStatus;
-	- (id)initWithDictionary:(id)arg1;
+@property (strong, nonatomic) NSString *username;
++(void)fetchFollowStatusInBulk:(id)fp8;
+-(id)followingCount;
+-(id)followerCount;
+-(void)fetchAdditionalUserDataWithCompletion:(id)fp8;
+-(void)fetchFollowStatus;
+-(id)initWithDictionary:(id)arg1;
 @end
 
 @interface IGPost : NSObject
-	@property (strong, nonatomic) IGUser *user;
-	-(id)init;
-	-(id)initWithCoder:(id)fp8;
-	-(int)likeCount;
+@property (strong, nonatomic) IGUser *user;
+-(id)init;
+-(id)initWithCoder:(id)fp8;
+-(int)likeCount;
 @end
 
 @interface IGFeedItem : IGPost
@@ -35,6 +35,7 @@
 
 @interface AppDelegate : NSObject
 - (void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated;
+- (void)applicationDidEnterBackground:(id)arg1;
 - (id)window; 
 @end
 
@@ -63,7 +64,7 @@
 @end
 
 @interface IGRootViewController : UIViewController
-- (id)topMostViewController;
+-(id)topMostViewController;
 @end
 
 @interface IGStyledString
@@ -115,8 +116,10 @@
 
 @interface IGCollectionView : UICollectionView
 @end
+
 @interface IGCollectionViewCell : UICollectionViewCell
 @end
+
 @interface IGInternalCollectionView
 -(id)visibleIndexPaths;
 @end
