@@ -47,6 +47,42 @@ static void loadPrefs() {
 
 %group instaHooks
 
+%hook IGUserDetailViewController
+- (void)checkFriendshipStatus {
+  %log;
+  %orig;
+}
+- (BOOL)shouldShowFriendStatus {
+  %log;
+  NSLog(@"orig %d", %orig);
+  return true;
+}
+%end
+
+%hook IGUser
+- (void)fetchFollowStatus {
+  %log;
+  %orig;
+  NSLog(@"status %d-%d --- %@", self.followStatus, self.lastFollowStatus, [[self toDict] description]);
+}
++ (id)stringForfollowStatus:(int)arg1 {
+  %log;
+  return %orig;
+}
+// - (void)onFriendStatusReceived:(id)arg1 {
+//   %log;
+//   %orig;
+// }
+// +(void)fetchFollowStatusInBulk:(NSArray*)users {
+//   %log;
+//   %orig;
+//   for (IGUser* followee in users) {
+//     NSLog(@"User: %@", followee.username);
+//   }
+// }
+%end
+
+
 %hook IGActionSheet
 - (void)show {
   if (enabled) {

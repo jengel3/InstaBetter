@@ -3,12 +3,33 @@
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
-+(void)fetchFollowStatusInBulk:(id)fp8;
++(void)fetchFollowStatusInBulk:(NSArray*)users;
 -(id)followingCount;
 -(id)followerCount;
 -(void)fetchAdditionalUserDataWithCompletion:(id)fp8;
--(void)fetchFollowStatus;
--(id)initWithDictionary:(id)arg1;
+
+-(id)initWithDictionary:(id)data;
+
++ (void)onFriendStatusesFailed:(id)arg1;
++ (void)onFriendStatusesReceived:(id)arg1;
+
++ (id)stringForfollowStatus:(int)arg1;
+
+- (BOOL)updateWithDictionary:(id)arg1;
+- (id)actionVerbForAction:(int)arg1;
+- (void)onFriendStatusFailed:(id)arg1;
+- (void)configureFollowStatus:(id)arg1;
+- (void)onFriendStatusReceived:(id)arg1;
+// - (void)changeFriendshipStatusWithAction:(int)arg1 completion:(CDUnknownBlockType)arg2;
+- (void)changeFriendshipStatusWithAction:(int)arg1;
+- (int)toggleFollowStatus;
+- (void)fetchFollowStatus;
+- (id)secondaryName;
+- (id)primaryName;
+- (id)fullOrDisplayName;
+- (id)toDict;
+@property int lastFollowStatus;
+@property int followStatus; 
 @end
 
 @interface IGPost : NSObject
@@ -61,6 +82,8 @@
 @interface IGUserDetailViewController : IGViewController
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(IGUser *)user;
+- (void)checkFriendshipStatus;
+- (BOOL)shouldShowFriendStatus;
 @end
 
 @interface IGRootViewController : UIViewController
