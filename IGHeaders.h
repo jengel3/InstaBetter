@@ -10,20 +10,9 @@
 
 -(id)initWithDictionary:(id)data;
 
-+ (void)onFriendStatusesFailed:(id)arg1;
-+ (void)onFriendStatusesReceived:(id)arg1;
+-(void)onFriendStatusReceived:(NSDictionary*)status;
 
-+ (id)stringForfollowStatus:(int)arg1;
 
-- (BOOL)updateWithDictionary:(id)arg1;
-- (id)actionVerbForAction:(int)arg1;
-- (void)onFriendStatusFailed:(id)arg1;
-- (void)configureFollowStatus:(id)arg1;
-- (void)onFriendStatusReceived:(id)arg1;
-// - (void)changeFriendshipStatusWithAction:(int)arg1 completion:(CDUnknownBlockType)arg2;
-- (void)changeFriendshipStatusWithAction:(int)arg1;
-- (int)toggleFollowStatus;
-- (void)fetchFollowStatus;
 - (id)secondaryName;
 - (id)primaryName;
 - (id)fullOrDisplayName;

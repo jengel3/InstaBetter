@@ -10,6 +10,7 @@ static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
 static BOOL enabled = YES;
 static BOOL showPercents = YES;
 static BOOL hideSponsored = YES;
+static int muteMode = 0;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -21,11 +22,12 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"enabled"];
     [prefs setValue:@YES forKey:@"hide_sponsored"];
     [prefs setValue:@YES forKey:@"show_percents"];
+    [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:vals forKey:@"muted_users"];
     [prefs writeToFile:prefsLoc atomically:YES];
 }
 
-static void loadPrefs() {
+static void updatePrefs() {
     NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
 
     if (!muted) {
@@ -35,11 +37,12 @@ static void loadPrefs() {
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
+      muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
     } else {
       initPrefs();
-      loadPrefs();
+      updatePrefs();
     }
 
     [prefs release];
@@ -48,38 +51,20 @@ static void loadPrefs() {
 %group instaHooks
 
 %hook IGUserDetailViewController
-- (void)checkFriendshipStatus {
-  %log;
-  %orig;
-}
-- (BOOL)shouldShowFriendStatus {
-  %log;
-  NSLog(@"orig %d", %orig);
-  return true;
-}
+
 %end
 
 %hook IGUser
-- (void)fetchFollowStatus {
+- (void)onFriendStatusReceived:(NSDictionary*)status {
   %log;
+  int followed = [[status objectForKey:@"followed_by"] intValue];
+  if (followed == 1) {
+    NSLog(@"%@ follows you!", self.username);
+  } else if (followed == 0) {
+    NSLog(@"%@ does not follow you", self.username);
+  }
   %orig;
-  NSLog(@"status %d-%d --- %@", self.followStatus, self.lastFollowStatus, [[self toDict] description]);
 }
-+ (id)stringForfollowStatus:(int)arg1 {
-  %log;
-  return %orig;
-}
-// - (void)onFriendStatusReceived:(id)arg1 {
-//   %log;
-//   %orig;
-// }
-// +(void)fetchFollowStatusInBulk:(NSArray*)users {
-//   %log;
-//   %orig;
-//   for (IGUser* followee in users) {
-//     NSLog(@"User: %@", followee.username);
-//   }
-// }
 %end
 
 
@@ -129,10 +114,11 @@ static void loadPrefs() {
 %hook IGMainFeedViewController
 -(BOOL)shouldHideFeedItem:(IGFeedItem *)item {
   if (enabled) {
-    if ([muted containsObject:item.user.username] or [item isHidden]) {
-        return YES;
+    BOOL contains = [muted containsObject:item.user.username];
+    if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
+      return YES;
     } else {
-        return %orig;
+      return %orig;
     }
   } else {
     return %orig;
@@ -195,14 +181,14 @@ static void loadPrefs() {
         [keys addObject:self.user.username];
         [prefs setValue:keys forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:YES];
-        loadPrefs();
+        updatePrefs();
     } else if ([title isEqualToString:instaUnmute]) {
         NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
         NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
         [keys removeObject:self.user.username];
         [prefs setValue:keys forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:YES];
-        loadPrefs();
+        updatePrefs();
     } else {
         %orig;
     }
@@ -278,8 +264,18 @@ static void loadPrefs() {
 
 %end
 
+static void handleNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+  updatePrefs();
+}
+
 %ctor {
     modded = [[NSMutableArray alloc] init];
-    loadPrefs();
+    
+    updatePrefs();
+    CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(), NULL,
+      &handleNotification,
+      (CFStringRef)@"com.jake0oo0.noalertloop/prefsChange",
+      NULL, CFNotificationSuspensionBehaviorCoalesce);
     %init(instaHooks);
 }
