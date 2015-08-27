@@ -21,6 +21,23 @@
 @property int followStatus; 
 @end
 
+@interface IGStyledString
+@property(retain, nonatomic) NSMutableAttributedString *attributedString;
+-(void)appendString:(id)str;
+-(void)appendAttributedString:(id)styled;
+@end
+
+@interface IGViewController : UIViewController
+@end
+
+@interface IGCoreTextView : UIView
+@property(retain, nonatomic) IGStyledString *styledString;
+@end
+
+@interface IGUserDetailHeaderView : UIView
+@property(retain, nonatomic) IGCoreTextView *infoLabelView;
+@end
+
 @interface IGPost : NSObject
 @property (strong, nonatomic) IGUser *user;
 -(id)init;
@@ -65,28 +82,16 @@
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 @end
 
-@interface IGViewController : UIViewController
-@end
-
 @interface IGUserDetailViewController : IGViewController
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(IGUser *)user;
 - (void)checkFriendshipStatus;
 - (BOOL)shouldShowFriendStatus;
+@property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 @end
 
 @interface IGRootViewController : UIViewController
 -(id)topMostViewController;
-@end
-
-@interface IGStyledString
-@property(retain, nonatomic) NSMutableAttributedString *attributedString;
--(void)appendString:(id)str;
--(void)appendAttributedString:(id)styled;
-@end
-
-@interface IGCoreTextView : UIView
-@property(retain, nonatomic) IGStyledString *styledString;
 @end
 
 @interface IGSimpleTableViewCell : UITableViewCell
