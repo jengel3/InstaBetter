@@ -197,22 +197,22 @@ static void updatePrefs() {
 }
 %end
 
-%hook IGFeedItemActionCell
--(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-  if (enabled && [title isEqualToString:instaSave]) {
-    IGFeedItem *item = self.feedItem;
-    if (item.mediaType == 1) {
-      int version = [[item class] fullSizeImageVersionForDevice];
-      NSURL *link = [item imageURLForImageVersion:version];
-      NSData *imageData = [NSData dataWithContentsOfURL:link];
-      UIImage *image = [UIImage imageWithData:imageData];
-      UIImageWriteToSavedPhotosAlbum(image, nil,nil,nil);
-      UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Image Saved" message:@"The image was saved."delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil, nil];
-      [alert show];
-    }
-  }
-}
-%end
+// %hook IGFeedItemActionCell
+// -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+//   if (enabled && [title isEqualToString:instaSave]) {
+//     IGFeedItem *item = self.feedItem;
+//     if (item.mediaType == 1) {
+//       int version = [[item class] fullSizeImageVersionForDevice];
+//       NSURL *link = [item imageURLForImageVersion:version];
+//       NSData *imageData = [NSData dataWithContentsOfURL:link];
+//       UIImage *image = [UIImage imageWithData:imageData];
+//       UIImageWriteToSavedPhotosAlbum(image, nil,nil,nil);
+//       UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Image Saved" message:@"The image was saved."delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil, nil];
+//       [alert show];
+//     }
+//   }
+// }
+// %end
 
 
 %hook IGUserDetailViewController
