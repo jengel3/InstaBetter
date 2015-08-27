@@ -47,12 +47,16 @@
 
 @interface IGPost : NSObject
 @property (strong, nonatomic) IGUser *user;
+@property(readonly) int mediaType;
 -(id)init;
 -(id)initWithCoder:(id)fp8;
 -(int)likeCount;
+-(id)imageURLForFullSizeImage;
 @end
 
 @interface IGFeedItem : IGPost
++(int)fullSizeImageVersionForDevice;
+- (id)imageURLForImageVersion:(int)arg1;
 -(id)description;
 -(BOOL)isHidden;
 -(id)getMediaId;
@@ -62,9 +66,11 @@
 @end
 
 @interface IGFeedItemActionCell
+@property(retain, nonatomic) IGFeedItem *feedItem;
 -(BOOL)sponsoredPostAllowed;
 -(id)initWithFrame:(CGRect)frame;
 -(UIButton*)likeButton;
+-(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 @end
 
 @interface AppDelegate : NSObject

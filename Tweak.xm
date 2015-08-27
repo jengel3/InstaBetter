@@ -14,6 +14,7 @@ static int muteMode = 0;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
+static NSString *instaSave = @"Save Media";
 static NSString *prefsLoc = @"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist";
 
 static void initPrefs() {
@@ -65,7 +66,6 @@ static void updatePrefs() {
 
     if (isProfileView) {
       IGUserDetailViewController *userView = (IGUserDetailViewController*) currentController;
-      NSLog(@"%@", userView.headerView.infoLabelView.styledString.attributedString);
       CGRect oldFrame = userView.headerView.followButton.frame;
       CGRect screenRect = [[UIScreen mainScreen] bounds];
       CGFloat screenWidth = screenRect.size.width;
@@ -108,6 +108,8 @@ static void updatePrefs() {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
+    } else if (!isProfileView) {
+      [self addButtonWithTitle:instaSave style:0];
     }
   }
   %orig;
@@ -192,6 +194,23 @@ static void updatePrefs() {
       }
     }
     return styled;
+}
+%end
+
+%hook IGFeedItemActionCell
+-(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+  if (enabled && [title isEqualToString:instaSave]) {
+    IGFeedItem *item = self.feedItem;
+    if (item.mediaType == 1) {
+      int version = [[item class] fullSizeImageVersionForDevice];
+      NSURL *link = [item imageURLForImageVersion:version];
+      NSData *imageData = [NSData dataWithContentsOfURL:link];
+      UIImage *image = [UIImage imageWithData:imageData];
+      UIImageWriteToSavedPhotosAlbum(image, nil,nil,nil);
+      UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Image Saved" message:@"The image was saved."delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil, nil];
+      [alert show];
+    }
+  }
 }
 %end
 
@@ -299,7 +318,7 @@ static void handleNotification(CFNotificationCenterRef center, void *observer, C
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(), NULL,
       &handleNotification,
-      (CFStringRef)@"com.jake0oo0.noalertloop/prefsChange",
+      (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
       NULL, CFNotificationSuspensionBehaviorCoalesce);
     %init(instaHooks);
 }
