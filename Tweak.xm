@@ -56,29 +56,35 @@ static void updatePrefs() {
 
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status {
-  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-  IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-  UIViewController *currentController = rootViewController.topMostViewController;
+  if (enabled) {
+    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    UIViewController *currentController = rootViewController.topMostViewController;
 
-  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+    BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
-  if (isProfileView) {
-    IGUserDetailViewController *userView = (IGUserDetailViewController*) currentController;
-    NSLog(@"%@", userView.headerView.infoLabelView.styledString.attributedString);
-    UILabel *statusLabel = [[UILabel alloc] initWithFrame:userView.headerView.infoLabelView.frame];
-    int followed_by = [[status objectForKey:@"followed_by"] intValue];
-    int following = [[status objectForKey:@"following"] intValue];
-    if (followed_by == 1 && following == 1) {
-      statusLabel.text = @"You follow eachother";
-      NSLog(@"You follow eachother!");
-    } else if (followed_by == 1) {
-      statusLabel.text = [NSString stringWithFormat:@"%@ follows you", self.username];
-      NSLog(@"%@ follows you!", self.username);
-    } else if (followed_by == 0) {
-      statusLabel.text = [NSString stringWithFormat:@"%@ does not follow you", self.username];
-      NSLog(@"%@ does not follow you", self.username);
+    if (isProfileView) {
+      IGUserDetailViewController *userView = (IGUserDetailViewController*) currentController;
+      NSLog(@"%@", userView.headerView.infoLabelView.styledString.attributedString);
+      CGRect oldFrame = userView.headerView.followButton.frame;
+      CGRect screenRect = [[UIScreen mainScreen] bounds];
+      CGFloat screenWidth = screenRect.size.width;
+      oldFrame.origin.y = oldFrame.size.height + oldFrame.origin.y;
+      oldFrame.size.width = screenWidth - oldFrame.origin.x;
+      UILabel *statusLabel = [[UILabel alloc] initWithFrame:oldFrame];
+      int followed_by = [[status objectForKey:@"followed_by"] intValue];
+      int following = [[status objectForKey:@"following"] intValue];
+      if (followed_by == 1 && following == 1) {
+        statusLabel.text = @"You follow eachother";
+      } else if (followed_by == 1) {
+        statusLabel.text = [NSString stringWithFormat:@"%@ follows you", self.username];
+      } else if (followed_by == 0) {
+        statusLabel.text = [NSString stringWithFormat:@"%@ does not follow you", self.username];
+      }
+      statusLabel.textColor = [UIColor colorWithWhite:0.333333 alpha:1.0];
+      statusLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:12];
+      [userView.headerView addSubview:statusLabel];
     }
-    [userView.headerView addSubview:statusLabel];
   }
 
   %orig;

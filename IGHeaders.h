@@ -21,6 +21,12 @@
 @property int followStatus; 
 @end
 
+@interface IGSpringButton : UIControl
+@end
+
+@interface IGFollowButton : IGSpringButton
+@end
+
 @interface IGStyledString
 @property(retain, nonatomic) NSMutableAttributedString *attributedString;
 -(void)appendString:(id)str;
@@ -35,6 +41,7 @@
 @end
 
 @interface IGUserDetailHeaderView : UIView
+@property(retain, nonatomic) IGFollowButton *followButton;
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
 @end
 
