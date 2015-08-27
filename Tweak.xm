@@ -51,12 +51,9 @@ static void updatePrefs() {
 
 %group instaHooks
 
-%hook IGUserDetailViewController
-
-%end
-
 %hook IGUser
-- (void)onFriendStatusReceived:(NSDictionary*)status {
+- (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
+  %log;
   if (enabled) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;

@@ -7,18 +7,12 @@
 -(id)followingCount;
 -(id)followerCount;
 -(void)fetchAdditionalUserDataWithCompletion:(id)fp8;
-
 -(id)initWithDictionary:(id)data;
-
--(void)onFriendStatusReceived:(NSDictionary*)status;
-
-
-- (id)secondaryName;
-- (id)primaryName;
-- (id)fullOrDisplayName;
-- (id)toDict;
-@property int lastFollowStatus;
-@property int followStatus; 
+-(void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req;
+-(id)secondaryName;
+-(id)primaryName;
+-(id)fullOrDisplayName;
+-(id)toDict;
 @end
 
 @interface IGSpringButton : UIControl
@@ -98,8 +92,6 @@
 @interface IGUserDetailViewController : IGViewController
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(IGUser *)user;
-- (void)checkFriendshipStatus;
-- (BOOL)shouldShowFriendStatus;
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 @end
 
@@ -112,7 +104,7 @@
 
 @interface IGFeedItemTextCell : IGSimpleTableViewCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item;
-@property(retain, nonatomic) IGFeedItem *feedItem; // @synthesize feedItem=_feedItem;
+@property(retain, nonatomic) IGFeedItem *feedItem;
 @property(retain, nonatomic) IGCoreTextView *coreTextView;
 @property(weak, nonatomic) UINavigationController *navigationController; 
 -(void)layoutSubviews;
