@@ -11,6 +11,16 @@
 	}
 	return _specifiers;
 }
+
+- (void)openTwitter:(id)sender {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/itsjake88"]];
+}
+
+- (void)openDesignerTwitter:(id)sender {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/AOkhtenberg"]];
+}
+
+
 @end
 
 @interface EditableListController : PSEditableListController {}

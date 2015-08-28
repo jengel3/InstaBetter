@@ -48,6 +48,42 @@
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
+			<string>follow_status</string>
+			<key>label</key>
+			<string>Show Follow Status</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>save_actions</string>
+			<key>label</key>
+			<string>Enable Save Actions</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
 			<string>hide_sponsored</string>
 			<key>label</key>
 			<string>Hide Sponsored Posts</string>
@@ -99,6 +135,26 @@
 			</array>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>action</key>
+			<string>openTwitter:</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Follow @itsjake88</string>
+		</dict>
+		<dict>
+			<key>action</key>
+			<string>openTwitter:</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Follow @AOkhtenberg (design)</string>
 		</dict>
 	</array>
 	<key>title</key>

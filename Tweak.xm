@@ -16,6 +16,8 @@ static BOOL enabled = YES;
 static BOOL showPercents = YES;
 static BOOL hideSponsored = YES;
 static int muteMode = 0;
+static BOOL saveActions = YES;
+static BOOL followStatus = YES;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -28,6 +30,8 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"enabled"];
     [prefs setValue:@YES forKey:@"hide_sponsored"];
     [prefs setValue:@YES forKey:@"show_percents"];
+    [prefs setValue:@YES forKey:@"follow_status"];
+    [prefs setValue:@YES forKey:@"save_actions"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:vals forKey:@"muted_users"];
     [prefs writeToFile:prefsLoc atomically:YES];
@@ -43,6 +47,8 @@ static void updatePrefs() {
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
+      saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
+      followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
@@ -71,50 +77,52 @@ static NSString * highestResImage(NSDictionary *versions) {
 }
 
 static void saveMedia(IGPost *post) {
-  UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
-  MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-  status.labelText = @"Saving";
-  if (post.mediaType == 1) {
-    NSString *versionURL = highestResImage(post.photo.imageVersions);
-  
-    NSURL *imgUrl = [NSURL URLWithString:versionURL];
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_async(queue, ^{
-      NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-      UIImage *img = [UIImage imageWithData:imgData];
-      IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
-      [postImageAssetWriter writeToInstagramAlbum];
-       dispatch_async(dispatch_get_main_queue(), ^{
-        status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
-        status.mode = MBProgressHUDModeCustomView;
-        status.labelText = @"Saved!";
-
-        [status hide:YES afterDelay:1.0];
-      });
-    });
-
-  } else if (post.mediaType == 2) {
-    NSString *versionURL = highestResImage(post.video.videoVersions);
-  
-    NSURL *vidURL = [NSURL URLWithString:versionURL];
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_async(queue, ^{
-      NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
-
-      [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-        NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-        [data writeToURL:tempURL atomically:YES];
-        [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
-        dispatch_async(dispatch_get_main_queue(), ^{
+  if (enabled && saveActions) {
+    UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+    MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+    status.labelText = @"Saving";
+    if (post.mediaType == 1) {
+      NSString *versionURL = highestResImage(post.photo.imageVersions);
+    
+      NSURL *imgUrl = [NSURL URLWithString:versionURL];
+      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+      dispatch_async(queue, ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+        UIImage *img = [UIImage imageWithData:imgData];
+        IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
+        [postImageAssetWriter writeToInstagramAlbum];
+         dispatch_async(dispatch_get_main_queue(), ^{
           status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
           status.mode = MBProgressHUDModeCustomView;
           status.labelText = @"Saved!";
 
           [status hide:YES afterDelay:1.0];
         });
-      }];
-    });
+      });
+
+    } else if (post.mediaType == 2) {
+      NSString *versionURL = highestResImage(post.video.videoVersions);
+    
+      NSURL *vidURL = [NSURL URLWithString:versionURL];
+      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+      dispatch_async(queue, ^{
+        NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
+
+        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+          NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+          NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+          [data writeToURL:tempURL atomically:YES];
+          [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
+            status.mode = MBProgressHUDModeCustomView;
+            status.labelText = @"Saved!";
+
+            [status hide:YES afterDelay:1.0];
+          });
+        }];
+      });
+    }
   }
 }
 
@@ -122,7 +130,7 @@ static void saveMedia(IGPost *post) {
 
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
-  if (enabled) {
+  if (enabled && followStatus) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
     UIViewController *currentController = rootViewController.topMostViewController;
