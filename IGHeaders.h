@@ -168,3 +168,34 @@
 @interface IGInternalCollectionView
 -(id)visibleIndexPaths;
 @end
+
+@interface IGCustomLocationDataSource : NSObject
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+-(id)tableView:(id)arg1 customLocationCellForRowAtIndexPath:(id)arg2;
+@end
+
+@interface IGRequest
+@end
+
+@interface IGStorableObject : NSObject
+-(id)initWithDictionary:(id)arg1 ;
+@end
+@interface IGLocation : IGStorableObject
+-(id)initWithDictionary:(id)arg1 ;
+@end
+
+@interface IGLocationDataSource : NSObject <UITableViewDataSource> 
+-(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2 ;
+-(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2 ;
+-(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2 ;
+-(id)tableView:(id)arg1 locationCellForRowAtIndexPath:(id)arg2 ;
+
+-(void)reloadData;
+-(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
+-(int)numberOfSectionsInTableView:(id)arg1 ;
+-(BOOL)isLoading;
+-(void)setIsLoading:(BOOL)arg1 ;
+-(NSArray *)locations;
+@property (nonatomic,retain) NSString * responseQueryText;  
+@end

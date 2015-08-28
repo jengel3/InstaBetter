@@ -128,6 +128,37 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
+// %hook IGLocationDataSource
+// -(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
+// -(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
+// -(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
+// -(id)tableView:(id)arg1 locationCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
+
+// -(void)reloadData {%log;}
+// -(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 { %log; return %orig; }
+// -(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
+// -(int)numberOfSectionsInTableView:(id)arg1 { %log; return %orig; }
+// -(BOOL)isLoading{ %log; return %orig; }
+// -(void)setIsLoading:(BOOL)arg1 { %log; }
+// -(NSArray *)locations{
+//   NSArray *thing = %orig;
+//   if (thing == nil) {
+//     return thing;
+//   }
+//   NSMutableArray *original = [thing mutableCopy];
+//   %log;
+//   IGLocation *newLoc = [%c(IGLocation) initWithDictionary:@{
+//     @"name": self.responseQueryText
+//   }];
+
+//   [original insertObject:newLoc atIndex:0];
+  
+//   NSLog(@"query text %@ --- %@ --- %@", self.responseQueryText, [original description], [[original objectAtIndex:0] description]);
+//   return [NSArray arrayWithArray:original];
+// }
+// %end
+
+
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
   if (enabled && followStatus) {
