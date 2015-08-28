@@ -1,7 +1,12 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import "substrate.h"
+#import <AssetsLibrary/AssetsLibrary.h>
 #import "IGHeaders.h"
+#import "MBProgressHUD.h"
+
+#define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/InstaBetterBundle.bundle"
+NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
 
 static NSMutableArray *muted = nil;
 static NSMutableArray *modded = nil;
@@ -49,11 +54,74 @@ static void updatePrefs() {
     [prefs release];
 }
 
+static NSString * highestResImage(NSDictionary *versions) {
+  CGFloat highestCount = 0;
+  NSString *highestURL = nil;
+  for (NSDictionary *ver in versions) {
+    CGFloat height = [[ver objectForKey:@"height"] floatValue];
+    CGFloat width = [[ver objectForKey:@"width"] floatValue];
+    CGFloat pixelCount = height * width;
+
+    if (pixelCount >= highestCount) {
+      highestCount = pixelCount;
+      highestURL = [ver objectForKey:@"url"];
+    }
+  }
+  return highestURL;
+}
+
+static void saveMedia(IGPost *post) {
+  UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+  MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+  status.labelText = @"Saving";
+  if (post.mediaType == 1) {
+    NSString *versionURL = highestResImage(post.photo.imageVersions);
+  
+    NSURL *imgUrl = [NSURL URLWithString:versionURL];
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+      NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+      UIImage *img = [UIImage imageWithData:imgData];
+      IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
+      [postImageAssetWriter writeToInstagramAlbum];
+       dispatch_async(dispatch_get_main_queue(), ^{
+        status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
+        status.mode = MBProgressHUDModeCustomView;
+        status.labelText = @"Saved!";
+
+        [status hide:YES afterDelay:1.0];
+      });
+    });
+
+  } else if (post.mediaType == 2) {
+    NSString *versionURL = highestResImage(post.video.videoVersions);
+  
+    NSURL *vidURL = [NSURL URLWithString:versionURL];
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+      NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
+
+      [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+        NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+        [data writeToURL:tempURL atomically:YES];
+        [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
+          status.mode = MBProgressHUDModeCustomView;
+          status.labelText = @"Saved!";
+
+          [status hide:YES afterDelay:1.0];
+        });
+      }];
+    });
+  }
+}
+
 %group instaHooks
 
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
-  %log;
   if (enabled) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
@@ -194,22 +262,14 @@ static void updatePrefs() {
 }
 %end
 
-// %hook IGFeedItemActionCell
-// -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-//   if (enabled && [title isEqualToString:instaSave]) {
-//     IGFeedItem *item = self.feedItem;
-//     if (item.mediaType == 1) {
-//       int version = [[item class] fullSizeImageVersionForDevice];
-//       NSURL *link = [item imageURLForImageVersion:version];
-//       NSData *imageData = [NSData dataWithContentsOfURL:link];
-//       UIImage *image = [UIImage imageWithData:imageData];
-//       UIImageWriteToSavedPhotosAlbum(image, nil,nil,nil);
-//       UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Image Saved" message:@"The image was saved."delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil, nil];
-//       [alert show];
-//     }
-//   }
-// }
-// %end
+%hook IGFeedItemActionCell
+-(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+  if (enabled && [title isEqualToString:instaSave]) {
+    IGFeedItem *item = self.feedItem;
+    saveMedia(item);
+  }
+}
+%end
 
 
 %hook IGUserDetailViewController

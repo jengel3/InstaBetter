@@ -39,9 +39,20 @@
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
 @end
 
+@interface IGPhoto
+-(NSDictionary*)imageVersions;
+@end
+
+@interface IGVideo
+-(NSDictionary*)videoVersions;
+@end
+
 @interface IGPost : NSObject
+
 @property (strong, nonatomic) IGUser *user;
 @property(readonly) int mediaType;
+@property (strong, nonatomic) IGVideo *video;
+@property (strong, nonatomic) IGPhoto *photo;
 -(id)init;
 -(id)initWithCoder:(id)fp8;
 -(int)likeCount;
@@ -57,6 +68,18 @@
 -(void)setIsHidden:(BOOL)hidden;
 -(id)initWithCoder:(id)fp8;
 -(id)init;
+@end
+
+@interface IGAssetWriter
+
+@property (nonatomic,retain) UIImage *image;
++ (void)writeVideo:(id)arg1 toInstagramAlbum:(BOOL)arg2 completionBlock:(id)arg3;
++ (void)writeVideoToCameraRoll:(id)arg1;
++ (void)writeVideoToInstagramAlbum:(id)arg1 completionBlock:(id)arg2;
+- (id)initWithImage:(id)arg1 metadata:(id)arg2;
+- (void)writeToInstagramAlbum;
+- (id)init;
+
 @end
 
 @interface IGFeedItemActionCell
