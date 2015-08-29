@@ -128,7 +128,14 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
-// %hook IGLocationDataSource
+%hook IGLocation
+  -(id)initWithDictionary:(id)dict {
+    NSLog(@"dict %@", [dict description]);
+    return %orig;
+  }
+%end
+
+%hook IGLocationDataSource
 // -(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
 // -(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
 // -(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
@@ -140,23 +147,28 @@ static void saveMedia(IGPost *post) {
 // -(int)numberOfSectionsInTableView:(id)arg1 { %log; return %orig; }
 // -(BOOL)isLoading{ %log; return %orig; }
 // -(void)setIsLoading:(BOOL)arg1 { %log; }
-// -(NSArray *)locations{
-//   NSArray *thing = %orig;
-//   if (thing == nil) {
-//     return thing;
-//   }
-//   NSMutableArray *original = [thing mutableCopy];
-//   %log;
-//   IGLocation *newLoc = [%c(IGLocation) initWithDictionary:@{
-//     @"name": self.responseQueryText
-//   }];
 
-//   [original insertObject:newLoc atIndex:0];
-  
-//   NSLog(@"query text %@ --- %@ --- %@", self.responseQueryText, [original description], [[original objectAtIndex:0] description]);
-//   return [NSArray arrayWithArray:original];
-// }
-// %end
+-(NSArray *)locations{
+  NSArray *thing = %orig;
+  if (thing == nil || !self.responseQueryText) {
+    return thing;
+  }
+  NSMutableArray *original = [[NSMutableArray alloc] initWithArray:thing];
+  IGLocation *newLoc = [[[%c(IGLocation) alloc] initWithDictionary:@{
+    @"name": self.responseQueryText,
+    @"address": @"",
+    @"external_source": @"facebook_places",
+    @"facebook_places_id": @2505799649651301,
+    @"lat": @"0.0",
+    @"lng": @"0.0",
+    @"state": @""
+  }] retain];
+  if (newLoc && original) {
+    [original addObject:newLoc];
+  }
+  return [NSArray arrayWithArray:original];
+}
+%end
 
 
 %hook IGUser

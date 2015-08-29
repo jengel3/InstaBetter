@@ -182,6 +182,7 @@
 @end
 @interface IGLocation : IGStorableObject
 -(id)initWithDictionary:(id)arg1 ;
+-(id)name;
 @end
 
 @interface IGLocationDataSource : NSObject <UITableViewDataSource> 
