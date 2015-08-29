@@ -9,7 +9,6 @@
 NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
 
 static NSMutableArray *muted = nil;
-static NSMutableArray *modded = nil;
 static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
 
 static BOOL enabled = YES;
@@ -131,30 +130,7 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
-
-%hook IGLocationDataSource
--(NSArray *)locations{
-  NSArray *thing = %orig;
-  if (thing == nil || !self.responseQueryText) {
-    return thing;
-  }
-  NSMutableArray *original = [[NSMutableArray alloc] initWithArray:thing];
-  IGLocation *newLoc = [[[%c(IGLocation) alloc] initWithDictionary:@{
-    @"name": self.responseQueryText,
-    @"address": @"",
-    @"external_source": @"facebook_places",
-    @"facebook_places_id": @2505799649651301,
-    @"lat": @"0.0",
-    @"lng": @"0.0",
-    @"state": @""
-  }] retain];
-  if (newLoc && original) {
-    [original addObject:newLoc];
-  }
-  return [NSArray arrayWithArray:original];
-}
-%end
-
+// follow status
 
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
@@ -192,6 +168,7 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+// action sheet manager
 
 %hook IGActionSheet
 - (void)show {
@@ -209,7 +186,7 @@ static void saveMedia(IGPost *post) {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
-    } else if (!isProfileView) {
+    } else if (!isProfileView && saveActions) {
       [self addButtonWithTitle:instaSave style:0];
     }
   }
@@ -217,24 +194,32 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
-%hook IGFeedItem
-- (id)initWithDictionary:(id)data {
-  id item = %orig;
-  if (enabled && showPercents) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    UIViewController *currentController = rootViewController.topMostViewController;
 
-    BOOL isPostsView = [currentController isKindOfClass:[%c(IGPostsFeedViewController) class]];
-    BOOL isMainView = [currentController isKindOfClass:[%c(IGMainFeedViewController) class]];
-    if (isPostsView || isMainView) {
-      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-      dispatch_async(queue, ^{
-        [self.user fetchAdditionalUserDataWithCompletion:nil];
-      });
+// mute users
+
+%hook IGUserDetailViewController
+-(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+  if (enabled) {
+    if ([title isEqualToString:instaMute]) {
+        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
+        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
+        [keys addObject:self.user.username];
+        [prefs setValue:keys forKey:@"muted_users"];
+        [prefs writeToFile:prefsLoc atomically:YES];
+        updatePrefs();
+    } else if ([title isEqualToString:instaUnmute]) {
+        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
+        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
+        [keys removeObject:self.user.username];
+        [prefs setValue:keys forKey:@"muted_users"];
+        [prefs writeToFile:prefsLoc atomically:YES];
+        updatePrefs();
+    } else {
+        %orig;
     }
+  } else {
+    %orig;
   }
-  return item;
 }
 %end
 
@@ -253,13 +238,7 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
-%hook AppDelegate
-- (void)applicationDidEnterBackground:(id)arg1 {
-  if (enabled && showPercents) {
-    [likesDict removeAllObjects];
-  }
-}
-%end
+// like percentages
 
 %hook IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
@@ -298,6 +277,37 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+%hook IGFeedItem
+- (id)initWithDictionary:(id)data {
+  id item = %orig;
+  if (enabled && showPercents) {
+    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    UIViewController *currentController = rootViewController.topMostViewController;
+
+    BOOL isPostsView = [currentController isKindOfClass:[%c(IGPostsFeedViewController) class]];
+    BOOL isMainView = [currentController isKindOfClass:[%c(IGMainFeedViewController) class]];
+    if (isPostsView || isMainView) {
+      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+      dispatch_async(queue, ^{
+        [self.user fetchAdditionalUserDataWithCompletion:nil];
+      });
+    }
+  }
+  return item;
+}
+%end
+
+%hook AppDelegate
+- (void)applicationDidEnterBackground:(id)arg1 {
+  if (enabled && showPercents) {
+    [likesDict removeAllObjects];
+  }
+}
+%end
+
+// save media
+
 %hook IGFeedItemActionCell
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled && [title isEqualToString:instaSave]) {
@@ -308,28 +318,29 @@ static void saveMedia(IGPost *post) {
 %end
 
 
-%hook IGUserDetailViewController
--(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-  if (enabled) {
-    if ([title isEqualToString:instaMute]) {
-        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
-        [keys addObject:self.user.username];
-        [prefs setValue:keys forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:YES];
-        updatePrefs();
-    } else if ([title isEqualToString:instaUnmute]) {
-        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
-        [keys removeObject:self.user.username];
-        [prefs setValue:keys forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:YES];
-        updatePrefs();
-    } else {
-        %orig;
+%hook IGLocationDataSource
+-(NSArray *)locations{
+  if (enabled && customLocations) {
+    NSArray *thing = %orig;
+    if (thing == nil || !self.responseQueryText) {
+      return thing;
     }
+    NSMutableArray *original = [[NSMutableArray alloc] initWithArray:thing];
+    IGLocation *newLoc = [[[%c(IGLocation) alloc] initWithDictionary:@{
+      @"name": self.responseQueryText,
+      @"address": @"",
+      @"external_source": @"facebook_places",
+      @"facebook_places_id": @2505799649651301,
+      @"lat": @"0.0",
+      @"lng": @"0.0",
+      @"state": @""
+    }] retain];
+    if (newLoc && original) {
+      [original addObject:newLoc];
+    }
+    return [NSArray arrayWithArray:original];
   } else {
-    %orig;
+    return %orig;
   }
 }
 %end
@@ -405,7 +416,6 @@ static void handleNotification(CFNotificationCenterRef center, void *observer, C
 }
 
 %ctor {
-    modded = [[NSMutableArray alloc] init];
     
     updatePrefs();
     CFNotificationCenterAddObserver(
