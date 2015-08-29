@@ -1,14 +1,13 @@
 #import <Preferences/Preferences.h>
-
-@interface InstaBetterPrefsListController: PSListController {
-}
+@interface InstaBetterPrefsController: PSListController 
 @end
 
-@implementation InstaBetterPrefsListController
+@implementation InstaBetterPrefsController
 - (id)specifiers {
 	if(_specifiers == nil) {
 		_specifiers = [[self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self] retain];
 	}
+
 	return _specifiers;
 }
 
@@ -23,7 +22,7 @@
 
 @end
 
-@interface EditableListController : PSEditableListController {}
+@interface EditableListController : PSEditableListController
 @end
  
 @implementation EditableListController
