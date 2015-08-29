@@ -186,8 +186,11 @@ static void saveMedia(IGPost *post) {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
-    } else if (!isProfileView && saveActions) {
-      [self addButtonWithTitle:instaSave style:0];
+    } else if (!isProfileView) {
+      if (saveActions) {
+        [self addButtonWithTitle:instaSave style:0];
+      } 
+      [self addButtonWithTitle:@"Share" style:0];
     }
   }
   %orig;
@@ -310,9 +313,22 @@ static void saveMedia(IGPost *post) {
 
 %hook IGFeedItemActionCell
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-  if (enabled && [title isEqualToString:instaSave]) {
-    IGFeedItem *item = self.feedItem;
-    saveMedia(item);
+  if (enabled) {
+    if ([title isEqualToString:instaSave]) {
+      IGFeedItem *item = self.feedItem;
+      saveMedia(item);
+    } else if ([title isEqualToString:@"Share"]) {
+      IGFeedItem *item = self.feedItem;
+      NSURL *link = [NSURL URLWithString:[item permalink]];
+      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+        initWithActivityItems:@[link]
+        applicationActivities:nil];
+      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+    } else {
+      %orig;
+    }
+  } else {
+    %orig;
   }
 }
 %end

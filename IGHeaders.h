@@ -68,6 +68,7 @@
 -(void)setIsHidden:(BOOL)hidden;
 -(id)initWithCoder:(id)fp8;
 -(id)init;
+-(NSString *)permalink;
 @end
 
 @interface IGAssetWriter
@@ -88,12 +89,14 @@
 -(id)initWithFrame:(CGRect)frame;
 -(UIButton*)likeButton;
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
+-(UINavigationController*)window;
 @end
 
 @interface AppDelegate : NSObject
 - (void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated;
 - (void)applicationDidEnterBackground:(id)arg1;
-- (id)window; 
+- (id)window;
+-(id)navigationController;
 @end
 
 @interface IGMainFeedViewController
