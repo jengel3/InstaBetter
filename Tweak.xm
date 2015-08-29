@@ -18,6 +18,7 @@ static BOOL hideSponsored = YES;
 static int muteMode = 0;
 static BOOL saveActions = YES;
 static BOOL followStatus = YES;
+static BOOL customLocations = YES;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -31,6 +32,7 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"hide_sponsored"];
     [prefs setValue:@YES forKey:@"show_percents"];
     [prefs setValue:@YES forKey:@"follow_status"];
+    [prefs setValue:@YES forKey:@"custom_locations"];
     [prefs setValue:@YES forKey:@"save_actions"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:vals forKey:@"muted_users"];
@@ -49,6 +51,7 @@ static void updatePrefs() {
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
+      customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
@@ -128,26 +131,8 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
-%hook IGLocation
-  -(id)initWithDictionary:(id)dict {
-    NSLog(@"dict %@", [dict description]);
-    return %orig;
-  }
-%end
 
 %hook IGLocationDataSource
-// -(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
-// -(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
-// -(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
-// -(id)tableView:(id)arg1 locationCellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
-
-// -(void)reloadData {%log;}
-// -(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 { %log; return %orig; }
-// -(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 { %log; return %orig; }
-// -(int)numberOfSectionsInTableView:(id)arg1 { %log; return %orig; }
-// -(BOOL)isLoading{ %log; return %orig; }
-// -(void)setIsLoading:(BOOL)arg1 { %log; }
-
 -(NSArray *)locations{
   NSArray *thing = %orig;
   if (thing == nil || !self.responseQueryText) {
