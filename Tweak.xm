@@ -241,6 +241,36 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+%hook IGCoreTextView
+-(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1 {
+  %orig((id<IGCoreTextLinkHandler>) self);
+}
+%new
+-(void)coreTextView:(id)arg1 didLongTapOnString:(id)arg2 URL:(id)arg3 {
+  %log;
+}
+%new
+-(void)coreTextView:(id)view didTapOnString:(id)text URL:(id)url {
+  if (url) {
+    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    
+    UIViewController *controller = rootViewController.topMostViewController;
+    UIViewController *webViewController = [[UIViewController alloc] init];
+    webViewController.modalPresentationStyle = UIModalPresentationPageSheet;
+
+    UIWebView *webView = [[UIWebView alloc] init];
+    NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+    [webViewController.view addSubview:webView];
+
+    [controller presentViewController:webViewController animated:YES completion:nil];
+    [webView loadRequest:requestObj];
+    webView.delegate=self; 
+  }
+  %log;
+}
+%end
+
 // like percentages
 
 %hook IGFeedItemTextCell
@@ -307,7 +337,14 @@ static void saveMedia(IGPost *post) {
     [likesDict removeAllObjects];
   }
 }
+-(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 {
+  %log;
+  return %orig;
+}
 %end
+
+
+
 
 // save media
 

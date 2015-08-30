@@ -30,8 +30,17 @@
 @interface IGViewController : UIViewController
 @end
 
-@interface IGCoreTextView : UIView
+
+@protocol IGCoreTextLinkHandler <NSObject>
+-(void)coreTextView:(id)arg1 didLongTapOnString:(id)arg2 URL:(id)arg3;
+-(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
+@end
+
+
+@interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
+@property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
+-(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1 ;
 @end
 
 @interface IGUserDetailHeaderView : UIView
@@ -97,6 +106,7 @@
 - (void)applicationDidEnterBackground:(id)arg1;
 - (id)window;
 -(id)navigationController;
+-(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 ;
 @end
 
 @interface IGMainFeedViewController
