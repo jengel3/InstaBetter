@@ -41,11 +41,14 @@
 @property(retain, nonatomic) IGStyledString *styledString;
 @property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
 -(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1 ;
+-(void)setStyledString:(IGStyledString *)arg1 ;
+-(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3 ;
 @end
 
 @interface IGUserDetailHeaderView : UIView
 @property(retain, nonatomic) IGFollowButton *followButton;
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
+-(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3 ;
 @end
 
 @interface IGPhoto
@@ -212,4 +215,8 @@
 -(void)setIsLoading:(BOOL)arg1 ;
 -(NSArray *)locations;
 @property (nonatomic,retain) NSString * responseQueryText;  
+@end
+
+@interface IGURLHelper : NSObject
++(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(char)arg3 controls:(char)arg4 completionHandler:(/*^block*/id)arg5 ;
 @end

@@ -114,6 +114,24 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>app_browser</string>
+			<key>label</key>
+			<string>Open links in Instagram</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
