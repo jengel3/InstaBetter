@@ -170,6 +170,59 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+
+// open links in app
+
+%hook IGUserDetailHeaderView 
+-(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
+  if (enabled && openInApp) {
+    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
+  }
+}
+%end
+
+// share sheet link
+
+%hook IGCoreTextView
+-(void)layoutSubviews {
+  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+  [longPress setMinimumPressDuration:1];
+  [self addGestureRecognizer:longPress];
+}
+
+%new
+-(void)callShare:(UIGestureRecognizer *)longPress {
+  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+        initWithActivityItems:@[[self.styledString.attributedString string]]
+        applicationActivities:nil];
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+}
+%end
+
+// share sheet image
+
+%hook IGFeedMediaView
+-(void)layoutSubviews {
+  %log;
+  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+  [longPress setMinimumPressDuration:1];
+  [self addGestureRecognizer:longPress];
+}
+
+%new
+-(void)callShare:(UIGestureRecognizer *)longPress {
+  UIImage *img = self.photoImageView.photoImageView.image;
+  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+        initWithActivityItems:@[img]
+        applicationActivities:nil];
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+}
+%end
+
 // action sheet manager
 
 %hook IGActionSheet
@@ -198,17 +251,6 @@ static void saveMedia(IGPost *post) {
   %orig;
 }
 %end
-
-%hook IGUserDetailHeaderView 
--(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
-  if (enabled && openInApp) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
-  }
-}
-%end
-
 
 // mute users
 

@@ -37,7 +37,7 @@
 @end
 
 
-@interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate>
+@interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UILongPressGestureRecognizerDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
 @property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
 -(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1 ;
@@ -219,4 +219,16 @@
 
 @interface IGURLHelper : NSObject
 +(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(char)arg3 controls:(char)arg4 completionHandler:(/*^block*/id)arg5 ;
+@end
+
+@interface IGImageView : UIImageView
+@end
+
+@interface IGImageProgressView : UIView
+@property (nonatomic,readonly) IGImageView * photoImageView;
+@end
+
+@interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
+@property (nonatomic,retain) IGPost * post;
+@property (nonatomic,readonly) IGImageProgressView * photoImageView; 
 @end
