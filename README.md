@@ -9,6 +9,11 @@ The best Instagram tweak yet, packed with features ranging from media saving to 
 * Custom Locations for Media - /u/stevep88
 * Show follow status on user profile (Similar to Twitter) - /u/evansjailbreak
 * Show like counts as percentages - /u/rnumur
+* Share sheet for text
+* Share sheet for images
+* Save hi-res images
+* Share sheet for link to hi-res images
+* Open links in Instagram
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

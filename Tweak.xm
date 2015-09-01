@@ -183,7 +183,7 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
-// share sheet link
+// share sheet text
 
 %hook IGCoreTextView
 -(void)layoutSubviews {
