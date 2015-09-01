@@ -3,7 +3,7 @@
 The best Instagram tweak yet, packed with features ranging from media saving to muting annoying users from your feed.
 
 ## Features
-* Save Media (Images & Videos) 
+* Save hi-res Media (Images & Videos) 
 * Mute Users from main feed
 * Hide Sponsored Ads
 * Custom Locations for Media - /u/stevep88
@@ -11,7 +11,6 @@ The best Instagram tweak yet, packed with features ranging from media saving to 
 * Show like counts as percentages - /u/rnumur
 * Share sheet for text
 * Share sheet for images
-* Save hi-res images
 * Share sheet for link to hi-res images
 * Open links in Instagram
 
