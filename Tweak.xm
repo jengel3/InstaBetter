@@ -346,7 +346,7 @@ static void saveMedia(IGPost *post) {
           [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:[item getMediaId]];
             int followers = [item.user.followerCount intValue];
             float percent = ((float)item.likeCount / (float)followers) * 100.0;
-            NSString *display = [NSString stringWithFormat:@"(%.01f%%)", percent];
+            NSString *display = [NSString stringWithFormat:@" (%.01f%%)", percent];
             NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
             NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
             UIColor *col = nil;
