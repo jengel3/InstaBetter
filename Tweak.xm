@@ -19,6 +19,7 @@ static BOOL saveActions = YES;
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
 static BOOL openInApp = YES;
+static BOOL disableDMRead = NO;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 
@@ -36,6 +37,7 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"follow_status"];
     [prefs setValue:@YES forKey:@"custom_locations"];
     [prefs setValue:@YES forKey:@"save_actions"];
+    [prefs setValue:@NO forKey:@"disable_read_notification"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
@@ -57,6 +59,7 @@ static void updatePrefs() {
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
+      disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
@@ -137,6 +140,42 @@ static void saveMedia(IGPost *post) {
 }
 
 %group instaHooks
+
+%hook IGDirectedPost
+-(void)performRead {
+  if (enabled && isableDMRead) {
+    return;
+  }
+  %orig;
+}
+-(BOOL)isRead {
+  if (enabled && disableDMRead) {
+    return false;
+  }
+  return %orig;
+}
+-(void)setIsRead:(BOOL)read {
+  if (enabled && disableDMRead) {
+    return %orig(NO);
+  }
+  return %orig;
+}
+%end
+
+%hook IGDirectedPostRecipient
+-(BOOL)hasRead {
+  if (enabled && disableDMRead) {
+    return false;
+  }
+  return %orig;
+}
+-(void)setHasRead:(BOOL)read {
+  if (enabled && disableDMRead) {
+    return %orig(NO);
+  }
+  return %orig;
+}
+%end
 
 // follow status
 

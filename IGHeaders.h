@@ -232,3 +232,14 @@
 @property (nonatomic,retain) IGPost * post;
 @property (nonatomic,readonly) IGImageProgressView * photoImageView; 
 @end
+
+@interface IGDirectedPost
+-(void)performRead;
+-(BOOL)isRead;
+-(void)setIsRead:(BOOL)read;
+@end
+
+@interface IGDirectedPostRecipient
+-(BOOL)hasRead;
+-(void)setHasRead:(BOOL)arg1 ;
+@end
