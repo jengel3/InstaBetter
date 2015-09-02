@@ -141,6 +141,11 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
+%hook UIApplication
+%end
+
+// disable DM seen checks
+
 %hook IGDirectedPost
 -(void)performRead {
   if (enabled && disableDMRead) {
@@ -283,7 +288,6 @@ static void saveMedia(IGPost *post) {
 
 %hook IGFeedMediaView
 -(void)layoutSubviews {
-  %log;
   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
   [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
   [longPress setMinimumPressDuration:1];
@@ -437,14 +441,7 @@ static void saveMedia(IGPost *post) {
     [likesDict removeAllObjects];
   }
 }
--(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 {
-  %log;
-  return %orig;
-}
 %end
-
-
-
 
 // save media
 
