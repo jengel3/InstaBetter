@@ -141,9 +141,6 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
-%hook UIApplication
-%end
-
 // disable DM seen checks
 
 %hook IGDirectedPost
