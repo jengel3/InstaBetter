@@ -143,7 +143,7 @@ static void saveMedia(IGPost *post) {
 
 %hook IGDirectedPost
 -(void)performRead {
-  if (enabled && isableDMRead) {
+  if (enabled && disableDMRead) {
     return;
   }
   %orig;
