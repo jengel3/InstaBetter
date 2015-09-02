@@ -19,6 +19,8 @@ static BOOL saveActions = YES;
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
 static BOOL openInApp = YES;
+static int fakeFollowers = nil;
+static int fakeFollowing = nil;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -35,6 +37,8 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"custom_locations"];
     [prefs setValue:@YES forKey:@"save_actions"];
     [prefs setValue:0 forKey:@"mute_mode"];
+    [prefs setValue:nil forKey:@"fake_follower_count"];
+    [prefs setValue:nil forKey:@"fake_following_count"];
     [prefs setValue:vals forKey:@"muted_users"];
     [prefs writeToFile:prefsLoc atomically:YES];
 }
@@ -54,6 +58,8 @@ static void updatePrefs() {
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
+      fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
+      fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
     } else {
@@ -167,6 +173,32 @@ static void saveMedia(IGPost *post) {
   }
 
   %orig;
+}
+
+-(id)followingCount {
+  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+  IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+  UIViewController *currentController = rootViewController.topMostViewController;
+
+  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+
+  if (isProfileView && fakeFollowing) {
+    return [NSNumber numberWithInt:fakeFollowing];
+  }
+  return %orig;
+}
+
+-(id)followerCount {
+  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+  IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+  UIViewController *currentController = rootViewController.topMostViewController;
+
+  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+
+  if (isProfileView && fakeFollowers) {
+    return [NSNumber numberWithInt:fakeFollowers];
+  }
+  return %orig;
 }
 %end
 

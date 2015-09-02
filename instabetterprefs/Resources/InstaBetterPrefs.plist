@@ -38,10 +38,6 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
-		</dict>
-		<dict>
-			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
@@ -92,10 +88,6 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSGroupCell</string>
-		</dict>
-		<dict>
-			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
@@ -107,10 +99,6 @@
 			<string>Hide Sponsored Posts</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.noalertloop/prefsChange</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -129,6 +117,48 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>fake_follower_count</string>
+			<key>label</key>
+			<string>Fake Follower Count</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>fake_following_count</string>
+			<key>label</key>
+			<string>Fake Following Count</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>enable_muting</string>
+			<key>label</key>
+			<string>Enable Muting</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
