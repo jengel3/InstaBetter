@@ -56,7 +56,7 @@ static void updatePrefs() {
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
-      customLocations = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
+      openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
@@ -175,6 +175,8 @@ static void saveMedia(IGPost *post) {
   %orig;
 }
 
+// fake following count
+
 -(id)followingCount {
   AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
   IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
@@ -182,11 +184,13 @@ static void saveMedia(IGPost *post) {
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
-  if (isProfileView && fakeFollowing) {
+  if (enabled && isProfileView && fakeFollowing) {
     return [NSNumber numberWithInt:fakeFollowing];
   }
   return %orig;
 }
+
+// fake follower count
 
 -(id)followerCount {
   AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
@@ -195,7 +199,7 @@ static void saveMedia(IGPost *post) {
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
-  if (isProfileView && fakeFollowers) {
+  if (enabled && isProfileView && fakeFollowers) {
     return [NSNumber numberWithInt:fakeFollowers];
   }
   return %orig;
@@ -211,6 +215,8 @@ static void saveMedia(IGPost *post) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
     [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
+  } else {
+    %orig;
   }
 }
 %end
