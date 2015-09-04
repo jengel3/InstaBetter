@@ -15,6 +15,7 @@ The best Instagram tweak yet, packed with features ranging from media saving to 
 * Open links in Instagram
 * Fake follower and following counts
 * View DMs without notifying the sender
+* All features can be toggled on or off
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

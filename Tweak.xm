@@ -562,8 +562,7 @@ static void handleNotification(CFNotificationCenterRef center, void *observer, C
   updatePrefs();
 }
 
-%ctor {
-    
+%ctor { 
     updatePrefs();
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(), NULL,
