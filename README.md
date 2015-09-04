@@ -2,6 +2,8 @@
 
 The best Instagram tweak yet, packed with features ranging from media saving to muting annoying users from your feed.
 
+The most comprehensive tweak for Instagram yet. With over 10 new features and tweaks, you'll have more control over your Instagram experience. 
+
 ## Features
 * Save hi-res Media (Images & Videos) 
 * Mute Users from main feed

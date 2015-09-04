@@ -7,7 +7,7 @@ include theos/makefiles/common.mk
 TWEAK_NAME = InstaBetter
 BUNDLE_NAME = InstaBetterBundle
 InstaBetterBundle_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries
-InstaBetter_FILES = MBProgressHUD.m Tweak.xm lib/JTSImageViewController.m lib/JTSImageInfo.m lib/UIImage+JTSImageEffects.m lib/UIApplication+JTSImageViewController.m lib/JTSSimpleImageDownloader.m lib/JTSAnimatedGIFUtility.m
+InstaBetter_FILES = MBProgressHUD.m Tweak.xm
 InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics
 
 include $(THEOS_MAKE_PATH)/tweak.mk
