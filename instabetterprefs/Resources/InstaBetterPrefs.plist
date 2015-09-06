@@ -219,6 +219,18 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Support</string>
+		</dict>
+		<dict>
+			<key>action</key>
+			<string>openDonate:</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Donate</string>
+			<key>icon</key>
+			<string>PayPalIcon.png</string>
 		</dict>
 		<dict>
 			<key>action</key>
@@ -227,6 +239,8 @@
 			<string>PSButtonCell</string>
 			<key>label</key>
 			<string>Follow @itsjake88</string>
+			<key>icon</key>
+			<string>TwitterIcon.png</string>
 		</dict>
 		<dict>
 			<key>action</key>
@@ -235,6 +249,8 @@
 			<string>PSButtonCell</string>
 			<key>label</key>
 			<string>Follow @AOkhtenberg (design)</string>
+			<key>icon</key>
+			<string>TwitterIcon.png</string>
 		</dict>
 	</array>
 	<key>title</key>

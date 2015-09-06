@@ -5,7 +5,7 @@
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
 
-#define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/InstaBetterBundle.bundle"
+#define kBundlePath @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
 
 static NSMutableArray *muted = nil;
@@ -201,7 +201,7 @@ static void saveMedia(IGPost *post) {
       int followed_by = [[status objectForKey:@"followed_by"] intValue];
       int following = [[status objectForKey:@"following"] intValue];
       if (followed_by == 1 && following == 1) {
-        statusLabel.text = @"You follow eachother";
+        statusLabel.text = @"You follow each other";
       } else if (followed_by == 1) {
         statusLabel.text = [NSString stringWithFormat:@"%@ follows you", self.username];
       } else if (followed_by == 0) {
