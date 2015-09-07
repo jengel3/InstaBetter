@@ -6,6 +6,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ## Features
 * Save hi-res Media (Images & Videos) 
+* Hold down on images to zoom
 * Mute Users from main feed
 * Hide Sponsored Ads
 * Custom Locations for Media - /u/stevep88

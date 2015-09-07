@@ -256,3 +256,11 @@
 @interface IGFeedItemPhotoCell
 @property (nonatomic,retain) IGPost * post;
 @end
+
+
+@interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
+@property (nonatomic,readonly) UIImage * originalImage;
+@property (nonatomic,retain) IGUser * user;  
+-(id)initWithFrame:(CGRect)arg1;
+-(id)initWithFrame:(CGRect)arg1 user:(id)arg2 ;
+@end

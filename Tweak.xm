@@ -339,6 +339,32 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+%hook IGProfilePictureImageView
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+  %log;
+  %orig;
+  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+  [longPress setMinimumPressDuration:1];
+  [self addGestureRecognizer:longPress];
+}
+
+%new
+-(void)longPressed:(UIGestureRecognizer *)longPress {
+  NSMutableArray *photos = [[NSMutableArray alloc] init];
+  InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+  photo.image = self.originalImage;
+  photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
+  [photos addObject:photo];
+
+  NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+
+
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+  %log;
+}
+%end
+
 // action sheet manager
 
 %hook IGActionSheet
