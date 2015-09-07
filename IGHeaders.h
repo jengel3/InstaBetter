@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <lib/Protocols/NYTPhoto.h>
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
@@ -13,6 +14,14 @@
 -(id)primaryName;
 -(id)fullOrDisplayName;
 -(id)toDict;
+@end
+
+@interface InstaBetterPhoto : NSObject <NYTPhoto>
+@property (nonatomic) UIImage *image;
+@property (nonatomic) UIImage *placeholderImage;
+@property (nonatomic) NSAttributedString *attributedCaptionTitle;
+@property (nonatomic) NSAttributedString *attributedCaptionSummary;
+@property (nonatomic) NSAttributedString *attributedCaptionCredit;
 @end
 
 @interface IGSpringButton : UIControl
@@ -242,4 +251,8 @@
 @interface IGDirectedPostRecipient
 -(BOOL)hasRead;
 -(void)setHasRead:(BOOL)arg1 ;
+@end
+
+@interface IGFeedItemPhotoCell
+@property (nonatomic,retain) IGPost * post;
 @end

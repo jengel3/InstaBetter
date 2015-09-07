@@ -2,6 +2,7 @@
 #import <Foundation/Foundation.h>
 #import "substrate.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <lib/NYTPhotosViewController.h>
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
 
@@ -70,7 +71,6 @@ static void updatePrefs() {
       updatePrefs();
     }
 
-    [prefs release];
 }
 
 static NSString * highestResImage(NSDictionary *versions) {
@@ -105,7 +105,7 @@ static void saveMedia(IGPost *post) {
         IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
         [postImageAssetWriter writeToInstagramAlbum];
          dispatch_async(dispatch_get_main_queue(), ^{
-          status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
+          status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
           status.mode = MBProgressHUDModeCustomView;
           status.labelText = @"Saved!";
 
@@ -127,7 +127,7 @@ static void saveMedia(IGPost *post) {
           [data writeToURL:tempURL atomically:YES];
           [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
           dispatch_async(dispatch_get_main_queue(), ^{
-            status.customView = [[[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]] autorelease];
+            status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
             status.mode = MBProgressHUDModeCustomView;
             status.labelText = @"Saved!";
 
@@ -138,6 +138,9 @@ static void saveMedia(IGPost *post) {
     }
   }
 }
+
+@implementation InstaBetterPhoto
+@end
 
 %group instaHooks
 
@@ -283,21 +286,56 @@ static void saveMedia(IGPost *post) {
 
 // share sheet image
 
+// %hook IGFeedMediaView
+// -(void)layoutSubviews {
+//   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+//   [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+//   [longPress setMinimumPressDuration:1];
+//   [self addGestureRecognizer:longPress];
+// }
+
+// %new
+// -(void)callShare:(UIGestureRecognizer *)longPress {
+//   UIImage *img = self.photoImageView.photoImageView.image;
+//   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+//         initWithActivityItems:@[img]
+//         applicationActivities:nil];
+//   [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+// }
+// %end
+// 
 %hook IGFeedMediaView
 -(void)layoutSubviews {
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
   [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
   [longPress setMinimumPressDuration:1];
   [self addGestureRecognizer:longPress];
 }
 
 %new
--(void)callShare:(UIGestureRecognizer *)longPress {
-  UIImage *img = self.photoImageView.photoImageView.image;
-  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[img]
-        applicationActivities:nil];
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+-(void)longPressed:(UIGestureRecognizer *)longPress {
+  NSMutableArray *photos = [[NSMutableArray alloc] init];
+  IGFeedItemPhotoCell *photoCell = (IGFeedItemPhotoCell*) self.superview.superview;
+  InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+  photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:photoCell.post.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
+  [photos addObject:photo];
+
+  NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+
+  NSString *versionURL = highestResImage(photoCell.post.photo.imageVersions);
+  NSURL *imgUrl = [NSURL URLWithString:versionURL];
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_async(queue, ^{
+    NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+    UIImage *img = [UIImage imageWithData:imgData];
+    photo.image = img;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [photosViewController updateImageForPhoto:photo];
+    });
+
+  });
+
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
 }
 %end
 
@@ -473,7 +511,7 @@ static void saveMedia(IGPost *post) {
       return thing;
     }
     NSMutableArray *original = [[NSMutableArray alloc] initWithArray:thing];
-    IGLocation *newLoc = [[[%c(IGLocation) alloc] initWithDictionary:@{
+    IGLocation *newLoc = [[%c(IGLocation) alloc] initWithDictionary:@{
       @"name": self.responseQueryText,
       @"address": @"",
       @"external_source": @"facebook_places",
@@ -481,7 +519,7 @@ static void saveMedia(IGPost *post) {
       @"lat": @"0.0",
       @"lng": @"0.0",
       @"state": @""
-    }] retain];
+    }];
     if (newLoc && original) {
       [original addObject:newLoc];
     }
