@@ -154,7 +154,13 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtinImageInsets = {3, 0,
         
         // iOS 7 has an issue with constraints that could evaluate to be negative, so we set the width to the margins' size.
         _overlayView = [[NYTPhotosOverlayView alloc] initWithFrame:CGRectMake(0, 0, NYTPhotoCaptionViewHorizontalMargin * 2.0, 0)];
-        _overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonX"] landscapeImagePhone:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonXLandscape"] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];
+
+        // edited with bundle support
+        _overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[[NSBundle bundleWithPath:@"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"] pathForResource:@"NYTPhotoViewerCloseButtonX" ofType:@"png"]] landscapeImagePhone:[UIImage imageWithContentsOfFile:[[NSBundle bundleWithPath:@"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"] pathForResource:@"NYTPhotoViewerCloseButtonXLandscape" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];
+        // end edit
+        
+        //_overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonX" inBundle:kBundlePath] landscapeImagePhone:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonXLandscape" inBundle:kBundlePath] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];
+        
         _overlayView.leftBarButtonItem.imageInsets = NYTPhotosViewControllerCloseButtinImageInsets;
         _overlayView.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(actionButtonTapped:)];
         

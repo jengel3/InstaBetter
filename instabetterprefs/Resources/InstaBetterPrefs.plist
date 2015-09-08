@@ -130,6 +130,20 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>zoom_hi_res</string>
+			<key>label</key>
+			<string>Load hi-res for zoom</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.noalertloop/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 		</dict>
 		<dict>

@@ -21,6 +21,7 @@ static BOOL followStatus = YES;
 static BOOL customLocations = YES;
 static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
+static BOOL loadHighRes = NO;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 
@@ -39,6 +40,7 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"custom_locations"];
     [prefs setValue:@YES forKey:@"save_actions"];
     [prefs setValue:@NO forKey:@"disable_read_notification"];
+    [prefs setValue:@NO forKey:@"zoom_hi_res"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
@@ -61,6 +63,7 @@ static void updatePrefs() {
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
+      loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
@@ -284,26 +287,6 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
-// share sheet image
-
-// %hook IGFeedMediaView
-// -(void)layoutSubviews {
-//   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
-//   [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
-//   [longPress setMinimumPressDuration:1];
-//   [self addGestureRecognizer:longPress];
-// }
-
-// %new
-// -(void)callShare:(UIGestureRecognizer *)longPress {
-//   UIImage *img = self.photoImageView.photoImageView.image;
-//   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-//         initWithActivityItems:@[img]
-//         applicationActivities:nil];
-//   [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
-// }
-// %end
-// 
 %hook IGFeedMediaView
 -(void)layoutSubviews {
   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
@@ -317,30 +300,47 @@ static void saveMedia(IGPost *post) {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   IGFeedItemPhotoCell *photoCell = (IGFeedItemPhotoCell*) self.superview.superview;
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+  UIImage *original = self.photoImageView.photoImageView.image;
+  if (!loadHighRes && original) {
+    photo.image = original;
+  }
+
+  NSArray *summary = [[photoCell.post.caption.text componentsSeparatedByString:@" "] subarrayWithRange:NSMakeRange(0, 8)];
+  NSMutableString *finalSummary = [[summary componentsJoinedByString:@" "] mutableCopy];
+  [finalSummary appendString:@"..."];
   photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:photoCell.post.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
+  photo.attributedCaptionSummary = [[NSMutableAttributedString alloc] initWithString:finalSummary attributes:@{NSForegroundColorAttributeName: [UIColor grayColor]}];
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+  photosViewController.delegate = self;
 
-  NSString *versionURL = highestResImage(photoCell.post.photo.imageVersions);
-  NSURL *imgUrl = [NSURL URLWithString:versionURL];
-  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-  dispatch_async(queue, ^{
-    NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-    UIImage *img = [UIImage imageWithData:imgData];
-    photo.image = img;
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [photosViewController updateImageForPhoto:photo];
+  if (loadHighRes || !original) {
+    NSString *versionURL = highestResImage(photoCell.post.photo.imageVersions);
+    NSURL *imgUrl = [NSURL URLWithString:versionURL];
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+      NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+      UIImage *img = [UIImage imageWithData:imgData];
+      photo.image = img;
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [photosViewController updateImageForPhoto:photo];
+      });
+
     });
-
-  });
+  }
 
   [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+}
+
+%new
+- (CGFloat)photosViewController:(NYTPhotosViewController *)photosViewController maximumZoomScaleForPhoto:(id <NYTPhoto>)photo {
+    return 5.0f;
 }
 %end
 
 %hook IGProfilePictureImageView
-- (void)willMoveToSuperview:(UIView *)newSuperview {
+- (void)didMoveToSuperview {
   %log;
   %orig;
   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];

@@ -68,12 +68,16 @@
 -(NSDictionary*)videoVersions;
 @end
 
-@interface IGPost : NSObject
+@interface IGCommentModel : NSObject
+@property (nonatomic,copy) NSString * text;
+@end
 
+@interface IGPost : NSObject
 @property (strong, nonatomic) IGUser *user;
 @property(readonly) int mediaType;
 @property (strong, nonatomic) IGVideo *video;
 @property (strong, nonatomic) IGPhoto *photo;
+@property (readonly) IGCommentModel * caption;  
 -(id)init;
 -(id)initWithCoder:(id)fp8;
 -(int)likeCount;
@@ -237,7 +241,7 @@
 @property (nonatomic,readonly) IGImageView * photoImageView;
 @end
 
-@interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
+@interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate>
 @property (nonatomic,retain) IGPost * post;
 @property (nonatomic,readonly) IGImageProgressView * photoImageView; 
 @end
@@ -256,7 +260,6 @@
 @interface IGFeedItemPhotoCell
 @property (nonatomic,retain) IGPost * post;
 @end
-
 
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
 @property (nonatomic,readonly) UIImage * originalImage;
