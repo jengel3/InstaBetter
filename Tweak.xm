@@ -341,12 +341,16 @@ static void saveMedia(IGPost *post) {
 
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
-  %log;
   %orig;
   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
   [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
   [longPress setMinimumPressDuration:1];
   [self addGestureRecognizer:longPress];
+  [self setUserInteractionEnabled:YES];
+}
+
+-(void)setUserInteractionEnabled:(BOOL)opt {
+  %orig(YES);
 }
 
 %new
@@ -358,10 +362,7 @@ static void saveMedia(IGPost *post) {
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
-
-
   [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
-  %log;
 }
 %end
 
@@ -501,6 +502,7 @@ static void saveMedia(IGPost *post) {
   if (enabled && showPercents) {
     [likesDict removeAllObjects];
   }
+  %orig;
 }
 %end
 

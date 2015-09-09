@@ -266,4 +266,8 @@
 @property (nonatomic,retain) IGUser * user;  
 -(id)initWithFrame:(CGRect)arg1;
 -(id)initWithFrame:(CGRect)arg1 user:(id)arg2 ;
+-(void)tapped:(id)arg1 ;
+@property (assign,nonatomic) BOOL buttonDisabled;
+-(void)setButtonDisabled:(BOOL)arg1 ;
+-(BOOL)buttonDisabled;
 @end
