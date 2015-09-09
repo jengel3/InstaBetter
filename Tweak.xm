@@ -147,6 +147,43 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
+%hook IGFeedViewController
+-(void)setFeedLayout:(int)arg1 {
+  %log;
+  %orig;
+  return;
+}
+-(int)feedLayout {
+  %log;
+  int th = %orig;
+  [self setFeedLayout:0];
+  NSLog(@"THIS %d", th);
+  return th;
+}
+%end
+
+
+%hook IGFeedToggleView
++(id)feedToggleViewForUserHeader {
+  %log;
+  return %orig;
+}
++(id)feedToggleViewForProfileHeader {
+  %log;
+  return %orig;
+}
+%end
+
+%hook Appirater
+-(void)showRatingAlert {
+  if (enabled && hideSponsored) {
+    return;
+  } else {
+    return %orig;
+  }
+}
+%end
+
 // disable DM seen checks
 
 %hook IGDirectedPost

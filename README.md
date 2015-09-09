@@ -7,6 +7,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ## Features
 * Save hi-res Media (Images & Videos) 
 * Hold down on images to zoom
+* Hold down on profile pictures to zoom
 * Mute Users from main feed
 * Hide Sponsored Ads
 * Custom Locations for Media - /u/stevep88
@@ -19,6 +20,11 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Fake follower and following counts
 * View DMs without notifying the sender
 * All features can be toggled on or off
+
+### Release 1.0.1
+* Add zooming to feed images
+* Add zooming to profile images
+* Correct "eachother" to "each other"
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

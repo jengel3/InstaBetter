@@ -139,6 +139,8 @@
 @interface IGFeedViewController
 -(void)handleDidDisplayFeedItem:(IGFeedItem*)item;
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
+-(void)setFeedLayout:(int)arg1 ;
+-(int)feedLayout;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -270,4 +272,13 @@
 @property (assign,nonatomic) BOOL buttonDisabled;
 -(void)setButtonDisabled:(BOOL)arg1 ;
 -(BOOL)buttonDisabled;
+@end
+
+@interface IGFeedToggleView : UIView
++(id)feedToggleViewForUserHeader;
++(id)feedToggleViewForProfileHeader;
+@end
+
+@interface Appirater : NSObject
+-(void)showRatingAlert;
 @end
