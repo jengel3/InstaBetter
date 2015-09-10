@@ -16,7 +16,7 @@
 			<key>label</key>
 			<string>Enable</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -34,7 +34,7 @@
 			<key>label</key>
 			<string>Show Like Percentages</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -48,7 +48,7 @@
 			<key>label</key>
 			<string>Show Follow Status</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -66,7 +66,7 @@
 			<key>label</key>
 			<string>Enable Save Actions</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -84,7 +84,7 @@
 			<key>label</key>
 			<string>Enable Custom Locations</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -98,7 +98,7 @@
 			<key>label</key>
 			<string>Hide Sponsored Posts</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -112,7 +112,7 @@
 			<key>label</key>
 			<string>Open links in Instagram</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -126,7 +126,7 @@
 			<key>label</key>
 			<string>Disable DM Seen Check</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -140,7 +140,7 @@
 			<key>label</key>
 			<string>Load hi-res for zoom</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -154,7 +154,35 @@
 			<key>label</key>
 			<string>Grid View in Main Feed</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>alert_mode</string>
+			<key>label</key>
+			<string>Double Tap Confirmation</string>
+			<key>validTitles</key>
+			<array>
+				<string>Never</string>
+				<string>Older than 24hrs</string>
+				<string>Always</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -170,7 +198,7 @@
 			<key>label</key>
 			<string>Fake Follower Count</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -182,7 +210,7 @@
 			<key>label</key>
 			<string>Fake Following Count</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -200,7 +228,7 @@
 			<key>label</key>
 			<string>Enable Muting</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -216,7 +244,7 @@
 			<key>label</key>
 			<string>Muted Users</string>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -242,7 +270,7 @@
 				<integer>1</integer>
 			</array>
 			<key>PostNotification</key>
-			<string>com.jake0oo0.noalertloop/prefsChange</string>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
 		<dict>
 			<key>cell</key>

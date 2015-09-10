@@ -72,12 +72,18 @@
 @property (nonatomic,copy) NSString * text;
 @end
 
+@interface IGDate : NSObject
+-(NSDate*)date;
+@end
+
 @interface IGPost : NSObject
 @property (strong, nonatomic) IGUser *user;
 @property(readonly) int mediaType;
 @property (strong, nonatomic) IGVideo *video;
 @property (strong, nonatomic) IGPhoto *photo;
-@property (readonly) IGCommentModel * caption;  
+@property (readonly) IGCommentModel * caption;
+@property (readonly) BOOL hasLiked;
+@property (readonly) IGDate * takenAt;
 -(id)init;
 -(id)initWithCoder:(id)fp8;
 -(int)likeCount;
@@ -85,6 +91,7 @@
 @end
 
 @interface IGFeedItem : IGPost
+@property (readonly) IGDate * takenAt; 
 +(int)fullSizeImageVersionForDevice;
 - (id)imageURLForImageVersion:(int)arg1;
 -(id)description;
@@ -289,4 +296,19 @@
 @end
 
 @interface IGMainFeedNetworkSource
+@end
+
+@interface IGUsertagGroup
+@property (assign,nonatomic) IGFeedItem * feedItem;  
+@end
+
+@interface IGFeedPhotoView
+@property (nonatomic,retain) IGUsertagGroup * usertags; 
+-(void)onDoubleTap:(id)arg1 ;
+@property (assign,nonatomic) IGFeedItemPhotoCell * parentCellView;
+@end
+
+@interface IGFeedItemVideoView
+-(void)onDoubleTap:(id)arg1 ;
+@property (nonatomic,readonly) IGPost * post;
 @end

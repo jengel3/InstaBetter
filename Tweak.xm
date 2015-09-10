@@ -5,6 +5,7 @@
 #import <lib/NYTPhotosViewController.h>
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
+#import <lib/UIAlertView+Blocks.h>
 
 #define kBundlePath @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -23,6 +24,7 @@ static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
+static int alertMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 
@@ -44,6 +46,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"zoom_hi_res"];
     [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
+    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
     [prefs setValue:vals forKey:@"muted_users"];
@@ -68,6 +71,7 @@ static void updatePrefs() {
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
+      alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
       [muted removeAllObjects];
@@ -150,6 +154,51 @@ static void saveMedia(IGPost *post) {
 
 %group instaHooks
 
+%hook IGFeedItemVideoView
+-(void)onDoubleTap:(UITapGestureRecognizer*)tap {
+  IGPost *post = ((IGFeedItemVideoView*)[tap view]).post;
+  NSDate *now = [NSDate date];
+  BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
+  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+    [UIAlertView showWithTitle:@"Like Video?"
+      message:@"Did you want to like this video?"
+      cancelButtonTitle:nil
+      otherButtonTitles:@[@"Confirm", @"Cancel"]
+      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+          %orig;
+        } 
+      }];
+  } else {
+    %orig;
+  }
+}
+%end
+
+%hook IGFeedPhotoView
+-(void)onDoubleTap:(id)tap {
+  IGPost *post = ((IGFeedPhotoView*)[tap view]).parentCellView.post;
+  NSDate *now = [NSDate date];
+  BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
+
+  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+    [UIAlertView showWithTitle:@"Like photo?"
+    message:@"Did you want to like this photo?"
+    cancelButtonTitle:nil
+    otherButtonTitles:@[@"Confirm", @"Cancel"]
+    tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+        %orig;
+      }
+    }];
+  } else {
+    %orig;
+  }
+}
+%end
+
+// grid view
+
 %hook IGFeedViewController
 -(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(char)control {
   if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
@@ -159,17 +208,7 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
-
-%hook IGFeedToggleView
-+(id)feedToggleViewForUserHeader {
-  %log;
-  return %orig;
-}
-+(id)feedToggleViewForProfileHeader {
-  %log;
-  return %orig;
-}
-%end
+// disable app rating
 
 %hook Appirater
 -(void)showRatingAlert {
