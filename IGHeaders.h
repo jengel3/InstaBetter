@@ -183,8 +183,14 @@
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 @end
 
+@protocol IGFeedHeaderItem <NSObject>
+@property (readonly) IGDate * takenAt; 
+@end
+
 @interface IGFeedItemHeader
+@property (nonatomic,retain) UIButton * timestampButton;
 -(BOOL)sponsoredPostAllowed;
+@property (nonatomic,retain) id<IGFeedHeaderItem> feedItem;
 @end
 
 @interface IGFeedItemTimelineLayoutAttributes

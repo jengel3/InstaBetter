@@ -28,6 +28,8 @@ static int alertMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 
+float origPosition = nil;
+
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
 static NSString *instaSave = @"Save Media";
@@ -650,6 +652,50 @@ static void saveMedia(IGPost *post) {
     return false;
   } else {
     return %orig;
+  }
+}
+
+-(void)layoutSubviews {
+  %orig;
+  origPosition = self.timestampButton.frame.origin.x;
+
+  UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTimestamp)];
+  [self.timestampButton addGestureRecognizer:singleTap];
+}
+
+%new
+-(void)showTimestamp {
+  if (self.timestampButton.frame.origin.x == origPosition) {
+    NSDate *takenAt = [self.feedItem.takenAt date];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+
+
+    [formatter setTimeStyle:NSDateFormatterShortStyle];
+    [formatter setDateStyle:NSDateFormatterShortStyle];
+
+    NSString *timestamp = [formatter stringFromDate:takenAt];
+    float old = self.timestampButton.frame.size.width;
+    float oldY = self.timestampButton.frame.origin.y;
+    float oldHeight = self.timestampButton.frame.size.height;
+    CGSize size = [timestamp sizeWithAttributes:[NSDictionary dictionaryWithObject:self.timestampButton.titleLabel.font forKey:NSFontAttributeName]];
+
+    float cur = size.width;
+
+    float change = cur - old;
+    float newX = self.timestampButton.frame.origin.x - change;
+
+  
+
+    [UIView animateWithDuration:0.5 
+                 animations:^{
+                  [self.timestampButton setTitle:timestamp forState:UIControlStateNormal];
+                     [self.timestampButton setFrame:CGRectMake(newX, 
+      oldY,
+      self.timestampButton.frame.size.width + change,
+      oldHeight)];
+                 }
+                 completion:nil];
+
   }
 }
 %end

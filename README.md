@@ -21,6 +21,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * View DMs without notifying the sender
 * All features can be toggled on or off
 * Enable grid view on main feed
+* Alerts for liking media with a double tap
 
 ### Release 1.0.1
 * [FEATURE] Add zooming to feed images
@@ -28,6 +29,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [BUG FIX] Correct "eachother" to "each other"
 * [TWEAK] Disable app rating messages
 * [FEATURE] Grid view on main feed
+* [FEATURE] Add alert to double-tap likes
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
