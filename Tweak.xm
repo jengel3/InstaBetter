@@ -22,6 +22,7 @@ static BOOL customLocations = YES;
 static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
+static BOOL mainGrid = NO;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 
@@ -41,6 +42,7 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"save_actions"];
     [prefs setValue:@NO forKey:@"disable_read_notification"];
     [prefs setValue:@NO forKey:@"zoom_hi_res"];
+    [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
@@ -64,6 +66,7 @@ static void updatePrefs() {
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
+      mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
@@ -148,17 +151,11 @@ static void saveMedia(IGPost *post) {
 %group instaHooks
 
 %hook IGFeedViewController
--(void)setFeedLayout:(int)arg1 {
-  %log;
-  %orig;
-  return;
-}
--(int)feedLayout {
-  %log;
-  int th = %orig;
-  [self setFeedLayout:0];
-  NSLog(@"THIS %d", th);
-  return th;
+-(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(char)control {
+  if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+    return %orig(src, 2, control);
+  }
+  return %orig;
 }
 %end
 

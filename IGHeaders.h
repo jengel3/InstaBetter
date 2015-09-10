@@ -141,6 +141,7 @@
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 -(void)setFeedLayout:(int)arg1 ;
 -(int)feedLayout;
+-(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(char)arg3 ;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -281,4 +282,11 @@
 
 @interface Appirater : NSObject
 -(void)showRatingAlert;
+@end
+
+@interface IGFeedNetworkSource
++(id)feedWithLatest;
+@end
+
+@interface IGMainFeedNetworkSource
 @end

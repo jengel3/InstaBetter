@@ -20,11 +20,14 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Fake follower and following counts
 * View DMs without notifying the sender
 * All features can be toggled on or off
+* Enable grid view on main feed
 
 ### Release 1.0.1
-* Add zooming to feed images
-* Add zooming to profile images
-* Correct "eachother" to "each other"
+* [FEATURE] Add zooming to feed images
+* [FEATURE] Add zooming to profile images
+* [BUG FIX] Correct "eachother" to "each other"
+* [TWEAK] Disable app rating messages
+* [FEATURE] Grid view on main feed
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
