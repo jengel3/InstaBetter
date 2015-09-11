@@ -162,6 +162,53 @@ static void saveMedia(IGPost *post) {
   }
 }
 
+static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
+  NSDate *takenAt = [header.feedItem.takenAt date];
+
+  NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+
+  NSDateFormatterStyle style = nil;
+  if (timestampFormat == 0) {
+    style = NSDateFormatterShortStyle;
+  } else if (timestampFormat == 1) {
+    style = NSDateFormatterMediumStyle;
+  } else if (timestampFormat == 2) {
+    style = NSDateFormatterLongStyle;
+  }
+
+  [formatter setTimeStyle:style];
+  [formatter setDateStyle:style];
+
+  NSString *timestamp = [formatter stringFromDate:takenAt];
+  float old = header.timestampButton.frame.size.width;
+  float oldY = header.timestampButton.frame.origin.y;
+  float oldHeight = header.timestampButton.frame.size.height;
+  CGSize size = [timestamp sizeWithAttributes:[NSDictionary dictionaryWithObject:header.timestampButton.titleLabel.font forKey:NSFontAttributeName]];
+
+  float cur = size.width;
+
+  float change = cur - old;
+  float newX = header.timestampButton.frame.origin.x - change;
+
+  if (animated) {
+    [UIView animateWithDuration:0.5 
+      animations:^{
+        [header.timestampButton setTitle:timestamp forState:UIControlStateNormal];
+        [header.timestampButton setFrame:CGRectMake(newX, 
+          oldY,
+          header.timestampButton.frame.size.width + change,
+          oldHeight)];
+      }
+      completion:nil];
+  } else {
+    [header.timestampButton setTitle:timestamp forState:UIControlStateNormal];
+        [header.timestampButton setFrame:CGRectMake(newX, 
+          oldY,
+          header.timestampButton.frame.size.width + change,
+          oldHeight)];
+  }
+}
+
 @implementation InstaBetterPhoto
 @end
 
@@ -670,6 +717,10 @@ static void saveMedia(IGPost *post) {
 -(void)layoutSubviews {
   %orig;
   if (enableTimestamps) {
+    if (alwaysTimestamp) {
+      showTimestamp(self, false);
+      return;
+    }
     origPosition = self.timestampButton.frame.origin.x;
 
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTimestamp)];
@@ -680,43 +731,7 @@ static void saveMedia(IGPost *post) {
 %new
 -(void)showTimestamp {
   if (self.timestampButton.frame.origin.x == origPosition) {
-    NSDate *takenAt = [self.feedItem.takenAt date];
-
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-
-    NSDateFormatterStyle style = nil;
-    if (timestampFormat == 0) {
-      style = NSDateFormatterShortStyle;
-    } else if (timestampFormat == 1) {
-      style = NSDateFormatterMediumStyle;
-    } else if (timestampFormat == 2) {
-      style = NSDateFormatterLongStyle;
-    }
-
-    [formatter setTimeStyle:style];
-    [formatter setDateStyle:style];
-
-    NSString *timestamp = [formatter stringFromDate:takenAt];
-    float old = self.timestampButton.frame.size.width;
-    float oldY = self.timestampButton.frame.origin.y;
-    float oldHeight = self.timestampButton.frame.size.height;
-    CGSize size = [timestamp sizeWithAttributes:[NSDictionary dictionaryWithObject:self.timestampButton.titleLabel.font forKey:NSFontAttributeName]];
-
-    float cur = size.width;
-
-    float change = cur - old;
-    float newX = self.timestampButton.frame.origin.x - change;
-
-    [UIView animateWithDuration:0.5 
-      animations:^{
-        [self.timestampButton setTitle:timestamp forState:UIControlStateNormal];
-        [self.timestampButton setFrame:CGRectMake(newX, 
-          oldY,
-          self.timestampButton.frame.size.width + change,
-          oldHeight)];
-      }
-      completion:nil];
-
+    showTimestamp(self, true);
   } else {
     [self layoutSubviews];
   }
