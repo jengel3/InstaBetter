@@ -72,8 +72,21 @@
 @property (nonatomic,copy) NSString * text;
 @end
 
-@interface IGDate : NSObject
--(NSDate*)date;
+@interface IGDate : NSObject <NSCoding> 
+
+@property (nonatomic,readonly) long long microseconds;                   //@synthesize microseconds=_microseconds - In the implementation block
+@property (nonatomic,copy,readonly) NSString * stringValue; 
+-(id)initWithMicroseconds:(long long)arg1 ;
+-(id)initWithCoder:(id)arg1 ;
+-(void)encodeWithCoder:(id)arg1 ;
+-(id)description;
+-(int)compare:(id)arg1 ;
+-(id)date;
+-(double)timeIntervalSinceNow;
+-(id)initWithString:(id)arg1 ;
+-(double)timeIntervalSince1970;
+-(id)initWithObject:(id)arg1 ;
+-(id)initWithTimeInterval:(double)arg1 ;
 @end
 
 @interface IGPost : NSObject
@@ -187,7 +200,7 @@
 @property (readonly) IGDate * takenAt; 
 @end
 
-@interface IGFeedItemHeader
+@interface IGFeedItemHeader : UIView
 @property (nonatomic,retain) UIButton * timestampButton;
 -(BOOL)sponsoredPostAllowed;
 @property (nonatomic,retain) id<IGFeedHeaderItem> feedItem;

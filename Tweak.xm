@@ -27,6 +27,9 @@ static BOOL mainGrid = NO;
 static int alertMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
+static BOOL enableTimestamps = YES;
+static int timestampFormat = 0;
+static BOOL alwaysTimestamp = NO;
 
 float origPosition = nil;
 
@@ -52,6 +55,9 @@ static void initPrefs() {
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
     [prefs setValue:vals forKey:@"muted_users"];
+    [prefs setValue:@NO forKey:@"always_timestamp"];
+    [prefs setValue:@YES forKey:@"enable_timestamp"];
+    [prefs setValue:[NSNumber numberWithInt:0] forKey:@"timestamp_format"];
     [prefs writeToFile:prefsLoc atomically:YES];
 }
 
@@ -76,6 +82,11 @@ static void updatePrefs() {
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
+
+      alwaysTimestamp = [prefs objectForKey:@"always_timestamp"] ? [[prefs objectForKey:@"always_timestamp"] boolValue] : NO;
+      enableTimestamps = [prefs objectForKey:@"enable_timestamp"] ? [[prefs objectForKey:@"enable_timestamp"] boolValue] : YES;
+      timestampFormat = [prefs objectForKey:@"timestamp_format"] ? [[prefs objectForKey:@"timestamp_format"] intValue] : 0;
+
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
     } else {
@@ -646,6 +657,7 @@ static void saveMedia(IGPost *post) {
 }
 %end
 
+
 %hook IGFeedItemHeader
 -(BOOL)sponsoredPostAllowed {
   if (enabled && hideSponsored) {
@@ -657,21 +669,32 @@ static void saveMedia(IGPost *post) {
 
 -(void)layoutSubviews {
   %orig;
-  origPosition = self.timestampButton.frame.origin.x;
+  if (enableTimestamps) {
+    origPosition = self.timestampButton.frame.origin.x;
 
-  UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTimestamp)];
-  [self.timestampButton addGestureRecognizer:singleTap];
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTimestamp)];
+    [self.timestampButton addGestureRecognizer:singleTap];
+  }
 }
 
 %new
 -(void)showTimestamp {
   if (self.timestampButton.frame.origin.x == origPosition) {
     NSDate *takenAt = [self.feedItem.takenAt date];
+
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 
+    NSDateFormatterStyle style = nil;
+    if (timestampFormat == 0) {
+      style = NSDateFormatterShortStyle;
+    } else if (timestampFormat == 1) {
+      style = NSDateFormatterMediumStyle;
+    } else if (timestampFormat == 2) {
+      style = NSDateFormatterLongStyle;
+    }
 
-    [formatter setTimeStyle:NSDateFormatterShortStyle];
-    [formatter setDateStyle:NSDateFormatterShortStyle];
+    [formatter setTimeStyle:style];
+    [formatter setDateStyle:style];
 
     NSString *timestamp = [formatter stringFromDate:takenAt];
     float old = self.timestampButton.frame.size.width;
@@ -684,18 +707,18 @@ static void saveMedia(IGPost *post) {
     float change = cur - old;
     float newX = self.timestampButton.frame.origin.x - change;
 
-  
-
     [UIView animateWithDuration:0.5 
-                 animations:^{
-                  [self.timestampButton setTitle:timestamp forState:UIControlStateNormal];
-                     [self.timestampButton setFrame:CGRectMake(newX, 
-      oldY,
-      self.timestampButton.frame.size.width + change,
-      oldHeight)];
-                 }
-                 completion:nil];
+      animations:^{
+        [self.timestampButton setTitle:timestamp forState:UIControlStateNormal];
+        [self.timestampButton setFrame:CGRectMake(newX, 
+          oldY,
+          self.timestampButton.frame.size.width + change,
+          oldHeight)];
+      }
+      completion:nil];
 
+  } else {
+    [self layoutSubviews];
   }
 }
 %end
