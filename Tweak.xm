@@ -24,6 +24,7 @@ static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
+static int audioMode = 1;
 static int alertMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
@@ -32,6 +33,7 @@ static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
 
 float origPosition = nil;
+BOOL ringerMuted = NO;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -52,6 +54,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
+    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
     [prefs setValue:vals forKey:@"muted_users"];
@@ -80,6 +83,7 @@ static void updatePrefs() {
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
+      audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
 
@@ -216,19 +220,23 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedItemVideoView
 -(void)onDoubleTap:(UITapGestureRecognizer*)tap {
-  IGPost *post = ((IGFeedItemVideoView*)[tap view]).post;
-  NSDate *now = [NSDate date];
-  BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
-  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-    [UIAlertView showWithTitle:@"Like Video?"
-      message:@"Did you want to like this video?"
-      cancelButtonTitle:nil
-      otherButtonTitles:@[@"Confirm", @"Cancel"]
-      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
-          %orig;
-        } 
-      }];
+  if (enabled) {
+    IGPost *post = ((IGFeedItemVideoView*)[tap view]).post;
+    NSDate *now = [NSDate date];
+    BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
+    if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+      [UIAlertView showWithTitle:@"Like Video?"
+        message:@"Did you want to like this video?"
+        cancelButtonTitle:nil
+        otherButtonTitles:@[@"Confirm", @"Cancel"]
+        tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+          if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+            %orig;
+          } 
+        }];
+    } else {
+      %orig;
+    }
   } else {
     %orig;
   }
@@ -265,6 +273,21 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     return %orig(src, 2, control);
   }
   return %orig;
+}
+%end
+
+%hook IGFeedVideoPlayer
+-(BOOL)isAudioEnabled {
+  if (enabled && (audioMode == 2 || (audioMode == 1 && !ringerMuted))) {
+    return YES;
+  }
+  return %orig;
+}
+-(void)setAudioEnabled:(BOOL)arg1 {
+  if (enabled && (audioMode == 2 || (audioMode == 1 && !ringerMuted))) {
+    return %orig(YES);
+  }
+  %orig;
 }
 %end
 
@@ -405,10 +428,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGCoreTextView
 -(void)layoutSubviews {
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
-  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
-  [longPress setMinimumPressDuration:1];
-  [self addGestureRecognizer:longPress];
+  if (enabled) {
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setMinimumPressDuration:1];
+    [self addGestureRecognizer:longPress];
+  }
 }
 
 %new
@@ -422,10 +447,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedMediaView
 -(void)layoutSubviews {
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
-  [longPress setMinimumPressDuration:1];
-  [self addGestureRecognizer:longPress];
+  if (enabled) {
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setMinimumPressDuration:1];
+    [self addGestureRecognizer:longPress];
+  }
 }
 
 %new
@@ -475,11 +502,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
   %orig;
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
-  [longPress setMinimumPressDuration:1];
-  [self addGestureRecognizer:longPress];
-  [self setUserInteractionEnabled:YES];
+  if (enabled) {
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setMinimumPressDuration:1];
+    [self addGestureRecognizer:longPress];
+    [self setUserInteractionEnabled:YES];
+  }
 }
 
 -(void)setUserInteractionEnabled:(BOOL)opt {
@@ -732,8 +761,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)showTimestamp {
   if (self.timestampButton.frame.origin.x == origPosition) {
     showTimestamp(self, true);
-  } else {
-    [self layoutSubviews];
   }
 }
 %end
@@ -785,12 +812,37 @@ static void handleNotification(CFNotificationCenterRef center, void *observer, C
   updatePrefs();
 }
 
+static void setRingerState() {
+  SBMediaController *contrl = (SBMediaController *)[%c(SBMediaController) sharedInstance];
+  ringerMuted = [contrl isRingerMuted];
+
+  NSLog(@"MUTE UPDATED %d", ringerMuted);
+}
+
+static void handleRingerState(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+    setRingerState();
+}
+
 %ctor { 
     updatePrefs();
+
+    setRingerState();
+
     CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDarwinNotifyCenter(), NULL,
+      CFNotificationCenterGetDarwinNotifyCenter(), 
+      NULL,
       &handleNotification,
       (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
-      NULL, CFNotificationSuspensionBehaviorCoalesce);
+      NULL, 
+      CFNotificationSuspensionBehaviorCoalesce);
+
+    CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(),
+      NULL,
+      handleRingerState, 
+      (CFStringRef)@"com.apple.springboard.ringerstate",
+      NULL,
+      CFNotificationSuspensionBehaviorCoalesce);
+
     %init(instaHooks);
 }

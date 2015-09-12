@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.burbn.instagram" ); }; }
+{ Filter = { Bundles = ( "com.burbn.instagram", "com.apple.springboard" ); }; }

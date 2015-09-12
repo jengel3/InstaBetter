@@ -162,6 +162,7 @@
 -(void)setFeedLayout:(int)arg1 ;
 -(int)feedLayout;
 -(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(char)arg3 ;
+-(void)startVideoForCellMovingOnScreen;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -330,4 +331,21 @@
 @interface IGFeedItemVideoView
 -(void)onDoubleTap:(id)arg1 ;
 @property (nonatomic,readonly) IGPost * post;
+@end
+
+@interface SBMediaController
++(id)sharedInstance;
+-(BOOL)isRingerMuted;
+@end
+
+@interface IGVideoPlayer : NSObject
+@property (assign,nonatomic) BOOL muted;
+-(BOOL)isMuted;
+-(void)setMuted:(BOOL)arg1 ;
+@end
+
+@interface IGFeedVideoPlayer : NSObject
+@property (assign,nonatomic) BOOL audioEnabled;
+-(BOOL)isAudioEnabled;
+-(void)setAudioEnabled:(BOOL)arg1 ;
 @end
