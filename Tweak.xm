@@ -315,6 +315,16 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // disable DM seen checks
 
+
+%hook IGDirectThreadViewController
+-(void)sendSeenTimestampForContent:(id)arg1 {
+  if (enabled && disableDMRead) {
+    return;
+  }
+  %orig;
+}
+%end
+
 %hook IGDirectedPost
 -(void)performRead {
   if (enabled && disableDMRead) {

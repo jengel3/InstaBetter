@@ -286,11 +286,24 @@
 -(void)performRead;
 -(BOOL)isRead;
 -(void)setIsRead:(BOOL)read;
+-(void)performReadWithRetryAttemptCount:(unsigned)arg1 successBlock:(/*^block*/id)arg2 failureBlock:(/*^block*/id)arg3 ;
+@end
+
+@interface IGDirectThreadViewController
+-(void)sendSeenTimestampForContent:(id)arg1 ;
 @end
 
 @interface IGDirectedPostRecipient
 -(BOOL)hasRead;
 -(void)setHasRead:(BOOL)arg1 ;
+@end
+
+@interface IGDirectThread
+-(id)seenAtForItemsWithId:(id)arg1 ;
+@end
+
+@interface IGDirectSharingHelper
++(id)seenUsersForContent:(id)arg1 thread:(id)arg2 pendingMode:(char)arg3;
 @end
 
 @interface IGFeedItemPhotoCell

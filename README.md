@@ -34,6 +34,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Add alert to double-tap likes
 * [FEATURE] Add full timestamps to feed items
 * [FEATURE] Add option to auto play video sound
+* [BUG FIX] Fix DM read timestamps still being sent
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
