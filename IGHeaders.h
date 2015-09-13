@@ -163,6 +163,12 @@
 -(int)feedLayout;
 -(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(char)arg3 ;
 -(void)startVideoForCellMovingOnScreen;
+-(id)videoCellForAutoPlay;
+-(BOOL)isDeviceSupportAlwaysAutoPlay;
+@end
+
+@interface IGMediaCaptureViewController
+-(BOOL)shouldAutoPlayVideo;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -342,10 +348,20 @@
 @property (assign,nonatomic) BOOL muted;
 -(BOOL)isMuted;
 -(void)setMuted:(BOOL)arg1 ;
+-(void)playFromStart;
+-(void)stop;
 @end
 
 @interface IGFeedVideoPlayer : NSObject
 @property (assign,nonatomic) BOOL audioEnabled;
 -(BOOL)isAudioEnabled;
 -(void)setAudioEnabled:(BOOL)arg1 ;
+-(void)setReadyToPlay:(char)arg1 ;
+-(void)play;
+-(id)player;
+@end
+
+@interface IGFeedItemVideoCell
+@property (nonatomic,retain) IGFeedItemVideoView * videoView; 
+
 @end

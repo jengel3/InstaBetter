@@ -23,8 +23,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Enable grid view on main feed
 * Alerts for liking media with a double tap
 * Show the full time for feed items by clicking on the timestamp button
+* Add setting to enable or disable auto-playing video sound
 
-### Release 1.0.1
+### Release 1.1.0
 * [FEATURE] Add zooming to feed images
 * [FEATURE] Add zooming to profile images
 * [BUG FIX] Correct "eachother" to "each other"
@@ -32,6 +33,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Grid view on main feed
 * [FEATURE] Add alert to double-tap likes
 * [FEATURE] Add full timestamps to feed items
+* [FEATURE] Add option to auto play video sound
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

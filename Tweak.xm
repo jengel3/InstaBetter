@@ -6,6 +6,7 @@
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
 #import <lib/UIAlertView+Blocks.h>
+#import <notify.h>
 
 #define kBundlePath @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -25,6 +26,7 @@ static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
 static int audioMode = 1;
+static int videoMode = 1;
 static int alertMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
@@ -33,7 +35,8 @@ static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
 
 float origPosition = nil;
-BOOL ringerMuted = NO;
+int ringerState;
+static BOOL ringerMuted;
 
 static NSString *instaMute = @"Mute";
 static NSString *instaUnmute = @"Unmute";
@@ -84,6 +87,7 @@ static void updatePrefs() {
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
+      videoMode = [prefs objectForKey:@"video_mode"] ? [[prefs objectForKey:@"video_mode"] intValue] : 1;
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
 
@@ -166,6 +170,9 @@ static void saveMedia(IGPost *post) {
   }
 }
 
+// show timestamps on IGFeedItems
+// header - IGFeedItemheader for relevant IGFeedItem
+// animated - whether or not displaying the timestamp should be animated
 static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   NSDate *takenAt = [header.feedItem.takenAt date];
 
@@ -217,6 +224,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 @end
 
 %group instaHooks
+
+// double-tap like confirmation
 
 %hook IGFeedItemVideoView
 -(void)onDoubleTap:(UITapGestureRecognizer*)tap {
@@ -276,20 +285,21 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+// auto play audio
+
 %hook IGFeedVideoPlayer
--(BOOL)isAudioEnabled {
-  if (enabled && (audioMode == 2 || (audioMode == 1 && !ringerMuted))) {
-    return YES;
-  }
-  return %orig;
-}
--(void)setAudioEnabled:(BOOL)arg1 {
-  if (enabled && (audioMode == 2 || (audioMode == 1 && !ringerMuted))) {
-    return %orig(YES);
+-(void)setReadyToPlay:(char)arg1 {
+  if (enabled) {
+    if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
+      [self setAudioEnabled:YES];
+    } else if (audioMode == 0) {
+      [self setAudioEnabled:NO];
+    }
   }
   %orig;
 }
 %end
+
 
 // disable app rating
 
@@ -812,21 +822,35 @@ static void handleNotification(CFNotificationCenterRef center, void *observer, C
   updatePrefs();
 }
 
-static void setRingerState() {
-  SBMediaController *contrl = (SBMediaController *)[%c(SBMediaController) sharedInstance];
-  ringerMuted = [contrl isRingerMuted];
-
-  NSLog(@"MUTE UPDATED %d", ringerMuted);
+static void setRingerState(uint64_t state) {
+  if (state == 0) {
+    ringerMuted = YES;
+  } else if (state == 1) {
+    ringerMuted = NO;
+  } else {
+    NSLog(@"Received invalid ringer status..this shouldn't happen -- State: %llu", state);
+    ringerMuted = YES;
+  }
 }
 
-static void handleRingerState(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-    setRingerState();
+static void setupRingerCheck() {
+  uint64_t state;
+  notify_get_state(ringerState, &state);
+  setRingerState(state);
+
+  notify_register_dispatch("com.apple.springboard.ringerstate",
+    &ringerState,
+    dispatch_get_main_queue(), ^(int t) {
+        uint64_t state;
+        notify_get_state(ringerState, &state);
+        setRingerState(state);
+    });
 }
 
 %ctor { 
     updatePrefs();
 
-    setRingerState();
+    setupRingerCheck();
 
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(), 
@@ -834,14 +858,6 @@ static void handleRingerState(CFNotificationCenterRef center, void *observer, CF
       &handleNotification,
       (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
       NULL, 
-      CFNotificationSuspensionBehaviorCoalesce);
-
-    CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDarwinNotifyCenter(),
-      NULL,
-      handleRingerState, 
-      (CFStringRef)@"com.apple.springboard.ringerstate",
-      NULL,
       CFNotificationSuspensionBehaviorCoalesce);
 
     %init(instaHooks);

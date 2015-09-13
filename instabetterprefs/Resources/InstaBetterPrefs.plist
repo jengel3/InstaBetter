@@ -220,6 +220,34 @@
 			<key>label</key>
 			<string>Audio &amp; Video</string>
 		</dict>
+<!-- 		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>video_mode</string>
+			<key>label</key>
+			<string>Auto-Play Video</string>
+			<key>validTitles</key>
+			<array>
+				<string>Never</string>
+				<string>Follow Ringer</string>
+				<string>Always</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict> -->
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
