@@ -24,6 +24,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Alerts for liking media with a double tap
 * Show the full time for feed items by clicking on the timestamp button
 * Add setting to enable or disable auto-playing video sound
+* Hold down on direct message images and videos for sharing and save options
 
 ### Release 1.1.0
 * [FEATURE] Add zooming to feed images
@@ -35,6 +36,8 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Add full timestamps to feed items
 * [FEATURE] Add option to auto play video sound
 * [BUG FIX] Fix DM read timestamps still being sent
+* [FEATURE] Add saving and sharing options to DMs
+* [BUG FIX] Prevent Mute button from showing on own profile
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

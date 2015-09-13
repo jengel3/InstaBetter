@@ -16,6 +16,11 @@
 -(id)toDict;
 @end
 
+@interface IGAuthHelper
+@property (nonatomic,retain) IGUser * currentUser; 
++(id)sharedAuthHelper;
+@end
+
 @interface InstaBetterPhoto : NSObject <NYTPhoto>
 @property (nonatomic) UIImage *image;
 @property (nonatomic) UIImage *placeholderImage;
@@ -199,8 +204,11 @@
 - (id)rootViewController;
 @end
 
-@interface IGActionSheet
+@interface IGActionSheet : UIActionSheet
+@property (nonatomic,retain) NSMutableArray * buttons; 
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
++(int)tag;
++(void)setTag:(int)arg1 ;
 @end
 
 @protocol IGFeedHeaderItem <NSObject>
@@ -282,11 +290,39 @@
 @property (nonatomic,readonly) IGImageProgressView * photoImageView; 
 @end
 
+@interface IGDirectContent : NSObject
+
+@end
+
+@interface IGDirectContentCell : UICollectionViewCell <UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate, UIActionSheetDelegate>
+@property (nonatomic,retain) IGDirectContent * content;
+-(void)onContentMenuPress:(id)arg1 ;
+@property (nonatomic,retain) UILongPressGestureRecognizer * contentMenuLongPressRecognizer;
+@end
+
+
+@interface IGDirectContentExpandableCell : IGDirectContentCell <UILongPressGestureRecognizerDelegate>
+-(void)layoutSubviews;
+@end
+
+@interface IGDirectPhoto
+@property (nonatomic,retain) IGPhoto * photo;
+@end
+
+@interface IGDirectVideo : IGDirectContent
+@property (nonatomic,retain) IGVideo * video;
+@end 
+
+
+@interface IGDirectPhotoExpandableCell 
+@property (nonatomic,retain) IGImageProgressView * photoImageView; 
+-(void)layoutSubviews;
+@end
+
 @interface IGDirectedPost
 -(void)performRead;
 -(BOOL)isRead;
 -(void)setIsRead:(BOOL)read;
--(void)performReadWithRetryAttemptCount:(unsigned)arg1 successBlock:(/*^block*/id)arg2 failureBlock:(/*^block*/id)arg3 ;
 @end
 
 @interface IGDirectThreadViewController

@@ -120,6 +120,32 @@ static NSString * highestResImage(NSDictionary *versions) {
   return highestURL;
 }
 
+static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
+  if (!status) {
+    UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+    status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+    status.labelText = @"Saving";
+  }
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_async(queue, ^{
+    NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
+
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+      NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+      [data writeToURL:tempURL atomically:YES];
+      [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
+        status.mode = MBProgressHUDModeCustomView;
+        status.labelText = @"Saved!";
+
+        [status hide:YES afterDelay:1.0];
+      });
+    }];
+  });
+}
+
 static void saveMedia(IGPost *post) {
   if (enabled && saveActions) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
@@ -148,24 +174,7 @@ static void saveMedia(IGPost *post) {
       NSString *versionURL = highestResImage(post.video.videoVersions);
     
       NSURL *vidURL = [NSURL URLWithString:versionURL];
-      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-      dispatch_async(queue, ^{
-        NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
-
-        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-          NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-          NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-          [data writeToURL:tempURL atomically:YES];
-          [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
-          dispatch_async(dispatch_get_main_queue(), ^{
-            status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-            status.mode = MBProgressHUDModeCustomView;
-            status.labelText = @"Saved!";
-
-            [status hide:YES afterDelay:1.0];
-          });
-        }];
-      });
+      saveVideo(vidURL, status);
     }
   }
 }
@@ -444,6 +453,77 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+// save images and videos in direct messages
+
+%hook IGDirectContentExpandableCell
+-(void)layoutSubviews{
+  if (enabled) {
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
+    [longPress setMinimumPressDuration:1.5];
+    [self setUserInteractionEnabled:YES];
+    [self addGestureRecognizer:longPress];
+  }
+
+  %orig;
+}
+
+%new
+-(void)callShare:(UIGestureRecognizer *)longPress {
+  if (longPress.state != UIGestureRecognizerStateBegan) return;
+
+  if ([self.content isKindOfClass:[%c(IGDirectPhoto) class]]) {
+    NSMutableArray *photos = [[NSMutableArray alloc] init];
+    InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+
+    [photos addObject:photo];
+
+    NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+    photosViewController.delegate = self;
+    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+
+    IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
+    
+    NSString *versionURL = highestResImage(media.imageVersions);
+    NSURL *imgUrl = [NSURL URLWithString:versionURL];
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+      NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+      UIImage *img = [UIImage imageWithData:imgData];
+      photo.image = img;
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [photosViewController updateImageForPhoto:photo];
+      });
+
+    });
+  } else if ([self.content isKindOfClass:[%c(IGDirectVideo) class]]) {
+    // confirm that we want to save the video
+    
+    UIActionSheet *actions = [[UIActionSheet alloc]
+      initWithTitle:@"Actions"
+      delegate:self
+      cancelButtonTitle:@"Cancel"
+      destructiveButtonTitle:nil
+      otherButtonTitles:@"Save Video", nil];
+
+    [actions showInView:[UIApplication sharedApplication].keyWindow];
+  }
+}
+
+%new
+- (void)actionSheet:(UIActionSheet *)popup clickedButtonAtIndex:(NSInteger)buttonIndex {
+  if (buttonIndex != 0) return;
+  
+  IGVideo *media = ((IGDirectVideo*)self.content).video;
+  NSString *versionURL = highestResImage(media.videoVersions);
+
+  NSURL *vidURL = [NSURL URLWithString:versionURL];
+
+  saveVideo(vidURL, nil);
+}
+%end
+
 // share sheet text
 
 %hook IGCoreTextView
@@ -557,10 +637,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
     UIViewController *currentController = rootViewController.topMostViewController;
 
+    // NSLog(@"THIS %@", [currentController class]);
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
     if (isProfileView) {
         IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
+
+        IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+        if ([current.username isEqualToString:userView.user.username]) return %orig;
         if ([muted containsObject:userView.user.username]) {
             [self addButtonWithTitle:instaUnmute style:0];
         } else {
