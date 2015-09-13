@@ -565,7 +565,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     photo.image = original;
   }
 
-  NSArray *summary = [[photoCell.post.caption.text componentsSeparatedByString:@" "] subarrayWithRange:NSMakeRange(0, 8)];
+  NSArray *items = [photoCell.post.caption.text componentsSeparatedByString:@" "];
+  NSArray *summary = [items subarrayWithRange:NSMakeRange(0, ([items count] >= 8 ? 8 : [items count]))];
   NSMutableString *finalSummary = [[summary componentsJoinedByString:@" "] mutableCopy];
   [finalSummary appendString:@"..."];
   photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:photoCell.post.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];

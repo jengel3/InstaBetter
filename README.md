@@ -49,3 +49,26 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 All Rights Reserved - InstaBetter may not be redistributed without permission from the developer.
 
 InstaBetter is not affiliated with Instagram.
+
+## Depiction Description
+
+The most comprehensive tweak for Instagram yet, with over 10 new features.
+
+* Save hi-res Media (Images & Videos) 
+* Hold down on images to zoom
+* Hold down on profile pictures to zoom
+* Mute Users from main feed
+* Hide Sponsored Ads
+* Custom Locations for Media
+* Show follow status on user profile (Similar to Twitter) 
+* Show like counts as percentages
+* Share actions for text and images
+* Open links in Instagram
+* View DMs without notifying the sender
+* Grid view
+* Confirm double-tap alerts
+* Media Timestamps
+* Auto-play video sound
+* Save DM content
+
+InstaBetter is not affiliated with Instagram or Facebook.
