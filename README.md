@@ -39,6 +39,15 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Add saving and sharing options to DMs
 * [BUG FIX] Prevent Mute button from showing on own profile
 
+### Release 1.1.1
+* [BUG FIX] Fix crash related to short captions
+
+### Release 1.1.2
+* [BUG FIX] Fix crash related to no captions
+
+### Release 1.1.3
+* [BUG FIX] Fix invalid ringer state on load
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

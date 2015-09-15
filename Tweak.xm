@@ -565,12 +565,19 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     photo.image = original;
   }
 
-  NSArray *items = [photoCell.post.caption.text componentsSeparatedByString:@" "];
-  NSArray *summary = [items subarrayWithRange:NSMakeRange(0, ([items count] >= 8 ? 8 : [items count]))];
-  NSMutableString *finalSummary = [[summary componentsJoinedByString:@" "] mutableCopy];
-  [finalSummary appendString:@"..."];
+  if (photoCell.post.caption && photoCell.post.caption.text) {
+    NSArray *items = [photoCell.post.caption.text componentsSeparatedByString:@" "];
+    NSArray *summary = [items subarrayWithRange:NSMakeRange(0, ([items count] >= 8 ? 8 : [items count]))];
+    NSMutableString *finalSummary = [[summary componentsJoinedByString:@" "] mutableCopy];
+    if ([items count] > 8) {
+      [finalSummary appendString:@"..."];
+    }    
+    if (finalSummary) {
+      photo.attributedCaptionSummary = [[NSMutableAttributedString alloc] initWithString:finalSummary attributes:@{NSForegroundColorAttributeName: [UIColor grayColor]}];
+    }
+  }
   photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:photoCell.post.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
-  photo.attributedCaptionSummary = [[NSMutableAttributedString alloc] initWithString:finalSummary attributes:@{NSForegroundColorAttributeName: [UIColor grayColor]}];
+
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
@@ -929,10 +936,6 @@ static void setRingerState(uint64_t state) {
 }
 
 static void setupRingerCheck() {
-  uint64_t state;
-  notify_get_state(ringerState, &state);
-  setRingerState(state);
-
   notify_register_dispatch("com.apple.springboard.ringerstate",
     &ringerState,
     dispatch_get_main_queue(), ^(int t) {
@@ -940,6 +943,8 @@ static void setupRingerCheck() {
         notify_get_state(ringerState, &state);
         setRingerState(state);
     });
+
+  notify_post("com.apple.springboard.ringerstate");
 }
 
 %ctor { 
