@@ -2,3 +2,4 @@ debs/
 _/
 .theos/
 obj/
+*.sublime-project

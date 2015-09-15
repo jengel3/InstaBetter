@@ -1,0 +1,1049 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"cure",
+				"currentController"
+			],
+			[
+				"app",
+				"applications"
+			],
+			[
+				"App",
+				"AppInfo.h"
+			],
+			[
+				"export",
+				"Export"
+			],
+			[
+				"expo",
+				"exportList"
+			],
+			[
+				"expor",
+				"Export"
+			],
+			[
+				"tweak",
+				"tweakList"
+			],
+			[
+				"current",
+				"currentController"
+			],
+			[
+				"save",
+				"saveVideo"
+			],
+			[
+				"disabl",
+				"disableDMRead"
+			],
+			[
+				"ringer",
+				"ringerMuted"
+			],
+			[
+				"ring",
+				"ringerMuted"
+			],
+			[
+				"aud",
+				"audioMode"
+			],
+			[
+				"CFNoti",
+				"CFNotificationSuspensionBehaviorCoalesce"
+			],
+			[
+				"CFN",
+				"CFNotificationCenterGetDarwinNotifyCenter"
+			],
+			[
+				"CFNot",
+				"CFNotificationCenterAddObserver"
+			],
+			[
+				"timeSt",
+				"timestampFormat"
+			],
+			[
+				"timestamp",
+				"timestampFormat"
+			],
+			[
+				"times",
+				"timestamp_format"
+			],
+			[
+				"ena",
+				"enableTimestamps"
+			],
+			[
+				"always",
+				"alwaysTimestamp"
+			],
+			[
+				"enable",
+				"enable_timestamp"
+			],
+			[
+				"timeStamp",
+				"timestampButton"
+			],
+			[
+				"orig",
+				"origPosition"
+			],
+			[
+				"photos",
+				"photosViewController"
+			],
+			[
+				"NSMUtab",
+				"NSMutableAttributedString"
+			],
+			[
+				"NSMutable",
+				"NSMutableArray"
+			],
+			[
+				"photo",
+				"photoImageView"
+			],
+			[
+				"attribute",
+				"attributedString"
+			],
+			[
+				"new",
+				"newSuperview"
+			],
+			[
+				"attri",
+				"attributedString"
+			],
+			[
+				"IGCoreTE",
+				"IGCoreTextLinkHandler"
+			],
+			[
+				"web",
+				"webViewController"
+			],
+			[
+				"response",
+				"responseQueryText"
+			],
+			[
+				"respon",
+				"responseQueryText"
+			],
+			[
+				"writeTo",
+				"writeToInstagramAlbum"
+			],
+			[
+				"highest",
+				"highestResImage"
+			],
+			[
+				"highes",
+				"highestResImage"
+			],
+			[
+				"high",
+				"highestURL"
+			],
+			[
+				"insta",
+				"instaSave"
+			],
+			[
+				"attrub",
+				"attributedString"
+			],
+			[
+				"scree",
+				"screenWidth"
+			],
+			[
+				"attr",
+				"attributedString"
+			],
+			[
+				"object",
+				"objectForKey"
+			],
+			[
+				"row",
+				"rowOfTheCell"
+			],
+			[
+				"int",
+				"intValue"
+			],
+			[
+				"IGFeedItem",
+				"IGFeedItemTextCell"
+			],
+			[
+				"like",
+				"likesDict"
+			],
+			[
+				"ins",
+				"instamute"
+			],
+			[
+				"user",
+				"userView"
+			],
+			[
+				"IGUs",
+				"IGUserDetailViewController"
+			],
+			[
+				"speci",
+				"specifierToSetValuesFor"
+			],
+			[
+				"create",
+				"createAccount"
+			],
+			[
+				"resolve",
+				"resolveUUID"
+			],
+			[
+				"get",
+				"getKillerUsername"
+			],
+			[
+				"redis",
+				"redis_url"
+			],
+			[
+				"tota",
+				"total_obs"
+			],
+			[
+				"player",
+				"playerMap"
+			],
+			[
+				"prev",
+				"previous_username"
+			],
+			[
+				"objectives",
+				"objectivesArray"
+			],
+			[
+				"forums",
+				"forumsNode"
+			],
+			[
+				"overa",
+				"overallNode"
+			],
+			[
+				"ove",
+				"overallNode"
+			],
+			[
+				"post",
+				"postAttach"
+			],
+			[
+				"passo",
+				"password_confirmed"
+			],
+			[
+				"password",
+				"password_confirmed"
+			],
+			[
+				"getCooki",
+				"getCookieFromHash"
+			],
+			[
+				"refre",
+				"refreshControl"
+			],
+			[
+				"refresh",
+				"refreshTable"
+			],
+			[
+				"topic",
+				"topicsArray"
+			],
+			[
+				"topics",
+				"topicsTableView"
+			],
+			[
+				"latest",
+				"latestVoteMap"
+			],
+			[
+				"for",
+				"for	for (…) {…}"
+			],
+			[
+				"tem",
+				"teamPlayers"
+			],
+			[
+				"team",
+				"teamPlayers"
+			],
+			[
+				"pla",
+				"playersNode"
+			],
+			[
+				"author",
+				"authorNodes"
+			],
+			[
+				"fro",
+				"for	for (…) {…}"
+			],
+			[
+				"tourney",
+				"tourneyRegistered"
+			],
+			[
+				"mme",
+				"member_count"
+			],
+			[
+				"connec",
+				"connect_redis"
+			],
+			[
+				"socket",
+				"socket_io"
+			],
+			[
+				"buf",
+				"buf_err2"
+			],
+			[
+				"first",
+				"firstConnect"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "Tweak.xm",
+			"settings":
+			{
+				"buffer_size": 35127,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "instabetterprefs/Resources/InstaBetterPrefs.plist",
+			"settings":
+			{
+				"buffer_size": 11068,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "IGHeaders.h",
+			"settings":
+			{
+				"buffer_size": 11857,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "package",
+		"selected_items":
+		[
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"chan",
+				"ChangeQuotes"
+			],
+			[
+				"markdown",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"pacakge",
+				"Package Control: Install Package"
+			],
+			[
+				"qu",
+				"ChangeQuotes"
+			],
+			[
+				"quo",
+				"ChangeQuotes"
+			],
+			[
+				"",
+				"ChangeQuotes"
+			],
+			[
+				"quotes",
+				"ChangeQuotes"
+			],
+			[
+				"cha",
+				"ChangeQuotes"
+			],
+			[
+				"change",
+				"ChangeQuotes"
+			],
+			[
+				"tag",
+				"Tag: Auto-Format Tags on Document"
+			],
+			[
+				"Tag",
+				"Tag: Auto-Format Tags on Document"
+			],
+			[
+				"Format",
+				"Format: Javascript"
+			],
+			[
+				"Objecti",
+				"Set Syntax: Objective-C"
+			],
+			[
+				"bea",
+				"BeautifyRuby"
+			],
+			[
+				"install	",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Preferences: Browse Packages"
+			],
+			[
+				"format",
+				"Format: Javascript"
+			],
+			[
+				"underscore",
+				"Set Syntax: HTML (Underscore)"
+			],
+			[
+				"insatll",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/jake88/tweaks/instabetter",
+		"/home/jake88/tweaks/instabetter/.theos",
+		"/home/jake88/tweaks/instabetter/.theos/packages",
+		"/home/jake88/tweaks/instabetter/instabetterprefs",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/Resources"
+	],
+	"file_history":
+	[
+		"/home/jake88/tweaks/instabetter/control",
+		"/home/jake88/tweaks/instabetter/Makefile",
+		"/home/jake88/tweaks/instabetter/README.md",
+		"/home/jake88/tweaks/appster/AppInfoViewController.m",
+		"/home/jake88/tweaks/appster/AppListViewController.m",
+		"/home/jake88/tweaks/appster/AppListViewController.h",
+		"/home/jake88/tweaks/appster/Makefile",
+		"/home/jake88/tweaks/appster/debugger/Tweak.xm",
+		"/home/jake88/tweaks/appster/debugger/Makefile",
+		"/home/jake88/tweaks/appster/AppInfoViewController.h",
+		"/home/jake88/tweaks/appster/control",
+		"/home/jake88/tweaks/appster/main.m",
+		"/home/jake88/tweaks/appster/AppsterApplication.mm",
+		"/home/jake88/tweaks/appster/AppsterRootViewController.h",
+		"/home/jake88/tweaks/appster/AppsterRootViewController.m",
+		"/home/jake88/tweaks/appster/TweakListViewController.h",
+		"/home/jake88/.config/sublime-text-3/Packages/User/Objective-C++.sublime-settings",
+		"/home/jake88/.config/sublime-text-3/Packages/User/Objective-C.sublime-settings",
+		"/home/jake88/tweaks/appster/Resources/Info.plist",
+		"/home/jake88/tweaks/appster/Resources/Icon@2x.png",
+		"/home/jake88/tweaks/appster/TweakListViewController.m",
+		"/home/jake88/tweaks/appster/RootViewController.h",
+		"/home/jake88/tweaks/instabetter/Tweak.xm",
+		"/home/jake88/tweaks/instabetter/IGHeaders.h",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/Resources/InstaBetterPrefs.plist",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/Resources/InstaBetter@3x.png",
+		"/home/jake88/tweaks/instabetter/InstaBetter.plist",
+		"/home/jake88/tweaks/instabetter/NSDateFormatter.h",
+		"/home/jake88/tweaks/instabetter/lib/UIAlertView+Blocks.h",
+		"/home/jake88/tweaks/instabetter/lib/UIAlertView+Blocks.m",
+		"/home/jake88/tweaks/instabetter/lib/nullability.h",
+		"/home/jake88/tweaks/instabetter/nullability.h",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/InstaBetterPrefs.mm",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/Resources/Info.plist",
+		"/home/jake88/tweaks/instabetter/MBProgressHUD.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosViewController.m",
+		"/home/jake88/tweaks/instabetter/lib/Protocols/NYTPhoto.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoCaptionView.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoCaptionView.h",
+		"/home/jake88/tweaks/instabetter/theos/makefiles/targets/Linux/iphone.mk",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoViewController.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoViewController.h",
+		"/home/jake88/tweaks/instabetter/lib/Protocols/NYTPhotoContainer.h",
+		"/home/jake88/tweaks/instabetter/lib/Protocols/NYTPhotosViewControllerDataSource.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosDataSource.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosDataSource.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosOverlayView.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosOverlayView.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotosViewController.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoTransitionAnimator.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTScalingImageView.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTScalingImageView.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoDismissalInteractionController.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoDismissalInteractionController.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoTransitionAnimator.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoTransitionController.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTPhotoTransitionController.m",
+		"/home/jake88/tweaks/instabetter/lib/NYTOperatingSystemCompatibilityUtility.h",
+		"/home/jake88/tweaks/instabetter/lib/NYTOperatingSystemCompatibilityUtility.m",
+		"/home/jake88/tweaks/instabetter/lib/JTSImageViewController.m",
+		"/home/jake88/tweaks/instabetter/lib/JTSImageViewController.h",
+		"/home/jake88/tweaks/instabetter/lib/JTSAnimatedGIFUtility.m",
+		"/home/jake88/tweaks/instabetter/lib/JTSAnimatedGIFUtility.h",
+		"/home/jake88/tweaks/instabetter/lib/JTSImageInfo.h",
+		"/home/jake88/tweaks/instabetter/lib/JTSImageInfo.m",
+		"/home/jake88/tweaks/instabetter/lib/JTSSimpleImageDownloader.h",
+		"/home/jake88/tweaks/instabetter/lib/JTSSimpleImageDownloader.m",
+		"/home/jake88/tweaks/instabetter/lib/UIApplication+JTSImageViewController.h",
+		"/home/jake88/tweaks/instabetter/lib/UIApplication+JTSImageViewController.m",
+		"/home/jake88/tweaks/instabetter/lib/UIImage+JTSImageEffects.h",
+		"/home/jake88/tweaks/instabetter/lib/UIImage+JTSImageEffects.m",
+		"/home/jake88/tweaks/instabetter/.theos/packages/com.jake0oo0.instabetter-1.0.0",
+		"/home/jake88/tweaks/instabetter/.theos/last_package",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/Makefile",
+		"/home/jake88/tweaks/instabetter/instabetterprefs/entry.plist",
+		"/home/jake88/tweaks/instabetter/.gitignore",
+		"/home/jake88/tweaks/instabetter/MBProgressHUD.h",
+		"/home/jake88/tweaks/instabetter/Resources",
+		"/home/jake88/tweaks/cydia.jakes.site/.gitignore",
+		"/home/jake88/tweaks/cydia.jakes.site/Release",
+		"/home/jake88/tweaks/cydia.jakes.site/index.html",
+		"/home/jake88/tweaks/cydia.jakes.site/Packages.bz2",
+		"/home/jake88/tweaks/Boomerang/test-repo/depictions/index.html",
+		"/home/jake88/tweaks/Boomerang/test-repo/index.html",
+		"/home/jake88/tweaks/Boomerang/test-repo/repo.sh",
+		"/home/jake88/tweaks/Boomerang/templates/repo.sh",
+		"/home/jake88/tweaks/Boomerang/test-repo/depictions/screenshots/index.html",
+		"/home/jake88/tweaks/Boomerang/templates/depictions/screenshots/index.html",
+		"/home/jake88/tweaks/Boomerang/test-repo/depictions/changelog/index.html",
+		"/home/jake88/tweaks/Boomerang/templates/depictions/changelog/index.html",
+		"/home/jake88/tweaks/Boomerang/test-repo/Packages",
+		"/home/jake88/tweaks/Boomerang/test-repo/packages/com.jake0oo0.noalertloop.json",
+		"/home/jake88/tweaks/Boomerang/test-repo/packages/com.jake0oo0.instamute.json",
+		"/home/jake88/tweaks/Boomerang/test-repo/Packages.gz",
+		"/home/jake88/tweaks/Boomerang/test-repo/Temp1",
+		"/home/jake88/tweaks/Boomerang/test-repo/Temp",
+		"/home/jake88/tweaks/Boomerang/test-repo/dpkg-scanpackages",
+		"/home/jake88/tweaks/Boomerang/test-repo/dpkg-gettext.pl",
+		"/home/jake88/tweaks/Boomerang/README.md",
+		"/home/jake88/tweaks/Boomerang/test-repo/CNAME",
+		"/home/jake88/tweaks/Boomerang/test-repo/Packages.bz2",
+		"/home/jake88/tweaks/Boomerang/test-repo/test.sh",
+		"/home/jake88/tweaks/Boomerang/templates/CydiaIcon.png",
+		"/home/jake88/tweaks/Boomerang/test-repo/css/index.css",
+		"/home/jake88/tweaks/Boomerang/templates/Release",
+		"/home/jake88/tweaks/Boomerang/test.sh",
+		"/home/jake88/tweaks/Boomerang/templates/index.html",
+		"/home/jake88/tweaks/Boomerang/package.json",
+		"/home/jake88/tweaks/Boomerang/bin/boomerang-init.js",
+		"/home/jake88/tweaks/Boomerang/test-repo/README.md",
+		"/home/jake88/tweaks/Boomerang/test-repo/Release",
+		"/home/jake88/tweaks/Boomerang/.gitignore",
+		"/home/jake88/tweaks/Boomerang/templates/depictions/index.html",
+		"/home/jake88/tweaks/Boomerang/templates/depiction-index.html",
+		"/home/jake88/tweaks/Boomerang/node_modules/fs-extra/README.md",
+		"/home/jake88/tweaks/Boomerang/repo-test/add.sh",
+		"/home/jake88/tweaks/Boomerang/lib/index.js",
+		"/home/jake88/tweaks/Boomerang/bin/init.sh",
+		"/home/jake88/tweaks/Boomerang/test-repo/.gitignore",
+		"/home/jake88/tweaks/Boomerang/test-repo/images/twitter.png",
+		"/home/jake88/tweaks/Boomerang/templates/add.sh",
+		"/home/jake88/tweaks/noalertloop/noalertloopprefs/entry.plist",
+		"/home/jake88/tweaks/noalertloop/Tweak.xm",
+		"/home/jake88/tweaks/noalertloop/README.md",
+		"/home/jake88/tweaks/noalertloop/noalertloopprefs/NoAlertLoopPrefs.mm",
+		"/home/jake88/tweaks/noalertloop/noalertloopprefs/Resources/Info.plist",
+		"/home/jake88/tweaks/noalertloop/.gitignore",
+		"/home/jake88/tweaks/noalertloop/noalertloopprefs/Makefile"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			"-theos/,-obj/",
+			"<open folders>,-node_modules/,-client/",
+			"<open folders>,-node_modules/,-server/",
+			"<open folders>,-node_modules/",
+			"<open folders>,-node_modules/,-bower_components/",
+			"<open folders>",
+			"*.txt",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"image",
+			"layout",
+			"initWithString",
+			"appTable",
+			"appList",
+			"show",
+			"IGPhoto",
+			" photo",
+			"IGImageView",
+			"layoutSubviews",
+			"frame.",
+			"noalertloop",
+			"feeditem",
+			", nullable",
+			"nullable ",
+			";\n",
+			"UIImage",
+			"subview",
+			"IGPost",
+			"__weak",
+			"weak, ",
+			"weak",
+			"*self",
+			"__weak ",
+			"weakSelf",
+			"typeof(self) __weak weakSelf = self;",
+			"typeof(self) self = weakSelf;",
+			"strongSElf",
+			"CGImage",
+			"retain",
+			"release",
+			"weak,",
+			"@import",
+			"UIApplication",
+			"UIApplica",
+			"isableDMRead",
+			"IGUSerDetail",
+			"actionSheet",
+			"IGUSerDetailH",
+			"IGCoreTextView",
+			"char",
+			"AppDele",
+			"modded",
+			"alloc",
+			"char",
+			"IGLocationDataSourceDelegate",
+			"videoVersions",
+			"IGFeedItem",
+			"coreTExt",
+			"style",
+			"IGFeedItem",
+			"brought to you",
+			"Reposi3",
+			"Reposi",
+			"muted =",
+			"containsObj",
+			"Nslog",
+			"authentica",
+			"Parameter",
+			"Param",
+			", next",
+			"Promise",
+			", next",
+			"parseInt",
+			"filter",
+			"owner_id",
+			"mojang",
+			"account.last_update",
+			"console",
+			"bcrypt",
+			"draw_model",
+			"Tournament",
+			"url",
+			"exp.getText",
+			"friends",
+			"friends\n\n",
+			"profile",
+			"playerMap",
+			"player",
+			"friends",
+			"playerMap",
+			"objectives",
+			"socialMap",
+			"playerArray",
+			"socialArray",
+			"ObjectiveStats",
+			"base",
+			"request.get",
+			"console",
+			"helpers.helpers",
+			"uri",
+			"helpers.request",
+			"var request",
+			"https://oc.tc",
+			"config.base_url",
+			"User-Agent",
+			"request(",
+			"\"https://oc.tc/",
+			"\"https://oc.tc\"",
+			"https://oc.tc",
+			"postsArra",
+			"topics",
+			"createServer",
+			"page",
+			"ex.",
+			"failed to make",
+			"console.lo",
+			"hash",
+			"github.com",
+			"url",
+			"refresh",
+			"format",
+			"formatted",
+			"foramtted",
+			"withformatted",
+			"navigation",
+			"'",
+			"console",
+			"gettext",
+			"getText",
+			"console.log",
+			"gettex",
+			"self",
+			"topicsArra",
+			"refresh",
+			"release",
+			"match",
+			".send"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"tweakTable",
+			"tweakList",
+			"instabetter",
+			"",
+			"self",
+			"",
+			"self",
+			"BOOL",
+			"",
+			"getText",
+			"player",
+			"playerMap",
+			"player",
+			"profileMap",
+			"playerMap",
+			"socialMap",
+			"helpers.request",
+			"helpers.request(",
+			"config.base_url + \"/",
+			"config.base_url + \"",
+			"[]",
+			"{{domain}}",
+			"&",
+			"non-existent"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Tweak.xm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 35127,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								30809,
+								30809
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Objective-C/Objective-C.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 11332.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "instabetterprefs/Resources/InstaBetterPrefs.plist",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11068,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10752,
+								10752
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 5577.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "IGHeaders.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11857,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4081,
+								4081
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Objective-C/Objective-C.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1609.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 22.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 100.0
+	},
+	"pinned_build_system": "",
+	"project": "instabetter.sublime-project",
+	"replace":
+	{
+		"height": 40.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"parser",
+				"modules/parser.js"
+			],
+			[
+				"request/req",
+				"node_modules/request/request.js"
+			],
+			[
+				"request/index",
+				"node_modules/request/index.js"
+			],
+			[
+				"request/inde",
+				"node_modules/request/index.js"
+			],
+			[
+				"redis/inde",
+				"node_modules/redis/index.js"
+			],
+			[
+				"migrat",
+				"server/migrator.js"
+			],
+			[
+				"server",
+				"client/app/scripts/resources/server.js"
+			],
+			[
+				"en",
+				"config/locales/en.yml"
+			],
+			[
+				"test.js",
+				"test/test.js"
+			],
+			[
+				"irc",
+				"node_modules/irc/lib/irc.js"
+			],
+			[
+				"irc.js",
+				"node_modules/irc/lib/irc.js"
+			],
+			[
+				"module.js",
+				"node_modules/gulp-util/lib/env.js"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 467.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 324.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -133,13 +133,19 @@
 
 @end
 
-@interface IGFeedItemActionCell
+@interface IGFeedItemActionCell : UICollectionViewCell
 @property(retain, nonatomic) IGFeedItem *feedItem;
+@property (nonatomic,retain) UIButton * sendButton; 
+@property (nonatomic,retain) UIButton * commentButton;
+@property (nonatomic,retain) UIButton * likeButton;
 -(BOOL)sponsoredPostAllowed;
 -(id)initWithFrame:(CGRect)frame;
--(UIButton*)likeButton;
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(UINavigationController*)window;
+- (UIButton *)saveButton;
+- (void)setSaveButton:(UIButton *)value;
+-(void)shareItem:(id)sender;
+-(void)saveItem:(id)sender;
 @end
 
 @interface AppDelegate : NSObject

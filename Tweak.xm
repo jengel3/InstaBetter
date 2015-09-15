@@ -645,7 +645,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
     UIViewController *currentController = rootViewController.topMostViewController;
 
-    // NSLog(@"THIS %@", [currentController class]);
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
     if (isProfileView) {
@@ -658,11 +657,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
-    } else if (!isProfileView) {
-      if (saveActions) {
-        [self addButtonWithTitle:instaSave style:0];
-      } 
-      [self addButtonWithTitle:@"Share" style:0];
     }
   }
   %orig;
@@ -783,25 +777,76 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // save media
 
 %hook IGFeedItemActionCell
--(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-  if (enabled) {
-    if ([title isEqualToString:instaSave]) {
-      IGFeedItem *item = self.feedItem;
-      saveMedia(item);
-    } else if ([title isEqualToString:@"Share"]) {
-      IGFeedItem *item = self.feedItem;
-      NSURL *link = [NSURL URLWithString:[item permalink]];
-      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[link]
-        applicationActivities:nil];
-      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
-    } else {
-      %orig;
-    }
+-(void)layoutSubviews {
+  %orig;
+
+  if (!enabled || !saveActions) return;
+  if (self.saveButton) return;
+
+  CGRect firstFrame;
+  CGRect compareFrame;
+  UIButton *base;
+  
+  if (self.sendButton) {
+    base = self.sendButton;
+    firstFrame = self.commentButton.frame;
+    compareFrame = self.sendButton.frame;
   } else {
-    %orig;
+    base = self.likeButton;
+    firstFrame = self.likeButton.frame;
+    compareFrame = self.commentButton.frame;
   }
+
+  float distance = (compareFrame.origin.x - firstFrame.origin.x);
+
+  NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
+     
+  UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+  saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@2x" ofType:@"png"]];
+  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
+  [saveButton setImage:saveImage forState:UIControlStateNormal];
+  [self addSubview:saveButton];
+
+
+  // don't add share button to own posts
+  IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+  if ([current.username isEqualToString:self.feedItem.user.username]) return;
+
+  UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+  shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@2x" ofType:@"png"]];
+  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
+  [shareButton setImage:shareImage forState:UIControlStateNormal];
+  [self addSubview:shareButton];
 }
+
+%new
+-(void)saveItem:(id)sender {
+  IGFeedItem *item = self.feedItem;
+  saveMedia(item);
+}
+
+%new
+-(void)shareItem:(id)sender {
+  IGFeedItem *item = self.feedItem;
+  NSURL *link = [NSURL URLWithString:[item permalink]];
+  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+    initWithActivityItems:@[link]
+    applicationActivities:nil];
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+}
+
+%new
+- (UIButton *)saveButton {
+    return objc_getAssociatedObject(self, @selector(saveButton));
+}
+
+%new
+- (void)setSaveButton:(UIButton *)value {
+    objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
 %end
 
 
@@ -930,7 +975,7 @@ static void setRingerState(uint64_t state) {
   } else if (state == 1) {
     ringerMuted = NO;
   } else {
-    NSLog(@"Received invalid ringer status..this shouldn't happen -- State: %llu", state);
+    NSLog(@"Received invalid ringer status..this shouldn't happen -- State: %d", (int)state);
     ringerMuted = YES;
   }
 }
