@@ -161,7 +161,7 @@ static void saveMedia(IGPost *post) {
         UIImage *img = [UIImage imageWithData:imgData];
         IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
         [postImageAssetWriter writeToInstagramAlbum];
-         dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
           status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
           status.mode = MBProgressHUDModeCustomView;
           status.labelText = @"Saved!";
@@ -222,10 +222,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       completion:nil];
   } else {
     [header.timestampButton setTitle:timestamp forState:UIControlStateNormal];
-        [header.timestampButton setFrame:CGRectMake(newX, 
-          oldY,
-          header.timestampButton.frame.size.width + change,
-          oldHeight)];
+      [header.timestampButton setFrame:CGRectMake(newX, 
+        oldY,
+        header.timestampButton.frame.size.width + change,
+        oldHeight)];
   }
 }
 
@@ -465,7 +465,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [self setUserInteractionEnabled:YES];
     [self addGestureRecognizer:longPress];
   }
-
   %orig;
 }
 
@@ -534,6 +533,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [longPress setMinimumPressDuration:1];
     [self addGestureRecognizer:longPress];
   }
+  %orig;
 }
 
 %new
@@ -553,6 +553,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [longPress setMinimumPressDuration:1];
     [self addGestureRecognizer:longPress];
   }
+  %orig;
 }
 
 %new
@@ -620,7 +621,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 -(void)setUserInteractionEnabled:(BOOL)opt {
-  %orig(YES);
+  if (enabled) {
+    %orig(YES);
+  } else {
+    %orig;
+  }
 }
 
 %new
@@ -902,7 +907,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 -(void)layoutSubviews {
   %orig;
-  if (enableTimestamps) {
+  if (enabled && enableTimestamps) {
     if (alwaysTimestamp) {
       showTimestamp(self, false);
       return;
