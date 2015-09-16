@@ -10,6 +10,7 @@
 
 #define kBundlePath @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
+NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 
 static NSMutableArray *muted = nil;
 static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
@@ -67,7 +68,7 @@ static void initPrefs() {
     [prefs writeToFile:prefsLoc atomically:YES];
 }
 
-static void updatePrefs() {
+static NSDictionary* updatePrefs() {
     NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
 
     if (!muted) {
@@ -99,8 +100,10 @@ static void updatePrefs() {
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
     } else {
       initPrefs();
-      updatePrefs();
+      return updatePrefs();
     }
+
+    return prefs;
 
 }
 
@@ -144,6 +147,56 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
       });
     }];
   });
+}
+
+// provided by open-source gist by Ryan Maxwell
+// https://gist.github.com/ryanmaxwell/6227531
+static UIImage* imageResourceForType(NSString* name, NSString* type) {    
+    NSString *systemVersion = UIDevice.currentDevice.systemVersion;
+    NSString *iOSMajorSystemVersion = (systemVersion.length) ? [NSString stringWithFormat:@"iOS%@", [systemVersion substringToIndex:1]] : @"iOS";
+    
+    if (UIScreen.mainScreen.bounds.size.height == 568.0f) {
+        /* iPhone 5 */
+        NSString *iPhone5SystemVersionImageName = [NSString stringWithFormat:@"%@-%@-568h@2x", name, iOSMajorSystemVersion];
+        NSString *iPhone5SystemVersionImagePath = [bundle pathForResource:iPhone5SystemVersionImageName ofType:type];
+        
+        if ([NSFileManager.defaultManager fileExistsAtPath:iPhone5SystemVersionImagePath])
+            return [UIImage imageWithContentsOfFile:iPhone5SystemVersionImagePath];
+        
+        NSString *iPhone5ImageName = [NSString stringWithFormat:@"%@-568h@2x", name];
+        NSString *iPhone5ImagePath = [bundle pathForResource:iPhone5ImageName ofType:type];
+        
+        if ([NSFileManager.defaultManager fileExistsAtPath:iPhone5ImagePath])
+            return [UIImage imageWithContentsOfFile:iPhone5ImagePath];
+    }
+    
+    if (UIScreen.mainScreen.scale == 2.0) {
+        /* Retina */
+        NSString *retinaSystemVersionImageName = [NSString stringWithFormat:@"%@-%@@2x", name, iOSMajorSystemVersion];
+        NSString *retinaSystemVersionImagePath = [bundle pathForResource:retinaSystemVersionImageName ofType:type];
+        
+        if ([NSFileManager.defaultManager fileExistsAtPath:retinaSystemVersionImagePath])
+            return [UIImage imageWithContentsOfFile:retinaSystemVersionImagePath];
+        
+        NSString *retinaImageName = [NSString stringWithFormat:@"%@@2x", name];
+        NSString *retinaImagePath = [bundle pathForResource:retinaImageName ofType:type];
+        
+        if ([NSFileManager.defaultManager fileExistsAtPath:retinaImagePath])
+            return [UIImage imageWithContentsOfFile:retinaImagePath];
+    }
+    
+    NSString *standardSystemVersionImageName = [NSString stringWithFormat:@"%@-%@", name, iOSMajorSystemVersion];
+    NSString *standardSystemVersionImagePath = [bundle pathForResource:standardSystemVersionImageName ofType:type];
+    
+    if ([NSFileManager.defaultManager fileExistsAtPath:standardSystemVersionImagePath])
+        return [UIImage imageWithContentsOfFile:standardSystemVersionImagePath];
+    
+    NSString *standardImagePath = [bundle pathForResource:name ofType:type];
+    
+    if ([NSFileManager.defaultManager fileExistsAtPath:standardImagePath])
+        return [UIImage imageWithContentsOfFile:standardImagePath];
+    
+    return nil;
 }
 
 static void saveMedia(IGPost *post) {
@@ -200,32 +253,32 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [formatter setDateStyle:style];
 
   NSString *timestamp = [formatter stringFromDate:takenAt];
-  float old = header.timestampButton.frame.size.width;
-  float oldY = header.timestampButton.frame.origin.y;
-  float oldHeight = header.timestampButton.frame.size.height;
-  CGSize size = [timestamp sizeWithAttributes:[NSDictionary dictionaryWithObject:header.timestampButton.titleLabel.font forKey:NSFontAttributeName]];
+  float old = header.timestampLabel.frame.size.width;
+  float oldY = header.timestampLabel.frame.origin.y;
+  float oldHeight = header.timestampLabel.frame.size.height;
+  CGSize size = [timestamp sizeWithAttributes:[NSDictionary dictionaryWithObject:header.timestampLabel.font forKey:NSFontAttributeName]];
 
   float cur = size.width;
 
   float change = cur - old;
-  float newX = header.timestampButton.frame.origin.x - change;
+  float newX = header.timestampLabel.frame.origin.x - change;
 
   if (animated) {
     [UIView animateWithDuration:0.5 
       animations:^{
-        [header.timestampButton setTitle:timestamp forState:UIControlStateNormal];
-        [header.timestampButton setFrame:CGRectMake(newX, 
+        header.timestampLabel.text = timestamp;
+        [header.timestampLabel setFrame:CGRectMake(newX, 
           oldY,
-          header.timestampButton.frame.size.width + change,
+          header.timestampLabel.frame.size.width + change,
           oldHeight)];
       }
       completion:nil];
   } else {
-    [header.timestampButton setTitle:timestamp forState:UIControlStateNormal];
-      [header.timestampButton setFrame:CGRectMake(newX, 
-        oldY,
-        header.timestampButton.frame.size.width + change,
-        oldHeight)];
+    header.timestampLabel.text = timestamp;
+    [header.timestampLabel setFrame:CGRectMake(newX, 
+      oldY,
+      header.timestampLabel.frame.size.width + change,
+      oldHeight)];
   }
 }
 
@@ -808,7 +861,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
      
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@2x" ofType:@"png"]];
+  UIImage *saveImage = imageResourceForType(@"download", @"png");
   [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
@@ -820,7 +873,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@2x" ofType:@"png"]];
+  UIImage *shareImage = imageResourceForType(@"share", @"png");
   [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
   [shareButton setImage:shareImage forState:UIControlStateNormal];
   [self addSubview:shareButton];
@@ -912,16 +965,17 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       showTimestamp(self, false);
       return;
     }
-    origPosition = self.timestampButton.frame.origin.x;
+    origPosition = self.timestampLabel.frame.origin.x;
+    [self.timestampLabel setUserInteractionEnabled:YES];
 
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTimestamp)];
-    [self.timestampButton addGestureRecognizer:singleTap];
+    [self.timestampLabel addGestureRecognizer:singleTap];
   }
 }
 
 %new
 -(void)showTimestamp {
-  if (self.timestampButton.frame.origin.x == origPosition) {
+  if (self.timestampLabel.frame.origin.x == origPosition) {
     showTimestamp(self, true);
   }
 }
@@ -970,6 +1024,25 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %end
 
+%group versionWarning
+  
+%hook AppDelegate
+- (void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated {
+  %orig;
+
+  UIAlertView *alertView = [[UIAlertView alloc] 
+    initWithTitle:@"Compatibility Mode"
+    message:@"This is an unsupported version of Instagram. Either downgrade InstaBetter in Cydia, or update to the latest version of Instagram."
+    delegate:nil
+    cancelButtonTitle:nil
+    otherButtonTitles:@"Okay", nil];
+
+  [alertView show];
+}
+%end
+
+%end
+
 static void handleNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   updatePrefs();
 }
@@ -998,17 +1071,32 @@ static void setupRingerCheck() {
 }
 
 %ctor { 
-    updatePrefs();
+    NSDictionary *prefs = updatePrefs();
+    NSString *igVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    NSComparisonResult igVersionCheck = [igVersion compare:@"7.6" options:NSNumericSearch];
 
-    setupRingerCheck();
+    if (igVersionCheck == NSOrderedAscending) {
+      NSLog(@"This is an unsupported version of Instagram. Either downgrade InstaBetter in Cydia, or update to the latest version of Instagram.");
 
-    CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDarwinNotifyCenter(), 
-      NULL,
-      &handleNotification,
-      (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
-      NULL, 
-      CFNotificationSuspensionBehaviorCoalesce);
+      NSString *lastVersion = [prefs objectForKey:@"last_check"] ? [prefs objectForKey:@"last_check"] : nil;
+      if (!lastVersion || ![lastVersion isEqualToString:igVersion]) {
+        %init(versionWarning);
 
-    %init(instaHooks);
+        [prefs setValue:igVersion forKey:@"last_check"];
+        [prefs writeToFile:prefsLoc atomically:YES];
+      }
+
+    } else {
+      setupRingerCheck();
+
+      CFNotificationCenterAddObserver(
+        CFNotificationCenterGetDarwinNotifyCenter(), 
+        NULL,
+        &handleNotification,
+        (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
+        NULL, 
+        CFNotificationSuspensionBehaviorCoalesce);
+
+      %init(instaHooks);
+    }
 }

@@ -223,6 +223,7 @@
 
 @interface IGFeedItemHeader : UIView
 @property (nonatomic,retain) UIButton * timestampButton;
+@property (nonatomic,retain) UILabel * timestampLabel;
 -(BOOL)sponsoredPostAllowed;
 @property (nonatomic,retain) id<IGFeedHeaderItem> feedItem;
 @end
