@@ -1043,7 +1043,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %end
 
-static void handleNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   updatePrefs();
 }
 
@@ -1092,7 +1092,7 @@ static void setupRingerCheck() {
       CFNotificationCenterAddObserver(
         CFNotificationCenterGetDarwinNotifyCenter(), 
         NULL,
-        &handleNotification,
+        &handlePrefsChange,
         (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
         NULL, 
         CFNotificationSuspensionBehaviorCoalesce);

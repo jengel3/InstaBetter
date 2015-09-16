@@ -5,7 +5,7 @@ The best Instagram tweak yet, packed with features ranging from media saving to 
 The most comprehensive tweak for Instagram yet. With over 10 new features and tweaks, you'll have more control over your Instagram experience. 
 
 ## Features
-* Save hi-res Media (Images & Videos) 
+* Save hi-res images and videos
 * Hold down on images to zoom
 * Hold down on profile pictures to zoom
 * Mute Users from main feed
@@ -13,9 +13,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Custom Locations for Media - /u/stevep88
 * Show follow status on user profile (Similar to Twitter) - /u/evansjailbreak
 * Show like counts as percentages - /u/rnumur
-* Share sheet for text
-* Share sheet for images
-* Share sheet for link to hi-res images
+* Share sheet for text and images
 * Open links in Instagram
 * Fake follower and following counts
 * View DMs without notifying the sender
@@ -47,6 +45,8 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ### Release 1.1.3
 * [BUG FIX] Fix invalid ringer state on load
+* [CHANGE] Replace "Save Media" and "Share" with new buttons under images and videos
+* [CHANGE] New preferences icons - by @AOkhtenberg 
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
