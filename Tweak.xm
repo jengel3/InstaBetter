@@ -865,6 +865,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
+  [self setSaveButton:saveButton];
 
 
   // don't add share button to own posts
