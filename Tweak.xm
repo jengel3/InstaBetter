@@ -686,7 +686,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
   photo.image = self.originalImage;
-  photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
+  if (self.user && self.user.username) {
+    photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
+  }
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
@@ -1098,6 +1100,8 @@ static void setupRingerCheck() {
         NULL, 
         CFNotificationSuspensionBehaviorCoalesce);
 
-      %init(instaHooks);
+      @autoreleasepool {
+        %init(instaHooks);
+      }
     }
 }

@@ -45,8 +45,14 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ### Release 1.1.3
 * [BUG FIX] Fix invalid ringer state on load
+* [BUG FIX] Fix crash on Instagram 7.6
 * [CHANGE] Replace "Save Media" and "Share" with new buttons under images and videos
 * [CHANGE] New preferences icons - by @AOkhtenberg 
+
+### Release 1.1.4
+* [CHANGE] Add minor change to possibly lower memory usage
+* [BUG FIX] Fix very thick share/download icons
+* [BUG FIX] Fix crash when viewing profile image in activity tab
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
