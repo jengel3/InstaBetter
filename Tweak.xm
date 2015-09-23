@@ -151,53 +151,22 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
 
 // provided by open-source gist by Ryan Maxwell
 // https://gist.github.com/ryanmaxwell/6227531
-static UIImage* imageResourceForType(NSString* name, NSString* type) {    
-    NSString *systemVersion = UIDevice.currentDevice.systemVersion;
-    NSString *iOSMajorSystemVersion = (systemVersion.length) ? [NSString stringWithFormat:@"iOS%@", [systemVersion substringToIndex:1]] : @"iOS";
-    
-    if (UIScreen.mainScreen.bounds.size.height == 568.0f) {
-        /* iPhone 5 */
-        NSString *iPhone5SystemVersionImageName = [NSString stringWithFormat:@"%@-%@-568h@2x", name, iOSMajorSystemVersion];
-        NSString *iPhone5SystemVersionImagePath = [bundle pathForResource:iPhone5SystemVersionImageName ofType:type];
+// static UIImage* imageResourceForType(NSString* name, NSString* type) {    
+//     if (UIScreen.mainScreen.scale == 2.0) {
+//         NSString *retinaImageName = [NSString stringWithFormat:@"%@@2x", name];
+//         NSString *retinaImagePath = [bundle pathForResource:retinaImageName ofType:type];
         
-        if ([NSFileManager.defaultManager fileExistsAtPath:iPhone5SystemVersionImagePath])
-            return [UIImage imageWithContentsOfFile:iPhone5SystemVersionImagePath];
-        
-        NSString *iPhone5ImageName = [NSString stringWithFormat:@"%@-568h@2x", name];
-        NSString *iPhone5ImagePath = [bundle pathForResource:iPhone5ImageName ofType:type];
-        
-        if ([NSFileManager.defaultManager fileExistsAtPath:iPhone5ImagePath])
-            return [UIImage imageWithContentsOfFile:iPhone5ImagePath];
-    }
+//         if ([NSFileManager.defaultManager fileExistsAtPath:retinaImagePath])
+//             return [UIImage imageWithContentsOfFile:retinaImagePath];
+//     }
     
-    if (UIScreen.mainScreen.scale == 2.0) {
-        /* Retina */
-        NSString *retinaSystemVersionImageName = [NSString stringWithFormat:@"%@-%@@2x", name, iOSMajorSystemVersion];
-        NSString *retinaSystemVersionImagePath = [bundle pathForResource:retinaSystemVersionImageName ofType:type];
-        
-        if ([NSFileManager.defaultManager fileExistsAtPath:retinaSystemVersionImagePath])
-            return [UIImage imageWithContentsOfFile:retinaSystemVersionImagePath];
-        
-        NSString *retinaImageName = [NSString stringWithFormat:@"%@@2x", name];
-        NSString *retinaImagePath = [bundle pathForResource:retinaImageName ofType:type];
-        
-        if ([NSFileManager.defaultManager fileExistsAtPath:retinaImagePath])
-            return [UIImage imageWithContentsOfFile:retinaImagePath];
-    }
+//     NSString *standardImagePath = [bundle pathForResource:name ofType:type];
     
-    NSString *standardSystemVersionImageName = [NSString stringWithFormat:@"%@-%@", name, iOSMajorSystemVersion];
-    NSString *standardSystemVersionImagePath = [bundle pathForResource:standardSystemVersionImageName ofType:type];
+//     if ([NSFileManager.defaultManager fileExistsAtPath:standardImagePath])
+//         return [UIImage imageWithContentsOfFile:standardImagePath];
     
-    if ([NSFileManager.defaultManager fileExistsAtPath:standardSystemVersionImagePath])
-        return [UIImage imageWithContentsOfFile:standardSystemVersionImagePath];
-    
-    NSString *standardImagePath = [bundle pathForResource:name ofType:type];
-    
-    if ([NSFileManager.defaultManager fileExistsAtPath:standardImagePath])
-        return [UIImage imageWithContentsOfFile:standardImagePath];
-    
-    return nil;
-}
+//     return nil;
+// }
 
 static void saveMedia(IGPost *post) {
   if (enabled && saveActions) {
@@ -863,7 +832,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
      
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *saveImage = imageResourceForType(@"download", @"png");
+  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
   [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
@@ -876,7 +845,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *shareImage = imageResourceForType(@"share", @"png");
+  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
   [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
   [shareButton setImage:shareImage forState:UIControlStateNormal];
   [self addSubview:shareButton];
