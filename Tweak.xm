@@ -149,25 +149,6 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
   });
 }
 
-// provided by open-source gist by Ryan Maxwell
-// https://gist.github.com/ryanmaxwell/6227531
-// static UIImage* imageResourceForType(NSString* name, NSString* type) {    
-//     if (UIScreen.mainScreen.scale == 2.0) {
-//         NSString *retinaImageName = [NSString stringWithFormat:@"%@@2x", name];
-//         NSString *retinaImagePath = [bundle pathForResource:retinaImageName ofType:type];
-        
-//         if ([NSFileManager.defaultManager fileExistsAtPath:retinaImagePath])
-//             return [UIImage imageWithContentsOfFile:retinaImagePath];
-//     }
-    
-//     NSString *standardImagePath = [bundle pathForResource:name ofType:type];
-    
-//     if ([NSFileManager.defaultManager fileExistsAtPath:standardImagePath])
-//         return [UIImage imageWithContentsOfFile:standardImagePath];
-    
-//     return nil;
-// }
-
 static void saveMedia(IGPost *post) {
   if (enabled && saveActions) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
@@ -837,7 +818,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
   [self setSaveButton:saveButton];
-
 
   // don't add share button to own posts
   IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;

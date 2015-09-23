@@ -53,6 +53,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [CHANGE] Add minor change to possibly lower memory usage
 * [BUG FIX] Fix very thick share/download icons
 * [BUG FIX] Fix crash when viewing profile image in activity tab
+* [BUG FIX] Fix share/save images not showing on 6+
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
