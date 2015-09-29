@@ -212,6 +212,7 @@
 
 @interface IGActionSheet : UIActionSheet
 @property (nonatomic,retain) NSMutableArray * buttons; 
+@property (nonatomic,retain) UILabel * titleLabel;  
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 +(int)tag;
 +(void)setTag:(int)arg1 ;

@@ -418,7 +418,7 @@
 		</dict>
 		<dict>
 			<key>action</key>
-			<string>openTwitter:</string>
+			<string>openDesignerTwitter:</string>
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>

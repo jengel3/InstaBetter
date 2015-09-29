@@ -8,8 +8,8 @@
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
 
-#define kBundlePath @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
-NSBundle *bundle = [[NSBundle alloc] initWithPath:kBundlePath];
+#define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
+NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
 NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 
 static NSMutableArray *muted = nil;
@@ -656,8 +656,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     UIViewController *currentController = rootViewController.topMostViewController;
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
-
-    if (isProfileView) {
+    BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
+    if (isProfileView && [self.buttons count] == 5) {
         IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
         IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
@@ -667,6 +667,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
+    } else if (!self.titleLabel.text && !isWebView) {    
+      if (saveActions) {   
+        [self addButtonWithTitle:instaSave style:0];   
+      }    
+      [self addButtonWithTitle:@"Share" style:0];    
     }
   }
   %orig;
@@ -785,80 +790,28 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // save media
-
+// 
 %hook IGFeedItemActionCell
--(void)layoutSubviews {
-  %orig;
-
-  if (!enabled || !saveActions) return;
-  if (self.saveButton) return;
-
-  CGRect firstFrame;
-  CGRect compareFrame;
-  UIButton *base;
-  
-  if (self.sendButton) {
-    base = self.sendButton;
-    firstFrame = self.commentButton.frame;
-    compareFrame = self.sendButton.frame;
+-(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+  if (enabled) {
+    if ([title isEqualToString:instaSave]) {
+      IGFeedItem *item = self.feedItem;
+      saveMedia(item);
+    } else if ([title isEqualToString:@"Share"]) {
+      IGFeedItem *item = self.feedItem;
+      NSURL *link = [NSURL URLWithString:[item permalink]];
+      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+        initWithActivityItems:@[link]
+        applicationActivities:nil];
+      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+    } else {
+      %orig;
+    }
   } else {
-    base = self.likeButton;
-    firstFrame = self.likeButton.frame;
-    compareFrame = self.commentButton.frame;
+    %orig;
   }
-
-  float distance = (compareFrame.origin.x - firstFrame.origin.x);
-
-  NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
-     
-  UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-  saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
-  [saveButton setImage:saveImage forState:UIControlStateNormal];
-  [self addSubview:saveButton];
-  [self setSaveButton:saveButton];
-
-  // don't add share button to own posts
-  IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
-  if ([current.username isEqualToString:self.feedItem.user.username]) return;
-
-  UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-  shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
-  [shareButton setImage:shareImage forState:UIControlStateNormal];
-  [self addSubview:shareButton];
 }
-
-%new
--(void)saveItem:(id)sender {
-  IGFeedItem *item = self.feedItem;
-  saveMedia(item);
-}
-
-%new
--(void)shareItem:(id)sender {
-  IGFeedItem *item = self.feedItem;
-  NSURL *link = [NSURL URLWithString:[item permalink]];
-  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-    initWithActivityItems:@[link]
-    applicationActivities:nil];
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
-}
-
-%new
-- (UIButton *)saveButton {
-    return objc_getAssociatedObject(self, @selector(saveButton));
-}
-
-%new
-- (void)setSaveButton:(UIButton *)value {
-    objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
 %end
-
 
 %hook IGLocationDataSource
 -(NSArray *)locations{
@@ -976,25 +929,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %end
 
-%group versionWarning
-  
-%hook AppDelegate
-- (void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated {
-  %orig;
-
-  UIAlertView *alertView = [[UIAlertView alloc] 
-    initWithTitle:@"Compatibility Mode"
-    message:@"This is an unsupported version of Instagram. Either downgrade InstaBetter in Cydia, or update to the latest version of Instagram."
-    delegate:nil
-    cancelButtonTitle:nil
-    otherButtonTitles:@"Okay", nil];
-
-  [alertView show];
-}
-%end
-
-%end
-
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   updatePrefs();
 }
@@ -1023,34 +957,17 @@ static void setupRingerCheck() {
 }
 
 %ctor { 
-    NSDictionary *prefs = updatePrefs();
-    NSString *igVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
-    NSComparisonResult igVersionCheck = [igVersion compare:@"7.6" options:NSNumericSearch];
+  setupRingerCheck();
 
-    if (igVersionCheck == NSOrderedAscending) {
-      NSLog(@"This is an unsupported version of Instagram. Either downgrade InstaBetter in Cydia, or update to the latest version of Instagram.");
+  CFNotificationCenterAddObserver(
+    CFNotificationCenterGetDarwinNotifyCenter(), 
+    NULL,
+    &handlePrefsChange,
+    (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
+    NULL, 
+    CFNotificationSuspensionBehaviorCoalesce);
 
-      NSString *lastVersion = [prefs objectForKey:@"last_check"] ? [prefs objectForKey:@"last_check"] : nil;
-      if (!lastVersion || ![lastVersion isEqualToString:igVersion]) {
-        %init(versionWarning);
-
-        [prefs setValue:igVersion forKey:@"last_check"];
-        [prefs writeToFile:prefsLoc atomically:YES];
-      }
-
-    } else {
-      setupRingerCheck();
-
-      CFNotificationCenterAddObserver(
-        CFNotificationCenterGetDarwinNotifyCenter(), 
-        NULL,
-        &handlePrefsChange,
-        (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
-        NULL, 
-        CFNotificationSuspensionBehaviorCoalesce);
-
-      @autoreleasepool {
-        %init(instaHooks);
-      }
-    }
+  @autoreleasepool {
+    %init(instaHooks);
+  }
 }
