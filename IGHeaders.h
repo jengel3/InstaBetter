@@ -190,7 +190,11 @@
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 @end
 
+@interface IGNavigationController : UINavigationController
+@end
+
 @interface IGRootViewController : UIViewController
+@property (nonatomic,retain) IGNavigationController * registrationController; 
 -(id)topMostViewController;
 @end
 

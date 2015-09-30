@@ -1,13 +1,21 @@
-#import <Preferences/Preferences.h>
+#import <Preferences/PSListController.h>
+#import <Preferences/PSEditableListController.h>
+#import <Preferences/PSSpecifier.h>
 
-@interface InstaBetterPrefsController: PSListController 
+@interface InstaBetterPrefsController : PSListController 
 @end
 
 @interface EditableListController : PSEditableListController
 @end
 
 @implementation InstaBetterPrefsController
+- (void)viewDidLoad {
+  NSLog(@"CALLED!!");
+  [super viewDidLoad];
+  
+}
 - (id)specifiers {
+  NSLog(@"CALLED SPECS");
 	if(_specifiers == nil) {
 		_specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self];
 	}

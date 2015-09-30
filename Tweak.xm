@@ -2,6 +2,7 @@
 #import <Foundation/Foundation.h>
 #import "substrate.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <instabetterprefs/InstaBetterPrefs.mm>
 #import <lib/NYTPhotosViewController.h>
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
@@ -951,10 +952,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 {
   if (arg2 == 5) {
     NSLog(@"CALLED!");
-    // IBSettingsViewController *settings = [[IBSettingsViewController alloc] init];
-    // AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    // UINavigationController *nav = (UINavigationController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    // [nav pushViewController:settings animated:YES];
+
+    InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
+
+    [self.navigationController pushViewController:(UIViewController*)settings animated:YES];
   }
   %orig;
 }
