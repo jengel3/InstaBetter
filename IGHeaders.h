@@ -1,6 +1,8 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import <lib/Protocols/NYTPhoto.h>
+#import "lib/Protocols/NYTPhoto.h"
+#import "lib/NYTPhotoViewController.h"
+#import "lib/NYTPhotosViewController.h"
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
@@ -79,7 +81,7 @@
 
 @interface IGDate : NSObject <NSCoding> 
 
-@property (nonatomic,readonly) long long microseconds;                   //@synthesize microseconds=_microseconds - In the implementation block
+@property (nonatomic,readonly) long long microseconds;
 @property (nonatomic,copy,readonly) NSString * stringValue; 
 -(id)initWithMicroseconds:(long long)arg1 ;
 -(id)initWithCoder:(id)arg1 ;
@@ -421,4 +423,34 @@
 @interface IGFeedItemVideoCell
 @property (nonatomic,retain) IGFeedItemVideoView * videoView; 
 
+@end
+
+@interface IGTableView : UITableView
+@end
+
+@interface IGGroupedTableView : IGTableView
+@end
+
+@interface IGPlainTableViewController : IGViewController
+@property (nonatomic,retain) IGTableView * tableView; 
+@end
+
+@interface IGPlainTableView : IGTableView
+@end
+
+@interface IGPlainTableViewCell : UITableViewCell
+@end
+
+@interface IGGroupedTableViewController : IGPlainTableViewController
+@end
+
+@interface IGGroupedTableViewCell : UITableViewCell
+@end
+
+@interface IGAccountSettingsViewController : IGGroupedTableViewController
+-(id)aboutSectionRows;
+-(id)followSectionRows;
+-(id)settingSectionRows;
+-(id)sessionSectionRows;
+-(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 ;
 @end

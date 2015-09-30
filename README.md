@@ -57,6 +57,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ### Release 1.1.5
 * [CHANGE] Revert to old style of Saving/Sharing. Now more consistent
+* [BUG FIX] Fix both Twitter buttons opening to the same page
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

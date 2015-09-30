@@ -927,6 +927,39 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+%hook IGAccountSettingsViewController
+-(id)settingSectionRows {
+  id thing = %orig;
+  NSLog(@"THING: %@", thing);
+  return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
+}
+-(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 {
+  if (arg2 == 2) {
+    return 6;
+  }
+  return %orig;
+}
+
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  IGGroupedTableViewCell* cell = %orig;
+  if (indexPath.section == 2 && indexPath.row == 5) {
+    cell.textLabel.text = @"InstaBetter Settings";
+  }
+  return cell;
+}
+
+-(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 {
+  if (arg2 == 5) {
+    NSLog(@"CALLED!");
+    // IBSettingsViewController *settings = [[IBSettingsViewController alloc] init];
+    // AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+    // UINavigationController *nav = (UINavigationController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    // [nav pushViewController:settings animated:YES];
+  }
+  %orig;
+}
+%end
+
 %end
 
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {

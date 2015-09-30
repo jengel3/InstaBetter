@@ -9,7 +9,7 @@ include theos/makefiles/common.mk
 TWEAK_NAME = InstaBetter
 BUNDLE_NAME = InstaBetterResources
 InstaBetterResources_INSTALL_PATH = /Library/Application Support/InstaBetter
-InstaBetter_FILES = MBProgressHUD.m Tweak.xm $(wildcard lib/*.m)
+InstaBetter_FILES = MBProgressHUD.m IBSettingsViewController.m Tweak.xm $(wildcard lib/*.m)
 InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics ImageIO Accelerate QuartzCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk

@@ -9,7 +9,7 @@
 @implementation InstaBetterPrefsController
 - (id)specifiers {
 	if(_specifiers == nil) {
-		_specifiers = [[self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self] retain];
+		_specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self];
 	}
 
 	return _specifiers;
