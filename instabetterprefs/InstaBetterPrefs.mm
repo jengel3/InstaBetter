@@ -1,26 +1,22 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSEditableListController.h>
 #import <Preferences/PSSpecifier.h>
+#import "InstaBetterPrefs.h"
 
-@interface InstaBetterPrefsController : PSListController 
-@end
-
-@interface EditableListController : PSEditableListController
-@end
+NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundles/InstaBetterPrefs.bundle"];
 
 @implementation InstaBetterPrefsController
-- (void)viewDidLoad {
-  NSLog(@"CALLED!!");
+-(void) viewDidLoad {
   [super viewDidLoad];
-  
+  [self reload];
+  [self reloadSpecifiers];
 }
 - (id)specifiers {
-  NSLog(@"CALLED SPECS");
-	if(_specifiers == nil) {
-		_specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self];
-	}
-
-	return _specifiers;
+  if(_specifiers == nil) {
+    [ibsBundle load];
+    _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];
+  }
+  return _specifiers;
 }
 
 - (void)openTwitter:(id)sender {
@@ -31,33 +27,38 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/AOkhtenberg"]];
 }
 
+-(id) loadSpecifiersFromPlistName:(id)arg1 target:(id)arg2 bundle:(id)arg3 {
+  NSLog(@"CALLED %@ -- %@ -- %@", arg1, arg2, arg3);
+  return [super loadSpecifiersFromPlistName:arg1 target:arg2 bundle:arg3];
+}
+
 @end
  
 @implementation EditableListController
 - (id)specifiers {
-	if (!_specifiers) {
-		NSMutableArray *specs = [[NSMutableArray alloc] init];
-		NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
+  if (!_specifiers) {
+    NSMutableArray *specs = [[NSMutableArray alloc] init];
+    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
     NSArray *keys = [prefs objectForKey:@"muted_users"];
-		for (id o in keys) {
-    	PSSpecifier* defSpec = [PSSpecifier preferenceSpecifierNamed:o
-		    target:self
-		       set:NULL
-		       get:NULL
-		    detail:Nil
-		      cell:PSTitleValueCell
-		      edit:Nil];
-    	extern NSString* PSDeletionActionKey;
-    	[defSpec setProperty:NSStringFromSelector(@selector(removedUsername:)) forKey:PSDeletionActionKey];
-    	[specs addObject:defSpec];
-		}
-		_specifiers = [[NSArray alloc] initWithArray:specs];
-	}
-	return _specifiers;
+    for (id o in keys) {
+      PSSpecifier* defSpec = [PSSpecifier preferenceSpecifierNamed:o
+        target:self
+           set:NULL
+           get:NULL
+        detail:Nil
+          cell:PSTitleValueCell
+          edit:Nil];
+      extern NSString* PSDeletionActionKey;
+      [defSpec setProperty:NSStringFromSelector(@selector(removedUsername:)) forKey:PSDeletionActionKey];
+      [specs addObject:defSpec];
+    }
+    _specifiers = [[NSArray alloc] initWithArray:specs];
+  }
+  return _specifiers;
 }
 
 -(void)removedUsername:(PSSpecifier*)specifier{
-	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
+  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
   NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
   [keys removeObject:[specifier name]];
   [prefs setValue:keys forKey:@"muted_users"];

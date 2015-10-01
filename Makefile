@@ -9,7 +9,7 @@ include theos/makefiles/common.mk
 TWEAK_NAME = InstaBetter
 BUNDLE_NAME = InstaBetterResources
 InstaBetterResources_INSTALL_PATH = /Library/Application Support/InstaBetter
-InstaBetter_FILES = MBProgressHUD.m Tweak.xm $(wildcard lib/*.m)
+InstaBetter_FILES = MBProgressHUD.m Tweak.xm instabetterprefs/InstaBetterPrefs.mm $(wildcard lib/*.m)
 InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics ImageIO Accelerate QuartzCore
 InstaBetter_PRIVATE_FRAMEWORKS = Preferences
 
@@ -18,4 +18,5 @@ include theos/makefiles/bundle.mk
 
 after-install::
 	install.exec "killall -9 Instagram"
+SUBPROJECTS += instabetterprefs
 include $(THEOS_MAKE_PATH)/aggregate.mk

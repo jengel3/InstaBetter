@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 #import "substrate.h"
 #import <AssetsLibrary/AssetsLibrary.h>
-#import <instabetterprefs/InstaBetterPrefs.mm>
+#import <instabetterprefs/InstaBetterPrefs.h>
 #import <lib/NYTPhotosViewController.h>
 #import "IGHeaders.h"
 #import "MBProgressHUD.h"
@@ -76,6 +76,7 @@ static NSDictionary* updatePrefs() {
         muted = [[NSMutableArray alloc] init];
     }
     if (prefs) {
+      NSLog(@"ENABLED?!?! %@", [prefs objectForKey:@"enabled"] );
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
@@ -791,7 +792,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // save media
-// 
 %hook IGFeedItemActionCell
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
@@ -887,16 +887,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-%hook IGFeedItemActionCell
--(BOOL)sponsoredPostAllowed {
-  if (enabled && hideSponsored) {
-    return false;
-  } else {
-    return %orig;
-  }
-}
-%end
-
 %hook IGSponsoredPostInfo
 -(BOOL)showIcon {
   if (enabled && hideSponsored) {
@@ -930,10 +920,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGAccountSettingsViewController
 -(id)settingSectionRows {
-  id thing = %orig;
-  NSLog(@"THING: %@", thing);
   return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
 }
+
 -(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 {
   if (arg2 == 2) {
     return 6;
@@ -951,8 +940,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 -(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 {
   if (arg2 == 5) {
-    NSLog(@"CALLED!");
-
     InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
 
     [self.navigationController pushViewController:(UIViewController*)settings animated:YES];
@@ -964,7 +951,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+  NSLog(@"Called for a preferences reload...");
+  NSLog(@"BEFORE %d", enabled);
   updatePrefs();
+  NSLog(@"AFTER %d", enabled);
 }
 
 static void setRingerState(uint64_t state) {
@@ -992,6 +982,8 @@ static void setupRingerCheck() {
 
 %ctor { 
   setupRingerCheck();
+
+  updatePrefs();
 
   CFNotificationCenterAddObserver(
     CFNotificationCenterGetDarwinNotifyCenter(), 

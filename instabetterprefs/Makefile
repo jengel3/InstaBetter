@@ -1,5 +1,6 @@
 ARCHS = armv7 arm64
 TARGET = :clang
+ADDITIONAL_OBJCFLAGS = -fobjc-arc
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = InstaBetterPrefs
