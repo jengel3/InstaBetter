@@ -220,7 +220,7 @@
 			<key>label</key>
 			<string>Audio &amp; Video</string>
 		</dict>
-<!-- 		<dict>
+		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
@@ -247,7 +247,7 @@
 			</array>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict> -->
+		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>

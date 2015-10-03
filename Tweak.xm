@@ -60,6 +60,7 @@ static void initPrefs() {
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
+    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"video_mode"];
     [prefs setValue:nil forKey:@"fake_follower_count"];
     [prefs setValue:nil forKey:@"fake_following_count"];
     [prefs setValue:vals forKey:@"muted_users"];
@@ -76,7 +77,6 @@ static NSDictionary* updatePrefs() {
         muted = [[NSMutableArray alloc] init];
     }
     if (prefs) {
-      NSLog(@"ENABLED?!?! %@", [prefs objectForKey:@"enabled"] );
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
@@ -296,6 +296,17 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     return %orig(src, 2, control);
   }
   return %orig;
+}
+
+// auto play video
+-(void)startVideoForCellMovingOnScreen {
+  if (enabled) {
+    if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
+      return %orig;
+    }
+  } else {
+    %orig;
+  }
 }
 %end
 
@@ -879,6 +890,16 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+%hook IGFeedItemActionCell   
+-(BOOL)sponsoredPostAllowed {    
+  if (enabled && hideSponsored) {    
+    return false;    
+  } else {   
+    return %orig;    
+  }    
+}    
+%end
+
 %hook IGSponsoredPostInfo
 -(BOOL)showIcon {
   if (enabled && hideSponsored) {
@@ -912,26 +933,35 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGAccountSettingsViewController
 -(id)settingSectionRows {
-  return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
+  NSArray *thing = %orig;
+  if ([thing count] == 4) {
+    return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, nil];
+  } else if ([thing count] == 5) {
+    return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
+  }
+  return nil;
 }
 
--(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 {
-  if (arg2 == 2) {
-    return 6;
+-(int)tableView:(id)tableView numberOfRowsInSection:(int)sections {
+  if (sections == 2) {
+    return [[self settingSectionRows] count];
   }
   return %orig;
 }
 
--(id)tableView:(id)arg1 cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+-(id)tableView:(id)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   IGGroupedTableViewCell* cell = %orig;
-  if (indexPath.section == 2 && indexPath.row == 5) {
+  int count = [[self settingSectionRows] count];
+  if (indexPath.section == 2 && ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5))) {
     cell.textLabel.text = @"InstaBetter Settings";
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   }
   return cell;
 }
 
--(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 {
-  if (arg2 == 5) {
+-(void)tableView:(id)tableView didSelectSettingsRow:(int)index {
+  int count = [[self settingSectionRows] count];
+  if ((count == 5 && index == 4) || (count == 6 && index == 5)) {
     InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
 
     [self.navigationController pushViewController:(UIViewController*)settings animated:YES];
@@ -943,10 +973,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-  NSLog(@"Called for a preferences reload...");
-  NSLog(@"BEFORE %d", enabled);
   updatePrefs();
-  NSLog(@"AFTER %d", enabled);
 }
 
 static void setRingerState(uint64_t state) {
@@ -955,7 +982,6 @@ static void setRingerState(uint64_t state) {
   } else if (state == 1) {
     ringerMuted = NO;
   } else {
-    NSLog(@"Received invalid ringer status..this shouldn't happen -- State: %d", (int)state);
     ringerMuted = YES;
   }
 }
