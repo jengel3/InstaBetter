@@ -856,14 +856,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 
 %hook IGFeedItemHeader
--(BOOL)sponsoredPostAllowed {
-  if (enabled && hideSponsored) {
-    return false;
-  } else {
-    return %orig;
-  }
-}
-
 -(void)layoutSubviews {
   %orig;
   if (enabled && enableTimestamps) {

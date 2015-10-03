@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>InstaBetterPrefs</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.jake0oo0.instabetterprefs</string>
+	<string>com.jake0oo0.instabetter</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -21,7 +21,7 @@
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>MinimumOSVersion</key>
-	<string>3.0</string>
+	<string>7.0</string>
 	<key>NSPrincipalClass</key>
 	<string>InstaBetterPrefsController</string>
 </dict>

@@ -1,9 +1,8 @@
-#import <Preferences/PSListController.h>
-#import <Preferences/PSEditableListController.h>
-#import <Preferences/PSSpecifier.h>
+#import <Preferences/Preferences.h>
 #import "InstaBetterPrefs.h"
 
 NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundles/InstaBetterPrefs.bundle"];
+#define valuesPath @"/User/Library/Preferences/com.jake0oo0.instabetter.plist"
 
 @implementation InstaBetterPrefsController
 -(void) viewDidLoad {
@@ -15,8 +14,29 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   if(_specifiers == nil) {
     [ibsBundle load];
     _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];
+    NSLog(@"SPECS %@", _specifiers);
+    NSLog(@"DATA SOURCE %@", [self specifierDataSource]);
   }
   return _specifiers;
+}
+
+
+// http://iphonedevwiki.net/index.php/PreferenceBundles
+-(id) readPreferenceValue:(PSSpecifier*)specifier {
+  NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:valuesPath];
+  if (!settings[specifier.properties[@"key"]]) {
+    return specifier.properties[@"default"];
+  }
+  return settings[specifier.properties[@"key"]];
+}
+ 
+-(void) setPreferenceValue:(id)value specifier:(PSSpecifier*)specifier {
+  NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
+  [defaults addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:valuesPath]];
+  [defaults setObject:value forKey:specifier.properties[@"key"]];
+  [defaults writeToFile:valuesPath atomically:YES];
+  CFStringRef toPost = (__bridge CFStringRef)specifier.properties[@"PostNotification"];
+  if(toPost) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), toPost, NULL, NULL, YES);
 }
 
 - (void)openTwitter:(id)sender {
