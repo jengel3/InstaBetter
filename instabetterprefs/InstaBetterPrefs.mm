@@ -14,12 +14,9 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   if(_specifiers == nil) {
     [ibsBundle load];
     _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];
-    NSLog(@"SPECS %@", _specifiers);
-    NSLog(@"DATA SOURCE %@", [self specifierDataSource]);
   }
   return _specifiers;
 }
-
 
 // http://iphonedevwiki.net/index.php/PreferenceBundles
 -(id) readPreferenceValue:(PSSpecifier*)specifier {
@@ -38,6 +35,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   CFStringRef toPost = (__bridge CFStringRef)specifier.properties[@"PostNotification"];
   if(toPost) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), toPost, NULL, NULL, YES);
 }
+// end
 
 - (void)openTwitter:(id)sender {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/itsjake88"]];
@@ -47,18 +45,13 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/AOkhtenberg"]];
 }
 
--(id) loadSpecifiersFromPlistName:(id)arg1 target:(id)arg2 bundle:(id)arg3 {
-  NSLog(@"CALLED %@ -- %@ -- %@", arg1, arg2, arg3);
-  return [super loadSpecifiersFromPlistName:arg1 target:arg2 bundle:arg3];
-}
-
 @end
  
 @implementation EditableListController
 - (id)specifiers {
   if (!_specifiers) {
     NSMutableArray *specs = [[NSMutableArray alloc] init];
-    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
+    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:valuesPath];
     NSArray *keys = [prefs objectForKey:@"muted_users"];
     for (id o in keys) {
       PSSpecifier* defSpec = [PSSpecifier preferenceSpecifierNamed:o
@@ -78,11 +71,10 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 }
 
 -(void)removedUsername:(PSSpecifier*)specifier{
-  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist"];
+  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:valuesPath];
   NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
   [keys removeObject:[specifier name]];
   [prefs setValue:keys forKey:@"muted_users"];
-  [prefs writeToFile:@"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist" atomically:YES];
+  [prefs writeToFile:valuesPath atomically:YES];
 }
-
 @end
