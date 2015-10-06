@@ -8,6 +8,7 @@
 #import "MBProgressHUD.h"
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
+#import <lib/SSKeychain.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
@@ -325,6 +326,76 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+%hook IGTabBarController
+-(void)profileButtonLongPressed:(UILongPressGestureRecognizer*)sender {
+    if (sender.state != UIGestureRecognizerStateBegan) return;
+    UIActionSheet *alert = [[UIActionSheet alloc] initWithTitle:@"User Selection" 
+      delegate:self 
+      cancelButtonTitle:@"Cancel" 
+      destructiveButtonTitle:@"Add User"
+      otherButtonTitles:nil];
+    alert.tag = 200;
+
+    NSArray *accounts = [SSKeychain accountsForService:@"InstaBetter"];
+    for (id acc in accounts) {
+      [alert addButtonWithTitle:[acc objectForKey:@"acct"]];
+    }
+    [alert showFromTabBar:(UITabBar*)self.tabBar];
+}
+
+%new
+-(void) alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)index {
+  if (alertView.tag == 201) {
+    UITextField *userText = [alertView textFieldAtIndex:0];
+    UITextField *passText = [alertView textFieldAtIndex:1];
+    NSString *username = userText.text;
+    NSString *password = passText.text;
+    if (!username.length || !password.length) {
+      UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error!"
+        message:@"You must fill in both fields."
+        delegate:self 
+        cancelButtonTitle:nil 
+        otherButtonTitles:@"Okay", nil];
+      [alert show];
+      return;
+    }
+
+    [SSKeychain setPassword:password forService:@"InstaBetter" account:username];
+
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Added Account!"
+      message:nil
+      delegate:self 
+      cancelButtonTitle:nil 
+      otherButtonTitles:@"Okay", nil];
+    [alert show];
+  }
+}
+
+%new
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)index {
+  if (actionSheet.tag == 200) {
+    if (index == [actionSheet destructiveButtonIndex]) {
+      UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"New Account"
+      message:nil
+      delegate:self 
+      cancelButtonTitle:@"Cancel" 
+      otherButtonTitles:@"Done", nil];
+      alert.tag = 201;
+
+      alert.alertViewStyle = UIAlertViewStyleLoginAndPasswordInput;
+      [alert show];
+    } else if (index != [actionSheet cancelButtonIndex]) {
+      NSString *username = [actionSheet buttonTitleAtIndex:index];
+      NSString *password = [SSKeychain passwordForService:@"InstaBetter" account:username];
+
+      IGAuthService *authService = [%c(IGAuthService) sharedAuthService];
+      [authService logInWithUsername:username password:password userInfo:nil completionHandler:^(IGAuthenticatedUser *user){
+        [[%c(IGAuthHelper) sharedAuthHelper] logInWithAuthenticatedUser:user isSwitchingUsers:YES];
+      }];
+    }
+  }
+}
+%end
 
 // disable app rating
 

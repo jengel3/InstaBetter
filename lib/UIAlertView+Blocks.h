@@ -27,7 +27,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "nullability.h"
 
 typedef void (^UIAlertViewBlock) (UIAlertView *alertView);
 typedef void (^UIAlertViewCompletionBlock) (UIAlertView *alertView, NSInteger buttonIndex);

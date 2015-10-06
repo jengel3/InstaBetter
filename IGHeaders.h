@@ -21,6 +21,14 @@
 @interface IGAuthHelper
 @property (nonatomic,retain) IGUser * currentUser; 
 +(id)sharedAuthHelper;
+-(void)logInWithAuthenticatedUser:(id)arg1 ;
+-(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2 ;
+-(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(char)arg2 ;
+-(void)clearCurrentUser;
+@end
+
+@interface IGAuthenticatedUser
+
 @end
 
 @interface InstaBetterPhoto : NSObject <NYTPhoto>
@@ -457,4 +465,59 @@
 -(id)settingSectionRows;
 -(id)sessionSectionRows;
 -(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 ;
+@end
+
+@interface IGSwitchUsersController : NSObject <UITableViewDelegate, UITableViewDataSource> {
+
+  char _shouldShowAddAccountRow;
+  UITableView* _tableView;
+  NSArray* _usersArray;
+  int _currentUserIndex;
+
+}
+
+@property (nonatomic,retain) UITableView * tableView;                                          
+@property (nonatomic,retain) NSArray * usersArray;                                        
+@property (assign,nonatomic) int currentUserIndex;                                            
+@property (assign,nonatomic) BOOL shouldShowAddAccountRow;                                  
+-(void)imageViewLoadedImage:(id)arg1 ;
+-(id)initWithShouldShowAddAccountRow:(BOOL)arg1 ;
+-(float)minimumTableViewHeight;
+-(void)updateCurrentUserIndex;
+-(void)updateUserData;
+-(NSArray *)usersArray;
+-(void)setCurrentUserIndex:(int)arg1 ;
+-(void)setUsersArray:(NSArray *)arg1 ;
+-(BOOL)shouldShowAddAccountRow;
+-(id)userCellForTableView:(id)arg1 indexPath:(id)arg2 ;
+-(id)addAccountCellForTableView:(id)arg1 indexPath:(id)arg2 ;
+-(int)currentUserIndex;
+-(void)setShouldShowAddAccountRow:(BOOL)arg1 ;
+-(void)dealloc;
+-(float)tableView:(id)arg1 heightForHeaderInSection:(int)arg2 ;
+-(float)tableView:(id)arg1 heightForFooterInSection:(int)arg2 ;
+-(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2 ;
+-(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
+-(void)setTableView:(UITableView *)arg1 ;
+-(UITableView *)tableView;
+-(id)users;
+
+@end
+
+@interface IGTabBarController : UIViewController <UIActionSheetDelegate, UIAlertViewDelegate>
+@property (nonatomic,readonly) UIView * tabBar; 
+@property (nonatomic,retain) IGSwitchUsersController * switchUsersController;
+-(void)profileButtonPressed;
+-(void)profileButtonLongPressed:(id)arg1 ;
+-(void)animateSwitchUsersTableView;
+-(void)setIsDisplayingSwitchUsersTableView:(char)arg1 ;
+-(id)navigationControllerForTabBarItem:(int)arg1 ;
+-(int)selectedTabBarItem;
+
+@end
+
+@interface IGAuthService
++(id)sharedAuthService;
+-(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion ;
 @end
