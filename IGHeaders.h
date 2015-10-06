@@ -69,11 +69,6 @@
 -(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3 ;
 @end
 
-@interface IGUserDetailHeaderView : UIView
-@property(retain, nonatomic) IGFollowButton *followButton;
-@property(retain, nonatomic) IGCoreTextView *infoLabelView;
--(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3 ;
-@end
 
 @interface IGPhoto
 -(NSDictionary*)imageVersions;
@@ -192,10 +187,59 @@
 -(BOOL)shouldAutoPlayVideo;
 @end
 
+@interface IGSwitchUsersController : NSObject <UITableViewDelegate, UITableViewDataSource> {
+
+  char _shouldShowAddAccountRow;
+  UITableView* _tableView;
+  NSArray* _usersArray;
+  int _currentUserIndex;
+
+}
+
+@property (nonatomic,retain) UITableView * tableView;                                          
+@property (nonatomic,retain) NSArray * usersArray;                                        
+@property (assign,nonatomic) int currentUserIndex;                                            
+@property (assign,nonatomic) BOOL shouldShowAddAccountRow;                                  
+-(void)imageViewLoadedImage:(id)arg1 ;
+-(id)initWithShouldShowAddAccountRow:(BOOL)arg1 ;
+-(float)minimumTableViewHeight;
+-(void)updateCurrentUserIndex;
+-(void)updateUserData;
+-(NSArray *)usersArray;
+-(void)setCurrentUserIndex:(int)arg1 ;
+-(void)setUsersArray:(NSArray *)arg1 ;
+-(BOOL)shouldShowAddAccountRow;
+-(id)userCellForTableView:(id)arg1 indexPath:(id)arg2 ;
+-(id)addAccountCellForTableView:(id)arg1 indexPath:(id)arg2 ;
+-(int)currentUserIndex;
+-(void)setShouldShowAddAccountRow:(BOOL)arg1 ;
+-(void)dealloc;
+-(float)tableView:(id)arg1 heightForHeaderInSection:(int)arg2 ;
+-(float)tableView:(id)arg1 heightForFooterInSection:(int)arg2 ;
+-(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2 ;
+-(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
+-(void)setTableView:(UITableView *)arg1 ;
+-(UITableView *)tableView;
+-(id)users;
+
+@end
+
+@interface IGUserDetailHeaderView : UIView
+@property(retain, nonatomic) IGFollowButton *followButton;
+@property(retain, nonatomic) IGCoreTextView *infoLabelView;
+-(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3 ;
+@property (assign,nonatomic) id delegate;
+-(void)onFeedViewModeChanged:(int)arg1 ;
+-(void)onEditProfileTapped;
+@end
+
 @interface IGUserDetailViewController : IGViewController
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(IGUser *)user;
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
+-(void)setSwitchUsersTitleView;
+@property (nonatomic,retain) IGSwitchUsersController * switchUsersController;
 @end
 
 @interface IGNavigationController : UINavigationController
@@ -465,44 +509,6 @@
 -(id)settingSectionRows;
 -(id)sessionSectionRows;
 -(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 ;
-@end
-
-@interface IGSwitchUsersController : NSObject <UITableViewDelegate, UITableViewDataSource> {
-
-  char _shouldShowAddAccountRow;
-  UITableView* _tableView;
-  NSArray* _usersArray;
-  int _currentUserIndex;
-
-}
-
-@property (nonatomic,retain) UITableView * tableView;                                          
-@property (nonatomic,retain) NSArray * usersArray;                                        
-@property (assign,nonatomic) int currentUserIndex;                                            
-@property (assign,nonatomic) BOOL shouldShowAddAccountRow;                                  
--(void)imageViewLoadedImage:(id)arg1 ;
--(id)initWithShouldShowAddAccountRow:(BOOL)arg1 ;
--(float)minimumTableViewHeight;
--(void)updateCurrentUserIndex;
--(void)updateUserData;
--(NSArray *)usersArray;
--(void)setCurrentUserIndex:(int)arg1 ;
--(void)setUsersArray:(NSArray *)arg1 ;
--(BOOL)shouldShowAddAccountRow;
--(id)userCellForTableView:(id)arg1 indexPath:(id)arg2 ;
--(id)addAccountCellForTableView:(id)arg1 indexPath:(id)arg2 ;
--(int)currentUserIndex;
--(void)setShouldShowAddAccountRow:(BOOL)arg1 ;
--(void)dealloc;
--(float)tableView:(id)arg1 heightForHeaderInSection:(int)arg2 ;
--(float)tableView:(id)arg1 heightForFooterInSection:(int)arg2 ;
--(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2 ;
--(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
--(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
--(void)setTableView:(UITableView *)arg1 ;
--(UITableView *)tableView;
--(id)users;
-
 @end
 
 @interface IGTabBarController : UIViewController <UIActionSheetDelegate, UIAlertViewDelegate>

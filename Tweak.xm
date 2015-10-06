@@ -529,6 +529,27 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // open links in app
 
 %hook IGUserDetailHeaderView 
+-(void)onFeedViewModeChanged:(int)arg1 {
+  %log;
+  UITableView *sub = ((IGUserDetailViewController*)self.delegate).switchUsersController.tableView;
+  [self addSubview:sub];
+  %orig;
+}
+-(void)onEditProfileTapped {
+   %log;
+  UITableView *sub = ((IGUserDetailViewController*)self.delegate).switchUsersController.tableView;
+  // [sub setFrame:[[UIScreen mainScreen] applicationFrame]];
+  NSLog(@"TABLE %@ -- %d -- ", sub, (int)[sub numberOfRowsInSection:0]);
+  [self insertSubview:sub atIndex:0];
+  [sub reloadData];
+  [self bringSubviewToFront:sub];
+  [self setNeedsLayout];
+  [sub setNeedsLayout];
+  NSLog(@"HIDDEN %d -- %d -- %@", sub.hidden, (int)sub.alpha, sub.superview);
+  // %orig;
+
+}
+
 -(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
   if (enabled && openInApp) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
