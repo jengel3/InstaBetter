@@ -326,76 +326,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-%hook IGTabBarController
--(void)profileButtonLongPressed:(UILongPressGestureRecognizer*)sender {
-    if (sender.state != UIGestureRecognizerStateBegan) return;
-    UIActionSheet *alert = [[UIActionSheet alloc] initWithTitle:@"User Selection" 
-      delegate:self 
-      cancelButtonTitle:@"Cancel" 
-      destructiveButtonTitle:@"Add User"
-      otherButtonTitles:nil];
-    alert.tag = 200;
-
-    NSArray *accounts = [SSKeychain accountsForService:@"InstaBetter"];
-    for (id acc in accounts) {
-      [alert addButtonWithTitle:[acc objectForKey:@"acct"]];
-    }
-    [alert showFromTabBar:(UITabBar*)self.tabBar];
-}
-
-%new
--(void) alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)index {
-  if (alertView.tag == 201) {
-    UITextField *userText = [alertView textFieldAtIndex:0];
-    UITextField *passText = [alertView textFieldAtIndex:1];
-    NSString *username = userText.text;
-    NSString *password = passText.text;
-    if (!username.length || !password.length) {
-      UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error!"
-        message:@"You must fill in both fields."
-        delegate:self 
-        cancelButtonTitle:nil 
-        otherButtonTitles:@"Okay", nil];
-      [alert show];
-      return;
-    }
-
-    [SSKeychain setPassword:password forService:@"InstaBetter" account:username];
-
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Added Account!"
-      message:nil
-      delegate:self 
-      cancelButtonTitle:nil 
-      otherButtonTitles:@"Okay", nil];
-    [alert show];
-  }
-}
-
-%new
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)index {
-  if (actionSheet.tag == 200) {
-    if (index == [actionSheet destructiveButtonIndex]) {
-      UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"New Account"
-      message:nil
-      delegate:self 
-      cancelButtonTitle:@"Cancel" 
-      otherButtonTitles:@"Done", nil];
-      alert.tag = 201;
-
-      alert.alertViewStyle = UIAlertViewStyleLoginAndPasswordInput;
-      [alert show];
-    } else if (index != [actionSheet cancelButtonIndex]) {
-      NSString *username = [actionSheet buttonTitleAtIndex:index];
-      NSString *password = [SSKeychain passwordForService:@"InstaBetter" account:username];
-
-      IGAuthService *authService = [%c(IGAuthService) sharedAuthService];
-      [authService logInWithUsername:username password:password userInfo:nil completionHandler:^(IGAuthenticatedUser *user){
-        [[%c(IGAuthHelper) sharedAuthHelper] logInWithAuthenticatedUser:user isSwitchingUsers:YES];
-      }];
-    }
-  }
-}
-%end
 
 // disable app rating
 
@@ -529,24 +459,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // open links in app
 
 %hook IGUserDetailHeaderView 
--(void)onFeedViewModeChanged:(int)arg1 {
-  %log;
-  UITableView *sub = ((IGUserDetailViewController*)self.delegate).switchUsersController.tableView;
-  [self addSubview:sub];
-  %orig;
-}
 -(void)onEditProfileTapped {
+  if (!enabled) return;
    %log;
-  UITableView *sub = ((IGUserDetailViewController*)self.delegate).switchUsersController.tableView;
-  // [sub setFrame:[[UIScreen mainScreen] applicationFrame]];
-  NSLog(@"TABLE %@ -- %d -- ", sub, (int)[sub numberOfRowsInSection:0]);
-  [self insertSubview:sub atIndex:0];
-  [sub reloadData];
-  [self bringSubviewToFront:sub];
-  [self setNeedsLayout];
-  [sub setNeedsLayout];
-  NSLog(@"HIDDEN %d -- %d -- %@", sub.hidden, (int)sub.alpha, sub.superview);
-  // %orig;
+   IGUserDetailViewController *delegate = ((IGUserDetailViewController*)self.delegate);
+   [delegate onNeedsFullReload];
+  [delegate animateSwitchUsersTableView];
 
 }
 
@@ -786,6 +704,23 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // mute users
 
 %hook IGUserDetailViewController
+-(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2 {
+  if (!enabled) return;
+  %log;
+  %orig;
+  [self setUser:arg2];
+  [self onNeedsFullReload];
+  [self animateSwitchUsersTableView];
+  [[%c(IGAuthHelper) sharedAuthHelper] setCurrentUser:arg2];
+  // [[%c(IGAuthHelper) sharedAuthHelper] updateCurrentUser:arg2];
+  // [[%c(IGAuthHelper) sharedAuthHelper] postWillSwitchUsersNotification];
+  IGAuthenticatedUser *user = [[%c(IGAuthService) sharedAuthService] currentUser];
+  // NSLog(@"NEW PK %@", user.pk);
+  [%c(IGAuthNotificationHelper) postUserDidChangeNotificationForUser:arg2];
+  [%c(IGAuthNotificationHelper) postWillSwitchUsersNotification];
+  [%c(IGAuthNotificationHelper) postDidSwitchUsersNotificationForNewUserPK:user.pk];
+  [[%c(IGAuthHelper) sharedAuthHelper] logInWithAuthenticatedUser:user isSwitchingUsers:YES];
+}
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {

@@ -25,10 +25,19 @@
 -(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2 ;
 -(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(char)arg2 ;
 -(void)clearCurrentUser;
+-(void)setCurrentUser:(IGUser *)arg1 ;
+-(void)postWillSwitchUsersNotification;
+-(void)updateCurrentUser:(id)arg1 ;
+@end
+
+@interface IGAuthNotificationHelper
++(void)postUserDidChangeNotificationForUser:(id)arg1 ;
++(void)postWillSwitchUsersNotification;
++(void)postDidSwitchUsersNotificationForNewUserPK:(id)arg1 ;
 @end
 
 @interface IGAuthenticatedUser
-
+@property (copy) NSString * pk;
 @end
 
 @interface InstaBetterPhoto : NSObject <NYTPhoto>
@@ -232,6 +241,7 @@
 @property (assign,nonatomic) id delegate;
 -(void)onFeedViewModeChanged:(int)arg1 ;
 -(void)onEditProfileTapped;
+-(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2 ;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -240,6 +250,11 @@
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 -(void)setSwitchUsersTitleView;
 @property (nonatomic,retain) IGSwitchUsersController * switchUsersController;
+-(void)animateSwitchUsersTableView;
+-(void)switchUsersControllerResetTableView:(id)arg1 ;
+-(void)onNeedsFullReload;
+-(void)setDisplayingSwitchUsersTableView:(char)arg1 ;
+-(void)setUser:(IGUser *)arg1 ;
 @end
 
 @interface IGNavigationController : UINavigationController
@@ -524,6 +539,7 @@
 @end
 
 @interface IGAuthService
-+(id)sharedAuthService;
++(IGAuthService*)sharedAuthService;
+-(IGAuthenticatedUser *)currentUser;
 -(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion ;
 @end
