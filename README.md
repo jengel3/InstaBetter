@@ -55,9 +55,13 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [BUG FIX] Fix crash when viewing profile image in activity tab
 * [BUG FIX] Fix share/save images not showing on 6+ - s/o to ThisBeChrisSas for testing
 
-### Release 1.1.5
+### Release 1.2.0
 * [CHANGE] Revert to old style of Saving/Sharing. Now more consistent
 * [BUG FIX] Fix both Twitter buttons opening to the same page
+* [FEATURE] Enable Instagram's hidden account switcher
+* [FEATURE] Add preferences view to Instagram's settings
+* [FEATURE] Add ability to customize whether or not to auto play videos
+* [BUG FIX] Fix zoom/share attempting to display several times
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
@@ -72,7 +76,7 @@ InstaBetter is not affiliated with Instagram.
 
 ## Depiction Description
 
-The most comprehensive tweak for Instagram yet, with over 10 new features.
+The most comprehensive tweak for Instagram yet, with over 15 new features.
 
 * Save hi-res Media (Images & Videos) 
 * Hold down on images to zoom
@@ -88,7 +92,10 @@ The most comprehensive tweak for Instagram yet, with over 10 new features.
 * Grid view
 * Confirm double-tap alerts
 * Media Timestamps
-* Auto-play video sound
+* Enable or disable auto playing of video and sound
 * Save DM content
+* Enable Instagram account switcher
+
+InstaBetter will always be free, and does not add any ads to the Instagram app.
 
 InstaBetter is not affiliated with Instagram or Facebook.

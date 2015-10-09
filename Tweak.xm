@@ -561,6 +561,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 -(void)callShare:(UIGestureRecognizer *)longPress {
+  if (longPress.state != UIGestureRecognizerStateBegan) return;
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[[self.styledString.attributedString string]]
         applicationActivities:nil];
@@ -581,6 +582,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 -(void)longPressed:(UIGestureRecognizer *)longPress {
+  if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   IGFeedItemPhotoCell *photoCell = (IGFeedItemPhotoCell*) self.superview.superview;
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
@@ -653,6 +655,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 -(void)longPressed:(UIGestureRecognizer *)longPress {
+  if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
   photo.image = self.originalImage;
@@ -705,6 +708,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)viewDidLoad {
   %orig;
   if (!(enabled && accountSwitcher)) return;
+  IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
+  if (self.user != [authHelper currentUser]) return;
   UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"tabsPeopleIcon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(openSwitcher)];
   self.navigationItem.leftBarButtonItem = userButton;
 }
