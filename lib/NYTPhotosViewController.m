@@ -156,7 +156,9 @@ static const UIEdgeInsets NYTPhotosViewControllerCloseButtinImageInsets = {3, 0,
         _overlayView = [[NYTPhotosOverlayView alloc] initWithFrame:CGRectMake(0, 0, NYTPhotoCaptionViewHorizontalMargin * 2.0, 0)];
 
         // edited with bundle support
-        _overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[[NSBundle bundleWithPath:@"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"] pathForResource:@"NYTPhotoViewerCloseButtonX" ofType:@"png"]] landscapeImagePhone:[UIImage imageWithContentsOfFile:[[NSBundle bundleWithPath:@"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"] pathForResource:@"NYTPhotoViewerCloseButtonXLandscape" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];
+        _overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[[NSBundle bundleWithPath:@"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"] 
+            pathForResource:@"NYTPhotoViewerCloseButtonX" ofType:@"png"]] 
+            landscapeImagePhone:nil style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];
         // end edit
         
         //_overlayView.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonX" inBundle:kBundlePath] landscapeImagePhone:[UIImage imageNamed:@"NYTPhotoViewerCloseButtonXLandscape" inBundle:kBundlePath] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonTapped:)];

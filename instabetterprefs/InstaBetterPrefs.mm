@@ -70,7 +70,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
--(void)removedUsername:(PSSpecifier*)specifier{
+-(void)removedUsername:(PSSpecifier*)specifier {
   NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:valuesPath];
   NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
   [keys removeObject:[specifier name]];

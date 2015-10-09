@@ -8,7 +8,6 @@
 #import "MBProgressHUD.h"
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
-#import <lib/SSKeychain.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
