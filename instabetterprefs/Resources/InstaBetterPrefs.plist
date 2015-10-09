@@ -94,6 +94,20 @@
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
+			<string>account_switcher</string>
+			<key>label</key>
+			<string>Account Switcher</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
 			<string>hide_sponsored</string>
 			<key>label</key>
 			<string>Hide Sponsored Posts</string>

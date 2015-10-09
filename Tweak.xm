@@ -36,6 +36,7 @@ static int fakeFollowing = nil;
 static BOOL enableTimestamps = YES;
 static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
+static BOOL accountSwitcher = YES;
 
 float origPosition = nil;
 int ringerState;
@@ -67,6 +68,7 @@ static void initPrefs() {
     [prefs setValue:vals forKey:@"muted_users"];
     [prefs setValue:@NO forKey:@"always_timestamp"];
     [prefs setValue:@YES forKey:@"enable_timestamp"];
+    [prefs setValue:@YES forKey:@"account_switcher"];
     [prefs setValue:[NSNumber numberWithInt:0] forKey:@"timestamp_format"];
     [prefs writeToFile:prefsLoc atomically:YES];
 }
@@ -90,8 +92,11 @@ static NSDictionary* updatePrefs() {
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
+      accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
+
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
       videoMode = [prefs objectForKey:@"video_mode"] ? [[prefs objectForKey:@"video_mode"] intValue] : 1;
+
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
 
@@ -456,18 +461,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 
-// open links in app
+
+// open links in apps
 
 %hook IGUserDetailHeaderView 
--(void)onEditProfileTapped {
-  if (!enabled) return;
-   %log;
-   IGUserDetailViewController *delegate = ((IGUserDetailViewController*)self.delegate);
-   [delegate onNeedsFullReload];
-  [delegate animateSwitchUsersTableView];
-
-}
-
 -(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
   if (enabled && openInApp) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
@@ -680,7 +677,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
-    if (isProfileView && [self.buttons count] == 5) {
+    if (isProfileView && [self.buttons count] == 5 && !self.titleLabel.text) {
         IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
         IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
@@ -694,7 +691,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       if (saveActions) {   
         [self addButtonWithTitle:instaSave style:0];   
       }    
-      [self addButtonWithTitle:@"Share" style:0];    
+      [self addButtonWithTitle:@"Share" style:0];
     }
   }
   %orig;
@@ -704,23 +701,31 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // mute users
 
 %hook IGUserDetailViewController
--(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2 {
-  if (!enabled) return;
-  %log;
+// manage multiple users
+-(void)viewDidLoad {
   %orig;
-  [self setUser:arg2];
+  if (!(enabled && accountSwitcher)) return;
+  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"tabsPeopleIcon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(openSwitcher)];
+  self.navigationItem.leftBarButtonItem = userButton;
+}
+
+-(void)switchUsersController:(id)contrl tableViewDidSelectRowWithUser:(id)user {
+  %orig;
+  [self setUser:user];
   [self onNeedsFullReload];
   [self animateSwitchUsersTableView];
-  [[%c(IGAuthHelper) sharedAuthHelper] setCurrentUser:arg2];
-  // [[%c(IGAuthHelper) sharedAuthHelper] updateCurrentUser:arg2];
-  // [[%c(IGAuthHelper) sharedAuthHelper] postWillSwitchUsersNotification];
-  IGAuthenticatedUser *user = [[%c(IGAuthService) sharedAuthService] currentUser];
-  // NSLog(@"NEW PK %@", user.pk);
-  [%c(IGAuthNotificationHelper) postUserDidChangeNotificationForUser:arg2];
-  [%c(IGAuthNotificationHelper) postWillSwitchUsersNotification];
-  [%c(IGAuthNotificationHelper) postDidSwitchUsersNotificationForNewUserPK:user.pk];
-  [[%c(IGAuthHelper) sharedAuthHelper] logInWithAuthenticatedUser:user isSwitchingUsers:YES];
+  IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
+
+  [authHelper setCurrentUser:user];
+
+  IGAuthService *authService = [%c(IGAuthService) sharedAuthService];
+  IGAuthenticatedUser *authedUser = [authService currentUser];
+  [authService setCurrentUser:authedUser];
+
+  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
+  [igDelegate application:nil didFinishLaunchingWithOptions:nil];
 }
+
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {
@@ -744,6 +749,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     %orig;
   }
 }
+
+%new
+-(void)openSwitcher {
+  [self onNeedsFullReload];
+  [self animateSwitchUsersTableView];
+}
+
 %end
 
 %hook IGMainFeedViewController

@@ -24,6 +24,7 @@
 -(void)logInWithAuthenticatedUser:(id)arg1 ;
 -(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2 ;
 -(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(char)arg2 ;
+-(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(char)arg2 ;
 -(void)clearCurrentUser;
 -(void)setCurrentUser:(IGUser *)arg1 ;
 -(void)postWillSwitchUsersNotification;
@@ -168,6 +169,7 @@
 - (id)window;
 -(id)navigationController;
 -(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 ;
+-(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2;
 @end
 
 @interface IGMainFeedViewController
@@ -255,6 +257,7 @@
 -(void)onNeedsFullReload;
 -(void)setDisplayingSwitchUsersTableView:(char)arg1 ;
 -(void)setUser:(IGUser *)arg1 ;
+-(void)openSwitcher; // new method
 @end
 
 @interface IGNavigationController : UINavigationController
@@ -541,5 +544,6 @@
 @interface IGAuthService
 +(IGAuthService*)sharedAuthService;
 -(IGAuthenticatedUser *)currentUser;
+-(void)setCurrentUser:(IGAuthenticatedUser *)arg1 ;
 -(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion ;
 @end
