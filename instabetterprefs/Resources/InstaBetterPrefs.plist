@@ -134,20 +134,6 @@
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
-			<string>hide_sponsored</string>
-			<key>label</key>
-			<string>Hide Sponsored Posts</string>
-			<key>PostNotification</key>
-			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.jake0oo0.instabetter</string>
-			<key>key</key>
 			<string>app_browser</string>
 			<key>label</key>
 			<string>Open links in Instagram</string>
@@ -184,20 +170,6 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.jake0oo0.instabetter</string>
-			<key>key</key>
-			<string>main_grid</string>
-			<key>label</key>
-			<string>Grid View in Main Feed</string>
-			<key>PostNotification</key>
-			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict>
-		<dict>
-			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
 			<integer>1</integer>
@@ -221,6 +193,54 @@
 				<integer>1</integer>
 				<integer>2</integer>
 			</array>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Feed</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>main_grid</string>
+			<key>label</key>
+			<string>Grid View</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>layout_switcher</string>
+			<key>label</key>
+			<string>Layout Button</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>hide_sponsored</string>
+			<key>label</key>
+			<string>Hide Sponsored Posts</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>

@@ -163,6 +163,7 @@
 @end
 
 @interface IGFeedViewController : UIViewController
+@property (assign,nonatomic) int feedLayout;
 -(void)handleDidDisplayFeedItem:(IGFeedItem*)item;
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 -(void)setFeedLayout:(int)arg1 ;

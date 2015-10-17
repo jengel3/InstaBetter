@@ -27,6 +27,7 @@ static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
+static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
@@ -37,6 +38,8 @@ static BOOL enableTimestamps = YES;
 static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
 static BOOL accountSwitcher = YES;
+static UIBarButtonItem* gridItem;
+static UIBarButtonItem* listItem;
 
 float origPosition = nil;
 int ringerState;
@@ -70,6 +73,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"always_timestamp"];
     [prefs setValue:@YES forKey:@"enable_timestamp"];
     [prefs setValue:@YES forKey:@"account_switcher"];
+    [prefs setValue:@YES forKey:@"layout_switcher"];
     [prefs setValue:[NSNumber numberWithInt:0] forKey:@"timestamp_format"];
     [prefs writeToFile:prefsLoc atomically:YES];
 }
@@ -91,6 +95,7 @@ static NSDictionary* updatePrefs() {
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
+      layoutSwitcher = [prefs objectForKey:@"layout_switcher"] ? [[prefs objectForKey:@"layout_switcher"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
@@ -777,14 +782,26 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 -(void)viewDidLoad {
   %orig;
-  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
-  self.navigationItem.leftBarButtonItem = userButton;
+  if (!(enabled && layoutSwitcher)) return;
+  if (!gridItem) {
+    gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
+    listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
+  }
+  if (self.feedLayout == 1) {
+    self.navigationItem.leftBarButtonItem = gridItem;
+  } else if (self.feedLayout == 2) {
+    self.navigationItem.leftBarButtonItem = listItem;
+  }
 }
 %new
 -(void)changeView {
-  id thing = [self initWithFeedNetworkSource:nil feedLayout:1 showsPullToRefresh:TRUE];
-  NSLog(@"THING %@", thing);
-  %log;
+  if (self.feedLayout == 2) {
+    [self setFeedLayout:1];
+    [self.navigationItem setLeftBarButtonItem:gridItem animated:YES];
+  } else if (self.feedLayout == 1) {
+    [self setFeedLayout:2];
+    [self.navigationItem setLeftBarButtonItem:listItem animated:YES];
+  }
 }
 %end
 
