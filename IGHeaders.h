@@ -27,14 +27,7 @@
 -(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(char)arg2 ;
 -(void)clearCurrentUser;
 -(void)setCurrentUser:(IGUser *)arg1 ;
--(void)postWillSwitchUsersNotification;
 -(void)updateCurrentUser:(id)arg1 ;
-@end
-
-@interface IGAuthNotificationHelper
-+(void)postUserDidChangeNotificationForUser:(id)arg1 ;
-+(void)postWillSwitchUsersNotification;
-+(void)postDidSwitchUsersNotificationForNewUserPK:(id)arg1 ;
 @end
 
 @interface IGAuthenticatedUser
@@ -64,12 +57,10 @@
 @interface IGViewController : UIViewController
 @end
 
-
 @protocol IGCoreTextLinkHandler <NSObject>
 -(void)coreTextView:(id)arg1 didLongTapOnString:(id)arg2 URL:(id)arg3;
 -(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
 @end
-
 
 @interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UILongPressGestureRecognizerDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
@@ -78,7 +69,6 @@
 -(void)setStyledString:(IGStyledString *)arg1 ;
 -(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3 ;
 @end
-
 
 @interface IGPhoto
 -(NSDictionary*)imageVersions;
@@ -172,18 +162,7 @@
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2;
 @end
 
-@interface IGMainFeedViewController
--(BOOL)shouldHideFeedItem:(id)fp8;
--(BOOL)isFirstFeedLoad;
--(void)setIsFirstFeedLoad:(BOOL)first;
-@end
-
-@interface IGCollectionViewController
--(void)onPullToRefresh:(id)fp8;
--(void)finishRefreshFromPullToRefreshControl;
-@end
-
-@interface IGFeedViewController
+@interface IGFeedViewController : UIViewController
 -(void)handleDidDisplayFeedItem:(IGFeedItem*)item;
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 -(void)setFeedLayout:(int)arg1 ;
@@ -194,47 +173,21 @@
 -(BOOL)isDeviceSupportAlwaysAutoPlay;
 @end
 
+@interface IGMainFeedViewController : IGFeedViewController
+-(BOOL)shouldHideFeedItem:(id)fp8;
+-(BOOL)isFirstFeedLoad;
+-(void)setIsFirstFeedLoad:(BOOL)first;
+@end
+
+@interface IGCollectionViewController
+-(void)onPullToRefresh:(id)fp8;
+-(void)finishRefreshFromPullToRefreshControl;
+@end
+
 @interface IGMediaCaptureViewController
 -(BOOL)shouldAutoPlayVideo;
 @end
 
-@interface IGSwitchUsersController : NSObject <UITableViewDelegate, UITableViewDataSource> {
-
-  char _shouldShowAddAccountRow;
-  UITableView* _tableView;
-  NSArray* _usersArray;
-  int _currentUserIndex;
-
-}
-
-@property (nonatomic,retain) UITableView * tableView;                                          
-@property (nonatomic,retain) NSArray * usersArray;                                        
-@property (assign,nonatomic) int currentUserIndex;                                            
-@property (assign,nonatomic) BOOL shouldShowAddAccountRow;                                  
--(void)imageViewLoadedImage:(id)arg1 ;
--(id)initWithShouldShowAddAccountRow:(BOOL)arg1 ;
--(float)minimumTableViewHeight;
--(void)updateCurrentUserIndex;
--(void)updateUserData;
--(NSArray *)usersArray;
--(void)setCurrentUserIndex:(int)arg1 ;
--(void)setUsersArray:(NSArray *)arg1 ;
--(BOOL)shouldShowAddAccountRow;
--(id)userCellForTableView:(id)arg1 indexPath:(id)arg2 ;
--(id)addAccountCellForTableView:(id)arg1 indexPath:(id)arg2 ;
--(int)currentUserIndex;
--(void)setShouldShowAddAccountRow:(BOOL)arg1 ;
--(void)dealloc;
--(float)tableView:(id)arg1 heightForHeaderInSection:(int)arg2 ;
--(float)tableView:(id)arg1 heightForFooterInSection:(int)arg2 ;
--(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2 ;
--(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
--(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
--(void)setTableView:(UITableView *)arg1 ;
--(UITableView *)tableView;
--(id)users;
-
-@end
 
 @interface IGUserDetailHeaderView : UIView
 @property(retain, nonatomic) IGFollowButton *followButton;
@@ -250,10 +203,7 @@
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(IGUser *)user;
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
--(void)setSwitchUsersTitleView;
-@property (nonatomic,retain) IGSwitchUsersController * switchUsersController;
 -(void)animateSwitchUsersTableView;
--(void)switchUsersControllerResetTableView:(id)arg1 ;
 -(void)onNeedsFullReload;
 -(void)setDisplayingSwitchUsersTableView:(char)arg1 ;
 -(void)setUser:(IGUser *)arg1 ;
@@ -531,7 +481,6 @@
 
 @interface IGTabBarController : UIViewController <UIActionSheetDelegate, UIAlertViewDelegate>
 @property (nonatomic,readonly) UIView * tabBar; 
-@property (nonatomic,retain) IGSwitchUsersController * switchUsersController;
 -(void)profileButtonPressed;
 -(void)profileButtonLongPressed:(id)arg1 ;
 -(void)animateSwitchUsersTableView;

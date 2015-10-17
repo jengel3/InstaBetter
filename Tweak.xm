@@ -5,7 +5,7 @@
 #import <instabetterprefs/InstaBetterPrefs.h>
 #import <lib/NYTPhotosViewController.h>
 #import "IGHeaders.h"
-#import "MBProgressHUD.h"
+#import <lib/MBProgressHUD.h>
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
 
@@ -136,15 +136,15 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
     status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = @"Saving";
   }
-  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-  dispatch_async(queue, ^{
-    NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+    NSURLSessionTask *videoDownload = [[NSURLSession sharedSession] downloadTaskWithURL:vidURL completionHandler:^(NSURL *loc, NSURLResponse *res, NSError *err) {
+      NSFileManager *fileManager = [NSFileManager defaultManager];
+      NSURL *docsURL = [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *tempURL = [docsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+      [fileManager moveItemAtURL:loc toURL:tempURL error:&err];
 
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-      NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-      NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-      [data writeToURL:tempURL atomically:YES];
       [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+
       dispatch_async(dispatch_get_main_queue(), ^{
         status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
         status.mode = MBProgressHUDModeCustomView;
@@ -153,6 +153,23 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
         [status hide:YES afterDelay:1.0];
       });
     }];
+
+    [videoDownload resume];
+    // NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
+
+    // [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+      // NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      // NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+      // [data writeToURL:tempURL atomically:YES];
+      // [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+      // dispatch_async(dispatch_get_main_queue(), ^{
+      //   status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
+      //   status.mode = MBProgressHUDModeCustomView;
+      //   status.labelText = @"Saved!";
+
+      //   [status hide:YES afterDelay:1.0];
+    //   });
+    // }];
   });
 }
 
@@ -734,16 +751,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {
         NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
-        [keys addObject:self.user.username];
-        [prefs setValue:keys forKey:@"muted_users"];
+        [muted addObject:self.user.username];
+        [prefs setValue:muted forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:YES];
         updatePrefs();
     } else if ([title isEqualToString:instaUnmute]) {
         NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
-        [keys removeObject:self.user.username];
-        [prefs setValue:keys forKey:@"muted_users"];
+        [muted removeObject:self.user.username];
+        [prefs setValue:muted forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:YES];
         updatePrefs();
     } else {
@@ -759,7 +774,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [self onNeedsFullReload];
   [self animateSwitchUsersTableView];
 }
-
 %end
 
 %hook IGMainFeedViewController
@@ -774,6 +788,17 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   } else {
     return %orig;
   }
+}
+-(void)viewDidLoad {
+  %orig;
+  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
+  self.navigationItem.leftBarButtonItem = userButton;
+}
+%new
+-(void)changeView {
+  id thing = [self initWithFeedNetworkSource:nil feedLayout:1 showsPullToRefresh:TRUE];
+  NSLog(@"THING %@", thing);
+  %log;
 }
 %end
 
