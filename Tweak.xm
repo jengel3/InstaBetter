@@ -30,6 +30,7 @@ static BOOL mainGrid = NO;
 static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
+static int saveMode = 0;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 static BOOL enableTimestamps = YES;
@@ -59,6 +60,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"zoom_hi_res"];
     [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
+    [prefs setValue:0 forKey:@"save_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"video_mode"];
@@ -90,6 +92,7 @@ static NSDictionary* updatePrefs() {
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
+      saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
 
@@ -136,15 +139,15 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
     status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = @"Saving";
   }
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-    NSURLSessionTask *videoDownload = [[NSURLSession sharedSession] downloadTaskWithURL:vidURL completionHandler:^(NSURL *loc, NSURLResponse *res, NSError *err) {
-      NSFileManager *fileManager = [NSFileManager defaultManager];
-      NSURL *docsURL = [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-      NSURL *tempURL = [docsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-      [fileManager moveItemAtURL:loc toURL:tempURL error:&err];
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_async(queue, ^{
+    NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
 
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+      NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
+      [data writeToURL:tempURL atomically:YES];
       [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
-
       dispatch_async(dispatch_get_main_queue(), ^{
         status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
         status.mode = MBProgressHUDModeCustomView;
@@ -153,23 +156,6 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
         [status hide:YES afterDelay:1.0];
       });
     }];
-
-    [videoDownload resume];
-    // NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
-
-    // [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-      // NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-      // NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-      // [data writeToURL:tempURL atomically:YES];
-      // [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
-      // dispatch_async(dispatch_get_main_queue(), ^{
-      //   status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-      //   status.mode = MBProgressHUDModeCustomView;
-      //   status.labelText = @"Saved!";
-
-      //   [status hide:YES afterDelay:1.0];
-    //   });
-    // }];
   });
 }
 
@@ -707,10 +693,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
             [self addButtonWithTitle:instaMute style:0];
         }
     } else if (!self.titleLabel.text && !isWebView) {    
-      if (saveActions) {   
-        [self addButtonWithTitle:instaSave style:0];   
+      if (saveActions && saveMode == 1) {   
+        [self addButtonWithTitle:instaSave style:0];
+        [self addButtonWithTitle:@"Share" style:0];   
       }    
-      [self addButtonWithTitle:@"Share" style:0];
     }
   }
   %orig;
@@ -872,6 +858,85 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // save media
 %hook IGFeedItemActionCell
+-(void)layoutSubviews {
+  %orig;
+
+  if (!(enabled && saveActions && saveMode == 0)) return;
+  if (self.saveButton) return;
+
+  CGRect firstFrame;
+  CGRect compareFrame;
+  UIButton *base;
+  
+  if (self.sendButton) {
+    base = self.sendButton;
+    firstFrame = self.commentButton.frame;
+    compareFrame = self.sendButton.frame;
+  } else {
+    base = self.likeButton;
+    firstFrame = self.likeButton.frame;
+    compareFrame = self.commentButton.frame;
+  }
+
+  float distance = (compareFrame.origin.x - firstFrame.origin.x);
+
+  NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
+     
+  UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+  saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
+  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
+  [saveButton setImage:saveImage forState:UIControlStateNormal];
+  [self addSubview:saveButton];
+  [self setSaveButton:saveButton];
+
+
+  // don't add share button to own posts
+  IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+  if ([current.username isEqualToString:self.feedItem.user.username]) return;
+
+  UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+  shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
+  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
+  [shareButton setImage:shareImage forState:UIControlStateNormal];
+  [self addSubview:shareButton];
+}
+
+%new
+-(void)saveItem:(id)sender {
+  [UIAlertView showWithTitle:@"Save content?"
+  message:@"Did you want to save this content?"
+  cancelButtonTitle:nil
+  otherButtonTitles:@[@"Confirm", @"Cancel"]
+  tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+      IGFeedItem *item = self.feedItem;
+      saveMedia(item);
+    }
+  }];
+}
+
+%new
+-(void)shareItem:(id)sender {
+  IGFeedItem *item = self.feedItem;
+  NSURL *link = [NSURL URLWithString:[item permalink]];
+  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+    initWithActivityItems:@[link]
+    applicationActivities:nil];
+  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+}
+
+%new
+- (UIButton *)saveButton {
+  return objc_getAssociatedObject(self, @selector(saveButton));
+}
+
+%new
+- (void)setSaveButton:(UIButton *)value {
+  objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaSave]) {
