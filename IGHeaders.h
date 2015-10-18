@@ -3,6 +3,7 @@
 #import "lib/Protocols/NYTPhoto.h"
 #import "lib/NYTPhotoViewController.h"
 #import "lib/NYTPhotosViewController.h"
+#import <MapKit/MapKit.h>
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
@@ -288,9 +289,17 @@
 @interface IGStorableObject : NSObject
 -(id)initWithDictionary:(id)arg1 ;
 @end
+
 @interface IGLocation : IGStorableObject
--(id)initWithDictionary:(id)arg1 ;
+-(id)dictionaryRepresentation;
 -(id)name;
+-(void)setLocationCoord:(CLLocation *)arg1 ;
+-(void)setStreetAddress:(NSString *)arg1 ;
+-(void)setExternalSource:(NSString *)arg1 ;
+-(void)setExternalIDSource:(NSString *)arg1 ;
+-(void)setFacebookPlacesID:(NSString *)arg1 ;
+-(void)setFoursquareV2ID:(NSString *)arg1 ;
+-(void)setName:(NSString *)arg1 ;
 @end
 
 @interface IGLocationDataSource : NSObject <UITableViewDataSource> 
@@ -496,4 +505,21 @@
 -(IGAuthenticatedUser *)currentUser;
 -(void)setCurrentUser:(IGAuthenticatedUser *)arg1 ;
 -(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion ;
+@end
+
+@protocol LocationSelectionDelegate <NSObject>
+@required
+-(void)didSelectLocation:(CLLocationCoordinate2D)location;
+@end
+
+@interface IGLocationPickerViewController : UIViewController <LocationSelectionDelegate>
+-(void)locationPickerViewController:(id)arg1 didFinish:(char)arg2 withLocation:(id)arg3 ;
+- (IGLocation *)tempLocation;
+- (void)setTempLocation:(IGLocation *)value;
+@end
+
+@interface LocationSelectorViewController : UIViewController <UILongPressGestureRecognizerDelegate>
+@property (nonatomic, strong) MKMapView *mapView;
+@property (nonatomic, nonatomic) id<LocationSelectionDelegate> delegate;
+-(void)hideSelection;
 @end

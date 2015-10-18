@@ -8,10 +8,10 @@
 #import <lib/MBProgressHUD.h>
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
+#import <MapKit/MapKit.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
-NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 
 static NSMutableArray *muted = nil;
 static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
@@ -248,6 +248,52 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 @implementation InstaBetterPhoto
+@end
+
+@implementation LocationSelectorViewController
+-(void)viewDidLoad {
+  [super viewDidLoad];
+  self.view = [[UIView alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame]];
+  self.view.backgroundColor = [UIColor whiteColor];
+
+  self.title = @"Select Location";
+  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(hideSelection)];
+  [self.navigationItem  setLeftBarButtonItem:doneButton];
+
+  self.mapView = [[MKMapView alloc] initWithFrame:self.view.frame];
+
+  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(selectedLocation:)];
+  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+  [longPress setMinimumPressDuration:0.75];
+  [self.mapView addGestureRecognizer:longPress];
+
+  [self.view addSubview:self.mapView];
+}
+
+-(void)selectedLocation:(UITapGestureRecognizer *)recognizer {
+  if (recognizer.state != UIGestureRecognizerStateBegan) return;
+  [self.mapView removeAnnotations:self.mapView.annotations];
+
+  CGPoint point = [recognizer locationInView:self.mapView];
+  CLLocationCoordinate2D tapPoint = [self.mapView convertPoint:point toCoordinateFromView:self.mapView];
+
+  MKPointAnnotation *loc = [[MKPointAnnotation alloc] init]; 
+  loc.coordinate = tapPoint;
+  loc.title = @"Selected Location";
+
+
+  [self.mapView addAnnotation:loc];
+}
+
+-(void)hideSelection {
+  if (self.delegate) {
+    MKPointAnnotation *annotation = [self.mapView.annotations firstObject];
+    if (annotation) {
+      [self.delegate didSelectLocation:annotation.coordinate];
+    }
+  }
+  [self dismissViewControllerAnimated:YES completion:nil];
+}
 @end
 
 %group instaHooks
@@ -780,6 +826,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     return %orig;
   }
 }
+
 -(void)viewDidLoad {
   %orig;
   if (!(enabled && layoutSwitcher)) return;
@@ -793,6 +840,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     self.navigationItem.leftBarButtonItem = listItem;
   }
 }
+
 %new
 -(void)changeView {
   if (self.feedLayout == 2) {
@@ -804,7 +852,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 %end
-
 
 %hook IGFeedItemTextCell
 -(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
@@ -975,30 +1022,83 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-%hook IGLocationDataSource
--(NSArray *)locations{
-  if (enabled && customLocations) {
-    NSArray *thing = %orig;
-    if (thing == nil || !self.responseQueryText) {
-      return thing;
-    }
-    NSMutableArray *original = [[NSMutableArray alloc] initWithArray:thing];
-    IGLocation *newLoc = [[%c(IGLocation) alloc] initWithDictionary:@{
-      @"name": self.responseQueryText,
-      @"address": @"",
-      @"external_source": @"facebook_places",
-      @"facebook_places_id": @2505799649651301,
-      @"lat": @"0.0",
-      @"lng": @"0.0",
-      @"state": @""
-    }];
-    if (newLoc && original) {
-      [original addObject:newLoc];
-    }
-    return [NSArray arrayWithArray:original];
-  } else {
-    return %orig;
+// custom locations
+// 
+%hook IGLocation
+-(id)initWithDictionary:(id)dict {
+  NSLog(@"DICT %@", dict);
+  return %orig;
+}
+%end
+
+%hook IGLocationPickerViewController
+
+-(void)locationPickerViewController:(id)arg1 didFinish:(char)arg2 withLocation:(id)arg3 {
+  %orig;
+  NSLog(@"LOCATION %@", [arg3 dictionaryRepresentation]);
+
+}
+-(void)viewDidLoad {
+  %orig;
+  if (!(enabled && customLocations)) return;
+  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"location-pin-inactive.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(selectCustom)];
+  [self.navigationItem setLeftBarButtonItems:[NSArray arrayWithObjects:self.navigationItem.leftBarButtonItem, userButton, nil]];
+}
+
+%new
+-(void)selectCustom {
+  LocationSelectorViewController *sel = [[LocationSelectorViewController alloc] init];
+  UINavigationController *selNav = [[UINavigationController alloc] initWithRootViewController:sel];
+  selNav.modalPresentationStyle = UIModalPresentationFullScreen;
+  sel.delegate = self;
+
+  [self presentViewController:selNav animated:YES completion:nil];
+}
+
+%new
+-(void)didSelectLocation:(CLLocationCoordinate2D)location {
+  double longitude = location.longitude;
+  double latitude = location.latitude;
+  CLLocation *rawLocation = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
+  IGLocation *loc = [[%c(IGLocation) alloc] init];
+  [loc setLocationCoord:rawLocation];
+
+  [self setTempLocation:loc];
+
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Display" message:@"Enter the name for the custom location." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Done", nil];
+  alert.alertViewStyle = UIAlertViewStylePlainTextInput;
+  alert.tag = 107;
+  [alert show];
+}
+
+%new
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+  NSString *text = [[alertView textFieldAtIndex:0] text];
+  if (alertView.tag == 107) {
+    if (buttonIndex == 0) return;
+    [self.tempLocation setName:text];
+    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Address" message:@"Enter the address for the location. (not required)" delegate:self cancelButtonTitle:nil otherButtonTitles:@"Done", nil];
+    alert.alertViewStyle = UIAlertViewStylePlainTextInput;
+    alert.tag = 7;
+    [alert show];
+  } else if (alertView.tag == 7) {
+    [self.tempLocation setStreetAddress:text];
+    [self.tempLocation setExternalSource:@"facebook_places"];
+    [self.tempLocation setFacebookPlacesID:@"001358180265847"];
+
+    NSLog(@"LOCATION %@", [self.tempLocation dictionaryRepresentation]);
+    [self locationPickerViewController:self didFinish:TRUE withLocation:self.tempLocation];
   }
+}
+
+%new
+- (IGLocation *)tempLocation {
+  return objc_getAssociatedObject(self, @selector(tempLocation));
+}
+
+%new
+- (void)setTempLocation:(IGLocation *)value {
+  objc_setAssociatedObject(self, @selector(tempLocation), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 %end
 

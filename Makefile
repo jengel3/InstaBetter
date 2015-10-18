@@ -10,7 +10,7 @@ TWEAK_NAME = InstaBetter
 BUNDLE_NAME = InstaBetterResources
 InstaBetterResources_INSTALL_PATH = /Library/Application Support/InstaBetter
 InstaBetter_FILES = Tweak.xm instabetterprefs/InstaBetterPrefs.mm $(wildcard lib/*.m)
-InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics ImageIO Accelerate QuartzCore Security
+InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics ImageIO Accelerate QuartzCore MapKit CoreLocation
 InstaBetter_PRIVATE_FRAMEWORKS = Preferences
 
 include $(THEOS_MAKE_PATH)/tweak.mk
