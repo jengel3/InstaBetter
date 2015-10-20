@@ -241,6 +241,7 @@
 @interface IGActionSheet : UIActionSheet
 @property (nonatomic,retain) NSMutableArray * buttons; 
 @property (nonatomic,retain) UILabel * titleLabel;  
++(void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 +(int)tag;
 +(void)setTag:(int)arg1 ;
@@ -465,7 +466,7 @@
 @interface IGGroupedTableView : IGTableView
 @end
 
-@interface IGPlainTableViewController : IGViewController
+@interface IGPlainTableViewController : IGViewController <UITableViewDelegate>
 @property (nonatomic,retain) IGTableView * tableView; 
 @end
 
@@ -522,4 +523,25 @@
 @property (nonatomic, strong) MKMapView *mapView;
 @property (nonatomic, nonatomic) id<LocationSelectionDelegate> delegate;
 -(void)hideSelection;
+@end
+
+@interface IGNewsStory : NSObject
+@property (nonatomic,retain) IGUser * user; 
+@property (nonatomic,copy) NSString * payload;  
+@end
+
+@interface IGNewsBaseTableViewCell : UITableViewCell
+@property (nonatomic,retain) IGNewsStory * story;
+@end
+
+@interface IGNewsTableViewCell : IGNewsBaseTableViewCell
+@end
+
+@interface IGNewsTableViewController : IGGroupedTableViewController
++(id)storiesWithDictionaries:(id)arg1 ;
+
+@end
+
+@interface IGNewsFollowingTableViewController : IGNewsTableViewController
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
 @end

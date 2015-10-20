@@ -9,6 +9,7 @@
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
 #import <MapKit/MapKit.h>
+#import <AVFoundation/AVAudioSession.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
@@ -20,6 +21,7 @@ static BOOL enabled = YES;
 static BOOL showPercents = YES;
 static BOOL hideSponsored = YES;
 static int muteMode = 0;
+static BOOL muteActivity = YES;
 static BOOL saveActions = YES;
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
@@ -63,6 +65,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"zoom_hi_res"];
     [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
+    [prefs setValue:@YES forKey:@"mute_activity"];
     [prefs setValue:0 forKey:@"save_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
@@ -97,6 +100,7 @@ static NSDictionary* updatePrefs() {
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       layoutSwitcher = [prefs objectForKey:@"layout_switcher"] ? [[prefs objectForKey:@"layout_switcher"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
+      muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 0;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
@@ -164,6 +168,28 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
   });
 }
 
+static void saveImage(NSURL *imgUrl, MBProgressHUD *status) {
+  if (!status) {
+    UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+    status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+    status.labelText = @"Saving";
+  }
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_async(queue, ^{
+    NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+    UIImage *img = [UIImage imageWithData:imgData];
+    IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
+    [postImageAssetWriter writeToInstagramAlbum];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
+      status.mode = MBProgressHUDModeCustomView;
+      status.labelText = @"Saved!";
+
+      [status hide:YES afterDelay:1.0];
+    });
+  });
+}
+
 static void saveMedia(IGPost *post) {
   if (enabled && saveActions) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
@@ -172,21 +198,8 @@ static void saveMedia(IGPost *post) {
     if (post.mediaType == 1) {
       NSString *versionURL = highestResImage(post.photo.imageVersions);
     
-      NSURL *imgUrl = [NSURL URLWithString:versionURL];
-      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-      dispatch_async(queue, ^{
-        NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-        UIImage *img = [UIImage imageWithData:imgData];
-        IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
-        [postImageAssetWriter writeToInstagramAlbum];
-        dispatch_async(dispatch_get_main_queue(), ^{
-          status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-          status.mode = MBProgressHUDModeCustomView;
-          status.labelText = @"Saved!";
-
-          [status hide:YES afterDelay:1.0];
-        });
-      });
+      NSURL *imgURL = [NSURL URLWithString:versionURL];
+      saveImage(imgURL, status);
 
     } else if (post.mediaType == 2) {
       NSString *versionURL = highestResImage(post.video.videoVersions);
@@ -537,7 +550,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
     [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
-    [longPress setMinimumPressDuration:1.5];
+    [longPress setMinimumPressDuration:1];
     [self setUserInteractionEnabled:YES];
     [self addGestureRecognizer:longPress];
   }
@@ -549,29 +562,17 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
 
   if ([self.content isKindOfClass:[%c(IGDirectPhoto) class]]) {
-    NSMutableArray *photos = [[NSMutableArray alloc] init];
-    InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+    // provide action sheet in case image saving does not appear in share sheet
+    // 
+    UIActionSheet *actions = [[UIActionSheet alloc]
+      initWithTitle:@"Actions"
+      delegate:self
+      cancelButtonTitle:@"Cancel"
+      destructiveButtonTitle:nil
+      otherButtonTitles:@"Save Image", @"Zoom", nil];
+    actions.tag = 182;
 
-    [photos addObject:photo];
-
-    NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
-    photosViewController.delegate = self;
-    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
-
-    IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
-    
-    NSString *versionURL = highestResImage(media.imageVersions);
-    NSURL *imgUrl = [NSURL URLWithString:versionURL];
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_async(queue, ^{
-      NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-      UIImage *img = [UIImage imageWithData:imgData];
-      photo.image = img;
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [photosViewController updateImageForPhoto:photo];
-      });
-
-    });
+    [actions showInView:[UIApplication sharedApplication].keyWindow];
   } else if ([self.content isKindOfClass:[%c(IGDirectVideo) class]]) {
     // confirm that we want to save the video
     
@@ -581,21 +582,55 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       cancelButtonTitle:@"Cancel"
       destructiveButtonTitle:nil
       otherButtonTitles:@"Save Video", nil];
+    actions.tag = 181;
 
     [actions showInView:[UIApplication sharedApplication].keyWindow];
   }
 }
 
 %new
-- (void)actionSheet:(UIActionSheet *)popup clickedButtonAtIndex:(NSInteger)buttonIndex {
-  if (buttonIndex != 0) return;
-  
-  IGVideo *media = ((IGDirectVideo*)self.content).video;
-  NSString *versionURL = highestResImage(media.videoVersions);
+- (void)actionSheet:(UIActionSheet *)popup didDismissWithButtonIndex:(NSInteger)buttonIndex {
+  if (popup.tag == 181) {
+    if (buttonIndex != 0) return;
+    IGVideo *media = ((IGDirectVideo*)self.content).video;
+    NSString *versionURL = highestResImage(media.videoVersions);
 
-  NSURL *vidURL = [NSURL URLWithString:versionURL];
+    NSURL *vidURL = [NSURL URLWithString:versionURL];
 
-  saveVideo(vidURL, nil);
+    saveVideo(vidURL, nil);
+  } else if (popup.tag == 182) {
+    if (buttonIndex == 0) {
+      IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
+      
+      NSString *versionURL = highestResImage(media.imageVersions);
+      NSURL *imgUrl = [NSURL URLWithString:versionURL];
+
+      saveImage(imgUrl, nil);
+    } else if (buttonIndex == 1) {
+      NSMutableArray *photos = [[NSMutableArray alloc] init];
+      InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+
+      [photos addObject:photo];
+
+      NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+      photosViewController.delegate = self;
+      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+      IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
+      
+      NSString *versionURL = highestResImage(media.imageVersions);
+      NSURL *imgUrl = [NSURL URLWithString:versionURL];
+      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+      dispatch_async(queue, ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+        UIImage *img = [UIImage imageWithData:imgData];
+        photo.image = img;
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [photosViewController updateImageForPhoto:photo];
+        });
+
+      });
+    }
+  }
 }
 %end
 
@@ -754,7 +789,28 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// mute users
+// mute users from activity
+%hook IGNewsTableViewController
++(id)storiesWithDictionaries:(id)arr {
+  if (enabled && muteActivity) {
+    NSMutableArray *finalArray = [arr mutableCopy];
+    NSUInteger index = 0;
+    for (NSDictionary* dict in arr) {
+      NSArray *links = [dict valueForKeyPath:@"args.links"];
+      if ([links count] == 1) {
+        NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
+        if ([muted containsObject:[words objectAtIndex:0]]) {
+          [finalArray removeObjectAtIndex:index];
+        }
+      }
+      index++;
+    }
+    arr = [finalArray copy];
+  }
+  return %orig;
+}
+%end
+
 
 %hook IGUserDetailViewController
 // manage multiple users
@@ -784,6 +840,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [igDelegate application:nil didFinishLaunchingWithOptions:nil];
 }
 
+// mute users
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {
@@ -1023,21 +1080,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // custom locations
-// 
-%hook IGLocation
--(id)initWithDictionary:(id)dict {
-  NSLog(@"DICT %@", dict);
-  return %orig;
-}
-%end
-
 %hook IGLocationPickerViewController
 
--(void)locationPickerViewController:(id)arg1 didFinish:(char)arg2 withLocation:(id)arg3 {
-  %orig;
-  NSLog(@"LOCATION %@", [arg3 dictionaryRepresentation]);
-
-}
 -(void)viewDidLoad {
   %orig;
   if (!(enabled && customLocations)) return;
@@ -1086,7 +1130,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [self.tempLocation setExternalSource:@"facebook_places"];
     [self.tempLocation setFacebookPlacesID:@"001358180265847"];
 
-    NSLog(@"LOCATION %@", [self.tempLocation dictionaryRepresentation]);
     [self locationPickerViewController:self didFinish:TRUE withLocation:self.tempLocation];
   }
 }

@@ -63,6 +63,13 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Add ability to customize whether or not to auto play videos
 * [BUG FIX] Fix zoom/share attempting to display several times
 
+### Release 1.2.1
+* [BUG FIX] Fix muting not working for some users
+* [CHANGE] Revamp custom locations. Now select a location from a map, add a name and address.
+* [FEATURE] Add a toggle for displaying buttons or action sheet for saving/sharing
+* [FEATURE] Add confirmation to saving content with save button
+* [FEATURE] Remove activity from muted users from the activity feed. Only removes items where just a single user is involved.
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
