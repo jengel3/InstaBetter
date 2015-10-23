@@ -63,12 +63,16 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [FEATURE] Add ability to customize whether or not to auto play videos
 * [BUG FIX] Fix zoom/share attempting to display several times
 
-### Release 1.2.1
+### Release 1.3.0
 * [BUG FIX] Fix muting not working for some users
 * [CHANGE] Revamp custom locations. Now select a location from a map, add a name and address.
 * [FEATURE] Add a toggle for displaying buttons or action sheet for saving/sharing
 * [FEATURE] Add confirmation to saving content with save button
 * [FEATURE] Remove activity from muted users from the activity feed. Only removes items where just a single user is involved.
+* [FEATURE] Add action list to DM photos rather than immediately zooming. Includes zoom and save.
+
+### Release 1.3.1
+* Submit the correct version to BigBoss
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
@@ -79,29 +83,28 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ## License
 All Rights Reserved - InstaBetter may not be redistributed without permission from the developer.
 
-InstaBetter is not affiliated with Instagram.
+InstaBetter is not affiliated with Instagram or Facebook.
 
 ## Depiction Description
 
 The most comprehensive tweak for Instagram yet, with over 15 new features.
 
-* Save hi-res Media (Images & Videos) 
-* Hold down on images to zoom
-* Hold down on profile pictures to zoom
-* Mute Users from main feed
+* Save high resolution media (Images & Videos) 
+* Hold down on images and profile pictures to zoom
+* Mute Users from home and activity feeds
 * Hide Sponsored Ads
-* Custom Locations for Media
+* Select and name custom locations for media
 * Show follow status on user profile (Similar to Twitter) 
 * Show like counts as percentages
 * Share actions for text and images
 * Open links in Instagram
 * View DMs without notifying the sender
-* Grid view
-* Confirm double-tap alerts
-* Media Timestamps
+* Toggle grid layout with the press of a button
+* Confirm double-tap likes with an alert
+* Press times to display timestamps
 * Enable or disable auto playing of video and sound
-* Save DM content
-* Enable Instagram account switcher
+* Save and zoom DM content
+* Manage multiple accounts with a native switcher
 
 InstaBetter will always be free, and does not add any ads to the Instagram app.
 
