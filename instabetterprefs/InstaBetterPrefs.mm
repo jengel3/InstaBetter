@@ -33,11 +33,11 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 // end
 
 - (void)openTwitter:(id)sender {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/itsjake88"]];
+  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.twitter.com/itsjake88"]];
 }
 
 - (void)openDesignerTwitter:(id)sender {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/AOkhtenberg"]];
+  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.twitter.com/AOkhtenberg"]];
 }
 
 @end
