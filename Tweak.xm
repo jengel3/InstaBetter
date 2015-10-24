@@ -1250,10 +1250,22 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   int count = [[self settingSectionRows] count];
   if ((count == 5 && index == 4) || (count == 6 && index == 5)) {
     InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
+    UIViewController *rootController = (UIViewController*) settings;
 
-    [self.navigationController pushViewController:(UIViewController*)settings animated:YES];
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:rootController];
+    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeSettings)];
+    rootController.navigationItem.rightBarButtonItem = doneButton;
+    if (rootController) {
+        [[InstaHelper rootViewController] presentViewController:navigationController animated:YES completion:nil];
+    }
+    return;
   }
   %orig;
+}
+
+%new
+-(void)closeSettings {
+  [[InstaHelper rootViewController] dismissViewControllerAnimated:YES completion:nil];
 }
 %end
 

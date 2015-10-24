@@ -5,11 +5,6 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 #define valuesPath @"/User/Library/Preferences/com.jake0oo0.instabetter.plist"
 
 @implementation InstaBetterPrefsController
--(void) viewDidLoad {
-  [super viewDidLoad];
-  [self reload];
-  [self reloadSpecifiers];
-}
 - (id)specifiers {
   if(_specifiers == nil) {
     [ibsBundle load];
@@ -33,7 +28,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   [defaults setObject:value forKey:specifier.properties[@"key"]];
   [defaults writeToFile:valuesPath atomically:YES];
   CFStringRef toPost = (__bridge CFStringRef)specifier.properties[@"PostNotification"];
-  if(toPost) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), toPost, NULL, NULL, YES);
+  if (toPost) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), toPost, NULL, NULL, YES);
 }
 // end
 
