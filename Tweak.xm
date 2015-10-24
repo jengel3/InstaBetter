@@ -33,7 +33,7 @@ static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
-static int saveMode = 0;
+static int saveMode = 1;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 static BOOL enableTimestamps = YES;
@@ -42,6 +42,8 @@ static BOOL alwaysTimestamp = NO;
 static BOOL accountSwitcher = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
+
+IGFeedItem *cachedItem = nil;
 
 float origPosition = nil;
 int ringerState;
@@ -66,7 +68,7 @@ static void initPrefs() {
     [prefs setValue:@NO forKey:@"main_grid"];
     [prefs setValue:0 forKey:@"mute_mode"];
     [prefs setValue:@YES forKey:@"mute_activity"];
-    [prefs setValue:0 forKey:@"save_mode"];
+    [prefs setValue:@1 forKey:@"save_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
     [prefs setValue:[NSNumber numberWithInt:1] forKey:@"video_mode"];
@@ -101,7 +103,7 @@ static NSDictionary* updatePrefs() {
       layoutSwitcher = [prefs objectForKey:@"layout_switcher"] ? [[prefs objectForKey:@"layout_switcher"] boolValue] : YES;
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
-      saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 0;
+      saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
 
@@ -293,7 +295,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   MKPointAnnotation *loc = [[MKPointAnnotation alloc] init]; 
   loc.coordinate = tapPoint;
   loc.title = @"Selected Location";
-
 
   [self.mapView addAnnotation:loc];
 }
@@ -563,7 +564,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   if ([self.content isKindOfClass:[%c(IGDirectPhoto) class]]) {
     // provide action sheet in case image saving does not appear in share sheet
-    // 
     UIActionSheet *actions = [[UIActionSheet alloc]
       initWithTitle:@"Actions"
       delegate:self
@@ -761,6 +761,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGActionSheet
 - (void)show {
+
   if (enabled) {
     AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
     IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
@@ -778,10 +779,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         } else {
             [self addButtonWithTitle:instaMute style:0];
         }
-    } else if (!self.titleLabel.text && !isWebView) {    
-      if (saveActions && saveMode == 1) {   
+    } else if (!self.titleLabel.text && !isWebView) {
+      if (saveActions && saveMode == 1) { 
         [self addButtonWithTitle:instaSave style:0];
-        [self addButtonWithTitle:@"Share" style:0];   
+        IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+        if (cachedItem && cachedItem.user == current) {
+          cachedItem = nil;
+        } else {
+          [self addButtonWithTitle:@"Share" style:0]; 
+        }
       }    
     }
   }
@@ -887,7 +893,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)viewDidLoad {
   %orig;
   if (!(enabled && layoutSwitcher)) return;
-  if (!gridItem) {
+  if (!gridItem || !listItem) {
     gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
     listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
   }
@@ -979,6 +985,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // save media
 %hook IGFeedItemActionCell
+-(void)onMoreButtonPressed:(id)arg1 {
+  cachedItem = self.feedItem;
+
+  %orig;
+
+}
 -(void)layoutSubviews {
   %orig;
 
@@ -1006,7 +1018,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
+  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
   [self setSaveButton:saveButton];
@@ -1019,7 +1031,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
+  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
   [shareButton setImage:shareImage forState:UIControlStateNormal];
   [self addSubview:shareButton];
 }
@@ -1063,8 +1075,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     if ([title isEqualToString:instaSave]) {
       IGFeedItem *item = self.feedItem;
       saveMedia(item);
-    } else if ([title isEqualToString:@"Share"]) {
+    } else if ([title isEqualToString:@"Share"] && saveActions && saveMode == 1) {
       IGFeedItem *item = self.feedItem;
+      if (item.user == [[%c(IGAuthHelper) sharedAuthHelper] currentUser]) {
+        %orig;
+        return;
+      }
       NSURL *link = [NSURL URLWithString:[item permalink]];
       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[link]
@@ -1157,7 +1173,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 %end
-
 
 %hook IGFeedItemHeader
 -(void)layoutSubviews {
