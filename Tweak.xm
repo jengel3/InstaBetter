@@ -9,7 +9,7 @@
 #import <lib/UIAlertView+Blocks.h>
 #import <notify.h>
 #import <MapKit/MapKit.h>
-#import <AVFoundation/AVAudioSession.h>
+#import "InstaHelper.h"
 
 #define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
@@ -125,7 +125,6 @@ static NSDictionary* updatePrefs() {
     }
 
     return prefs;
-
 }
 
 static NSString * highestResImage(NSDictionary *versions) {
@@ -464,9 +463,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGUser
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
   if (enabled && followStatus) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    UIViewController *currentController = rootViewController.topMostViewController;
+    UIViewController *currentController = [InstaHelper currentController];
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
@@ -499,9 +496,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // fake following count
 
 -(id)followingCount {
-  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-  IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-  UIViewController *currentController = rootViewController.topMostViewController;
+  UIViewController *currentController = [InstaHelper currentController];
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
@@ -514,9 +509,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // fake follower count
 
 -(id)followerCount {
-  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-  IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-  UIViewController *currentController = rootViewController.topMostViewController;
+  UIViewController *currentController = [InstaHelper currentController];
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
@@ -527,15 +520,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-
-
-// open links in apps
+// open links in app
 
 %hook IGUserDetailHeaderView 
 -(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
   if (enabled && openInApp) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
+    UIViewController *rootViewController = [InstaHelper rootViewController];
     [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
   } else {
     %orig;
@@ -614,7 +604,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
       NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
       photosViewController.delegate = self;
-      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+      [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
       IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
       
       NSString *versionURL = highestResImage(media.imageVersions);
@@ -653,7 +643,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[[self.styledString.attributedString string]]
         applicationActivities:nil];
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+  [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
 }
 %end
 
@@ -712,7 +702,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     });
   }
 
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+  [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
 }
 
 %new
@@ -753,7 +743,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:photosViewController animated:YES completion:nil];
+  [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
 }
 %end
 
@@ -763,16 +753,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (void)show {
 
   if (enabled) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    UIViewController *currentController = rootViewController.topMostViewController;
+    UIViewController *currentController = [InstaHelper currentController];
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
     if (isProfileView && [self.buttons count] == 5 && !self.titleLabel.text) {
         IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
-        IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+        IGUser *current = [InstaHelper currentUser];
         if ([current.username isEqualToString:userView.user.username]) return %orig;
         if ([muted containsObject:userView.user.username]) {
             [self addButtonWithTitle:instaUnmute style:0];
@@ -782,7 +770,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     } else if (!self.titleLabel.text && !isWebView) {
       if (saveActions && saveMode == 1) { 
         [self addButtonWithTitle:instaSave style:0];
-        IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+        IGUser *current = [InstaHelper currentUser];
         if (cachedItem && cachedItem.user == current) {
           cachedItem = nil;
         } else {
@@ -957,9 +945,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (id)initWithDictionary:(id)data {
   id item = %orig;
   if (enabled && showPercents) {
-    AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-    IGRootViewController *rootViewController = (IGRootViewController *)((IGShakeWindow *)igDelegate.window).rootViewController;
-    UIViewController *currentController = rootViewController.topMostViewController;
+    UIViewController *currentController = [InstaHelper currentController];
 
     BOOL isPostsView = [currentController isKindOfClass:[%c(IGPostsFeedViewController) class]];
     BOOL isMainView = [currentController isKindOfClass:[%c(IGMainFeedViewController) class]];
@@ -987,9 +973,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGFeedItemActionCell
 -(void)onMoreButtonPressed:(id)arg1 {
   cachedItem = self.feedItem;
-
   %orig;
-
 }
 -(void)layoutSubviews {
   %orig;
@@ -1025,7 +1009,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 
   // don't add share button to own posts
-  IGUser *current = ((IGAuthHelper*)[%c(IGAuthHelper) sharedAuthHelper]).currentUser;
+  IGUser *current = [InstaHelper currentUser];
   if ([current.username isEqualToString:self.feedItem.user.username]) return;
 
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
@@ -1057,7 +1041,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
     initWithActivityItems:@[link]
     applicationActivities:nil];
-  [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+  [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
 }
 
 %new
@@ -1077,15 +1061,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       saveMedia(item);
     } else if ([title isEqualToString:@"Share"] && saveActions && saveMode == 1) {
       IGFeedItem *item = self.feedItem;
-      if (item.user == [[%c(IGAuthHelper) sharedAuthHelper] currentUser]) {
-        %orig;
-        return;
-      }
+      if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[link]
         applicationActivities:nil];
-      [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:activityViewController animated:YES completion:nil];
+      [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     } else {
       %orig;
     }
@@ -1097,7 +1078,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // custom locations
 %hook IGLocationPickerViewController
-
 -(void)viewDidLoad {
   %orig;
   if (!(enabled && customLocations)) return;
@@ -1125,7 +1105,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   [self setTempLocation:loc];
 
-  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Display" message:@"Enter the name for the custom location." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Done", nil];
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Display" message:@"Enter the name for the location." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Done", nil];
   alert.alertViewStyle = UIAlertViewStylePlainTextInput;
   alert.tag = 107;
   [alert show];
@@ -1160,7 +1140,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   objc_setAssociatedObject(self, @selector(tempLocation), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 %end
-
 
 // hide sponsored posts
 

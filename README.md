@@ -74,6 +74,11 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.3.1
 * Submit the correct version to BigBoss
 
+### Release 1.3.2
+* Codebase cleanup
+* Make it possible to access native Instagram share sheet on own posts
+* Change save and share buttons to activate on inside touch events
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
