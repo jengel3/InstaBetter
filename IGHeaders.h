@@ -545,3 +545,6 @@
 @interface IGNewsFollowingTableViewController : IGNewsTableViewController
 -(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
 @end
+
+@interface IGWebViewController : IGFeedViewController
+@end

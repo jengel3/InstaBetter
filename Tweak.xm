@@ -272,7 +272,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   self.title = @"Select Location";
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(hideSelection)];
-  [self.navigationItem  setLeftBarButtonItem:doneButton];
+  [self.navigationItem setLeftBarButtonItem:doneButton];
 
   self.mapView = [[MKMapView alloc] initWithFrame:self.view.frame];
 
@@ -530,6 +530,19 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   } else {
     %orig;
   }
+}
+%end
+
+%hook IGWebViewController
+-(void)viewDidLoad {
+  %orig;
+  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeController)];
+  [self.navigationItem setLeftBarButtonItem:doneButton];
+}
+
+%new
+-(void)closeController {
+  [self dismissViewControllerAnimated:YES completion:nil];
 }
 %end
 
