@@ -364,10 +364,16 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedViewController
 -(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(char)control {
+  // if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+  //   return %orig(src, 2, control);
+  // } else {
+  //   return %orig;
+  // }
+  id thing = %orig;
   if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
-    return %orig(src, 2, control);
+    [self setFeedLayout:2];
   }
-  return %orig;
+  return thing;
 }
 
 // auto play video
@@ -749,13 +755,26 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
-  photo.image = self.originalImage;
+
   if (self.user && self.user.username) {
     photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
   }
+
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
+
+  NSURL *imgUrl = self.user.profilePicURL;
+  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_async(queue, ^{
+    NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+    UIImage *img = [UIImage imageWithData:imgData];
+    photo.image = img;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [photosViewController updateImageForPhoto:photo];
+    });
+  });
+
   [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
 }
 %end
@@ -832,17 +851,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 -(void)switchUsersController:(id)contrl tableViewDidSelectRowWithUser:(id)user {
   %orig;
-  [self setUser:user];
-  [self onNeedsFullReload];
   [self animateSwitchUsersTableView];
-  IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
-
-  [authHelper setCurrentUser:user];
-
-  IGAuthService *authService = [%c(IGAuthService) sharedAuthService];
-  IGAuthenticatedUser *authedUser = [authService currentUser];
-  [authService setCurrentUser:authedUser];
-
   AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
   [igDelegate application:nil didFinishLaunchingWithOptions:nil];
 }

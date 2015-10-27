@@ -7,6 +7,7 @@
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
+@property (retain) NSURL *profilePicURL; 
 +(void)fetchFollowStatusInBulk:(NSArray*)users;
 -(id)followingCount;
 -(id)followerCount;
@@ -392,8 +393,7 @@
 @end
 
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
-@property (nonatomic,readonly) UIImage * originalImage;
-@property (nonatomic,retain) IGUser * user;  
+@property (nonatomic,retain) IGUser * user; 
 -(id)initWithFrame:(CGRect)arg1;
 -(id)initWithFrame:(CGRect)arg1 user:(id)arg2 ;
 -(void)tapped:(id)arg1 ;

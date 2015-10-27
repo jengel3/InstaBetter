@@ -79,6 +79,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Make it possible to access native Instagram share sheet on own posts
 * Change save and share buttons to activate on inside touch events
 * Redo settings as a popup to fix black screen on iOS 9
+* Add done button to web view
+* Potentially fix freezing on app start
+
+### Release 1.3.3
+* Fix 7.9 crash when zooming on profile pics
+* Fix 7.9 crash when using account switcher
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
