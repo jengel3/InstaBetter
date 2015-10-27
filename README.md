@@ -86,6 +86,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Fix 7.9 crash when zooming on profile pics
 * Fix 7.9 crash when using account switcher
 
+### Release 1.3.3-6
+* Potentially fix iPhone 6(+) crashes
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

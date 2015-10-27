@@ -80,7 +80,7 @@ static void initPrefs() {
     [prefs setValue:@YES forKey:@"account_switcher"];
     [prefs setValue:@YES forKey:@"layout_switcher"];
     [prefs setValue:[NSNumber numberWithInt:0] forKey:@"timestamp_format"];
-    [prefs writeToFile:prefsLoc atomically:YES];
+    [prefs writeToFile:prefsLoc atomically:NO];
 }
 
 static NSDictionary* updatePrefs() {
@@ -156,7 +156,7 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
       NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
       NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-      [data writeToURL:tempURL atomically:YES];
+      [data writeToURL:tempURL atomically:NO];
       [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
       dispatch_async(dispatch_get_main_queue(), ^{
         status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
@@ -863,13 +863,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
         [muted addObject:self.user.username];
         [prefs setValue:muted forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:YES];
+        [prefs writeToFile:prefsLoc atomically:NO];
         updatePrefs();
     } else if ([title isEqualToString:instaUnmute]) {
         NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
         [muted removeObject:self.user.username];
         [prefs setValue:muted forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:YES];
+        [prefs writeToFile:prefsLoc atomically:NO];
         updatePrefs();
     } else {
         %orig;

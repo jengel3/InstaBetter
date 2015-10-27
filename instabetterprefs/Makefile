@@ -1,11 +1,12 @@
 ARCHS = armv7 arm64
-TARGET = :clang
+TARGET = iphone:latest:7.0
 ADDITIONAL_OBJCFLAGS = -fobjc-arc
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = InstaBetterPrefs
 InstaBetterPrefs_FILES = InstaBetterPrefs.mm
 InstaBetterPrefs_INSTALL_PATH = /Library/PreferenceBundles
+InstaBetterPrefs_LDFLAGS += -Wl,-segalign,4000
 InstaBetterPrefs_FRAMEWORKS = UIKit
 InstaBetterPrefs_PRIVATE_FRAMEWORKS = Preferences
 

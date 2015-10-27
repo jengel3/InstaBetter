@@ -26,7 +26,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
   [defaults addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:valuesPath]];
   [defaults setObject:value forKey:specifier.properties[@"key"]];
-  [defaults writeToFile:valuesPath atomically:YES];
+  [defaults writeToFile:valuesPath atomically:NO];
   CFStringRef toPost = (__bridge CFStringRef)specifier.properties[@"PostNotification"];
   if (toPost) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), toPost, NULL, NULL, YES);
 }
@@ -70,6 +70,6 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
   [keys removeObject:[specifier name]];
   [prefs setValue:keys forKey:@"muted_users"];
-  [prefs writeToFile:valuesPath atomically:YES];
+  [prefs writeToFile:valuesPath atomically:NO];
 }
 @end
