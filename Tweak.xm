@@ -542,6 +542,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGWebViewController
 -(void)viewDidLoad {
   %orig;
+  if (!self.presentedViewController) return;
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeController)];
   [self.navigationItem setLeftBarButtonItem:doneButton];
 }
@@ -1293,6 +1294,32 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %end
 
+%group sbHooks
+
+%hook BBBulletin
+// - (id)init {
+//   id thing = %orig;
+
+//   // NSLog(@"CALLED!!! %@ -- %@", self.section, self.context);
+//   %log;
+//   return thing;
+
+// }
+
+
+// comment
+// new_follower
+// like
+// 
+- (BBSound *)sound {
+  // NSLog(@"CALLED!!! %@ -- %@", self.section, self.context);
+  %log;
+  return [%c(BBSound) alertSoundWithSystemSoundID:1000];
+}
+%end
+
+%end
+
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   updatePrefs();
 }
@@ -1319,20 +1346,29 @@ static void setupRingerCheck() {
   notify_post("com.apple.springboard.ringerstate");
 }
 
-%ctor { 
-  setupRingerCheck();
-
-  updatePrefs();
-
-  CFNotificationCenterAddObserver(
-    CFNotificationCenterGetDarwinNotifyCenter(), 
-    NULL,
-    &handlePrefsChange,
-    (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
-    NULL, 
-    CFNotificationSuspensionBehaviorCoalesce);
+%ctor {
 
   @autoreleasepool {
-    %init(instaHooks);
+    NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
+    NSLog(@"[INSTABETTER] ATTEMPTING HOOK %@", bundle);
+
+    updatePrefs();
+
+    CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(), 
+      NULL,
+      &handlePrefsChange,
+      (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
+      NULL, 
+      CFNotificationSuspensionBehaviorCoalesce);
+
+    if ([bundle isEqualToString:@"com.apple.springboard"]) {
+      NSLog(@"[INSTABETTER] REGISTERING!!!");
+      %init(sbHooks);
+    } else {
+      setupRingerCheck();
+
+      %init(instaHooks);
+    }
   }
 }

@@ -162,6 +162,9 @@
 -(id)navigationController;
 -(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 ;
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2;
+-(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2 fetchCompletionHandler:(/*^block*/id)arg3 ;
+-(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2 ;
+-(void)application:(id)arg1 handleActionWithIdentifier:(id)arg2 forRemoteNotification:(id)arg3 completionHandler:(/*^block*/id)arg4 ;
 @end
 
 @interface IGFeedViewController : UIViewController
@@ -547,4 +550,22 @@
 @end
 
 @interface IGWebViewController : IGFeedViewController
+@end
+
+@interface SBRemoteNotificationServer
+- (void)noteDidReceiveMessage:(id)arg1 withType:(long long)arg2 fromClient:(id)arg3;
+@end
+
+@interface BBSound : NSObject
++ (id)alertSoundWithSystemSoundID:(unsigned long)arg1;
+@end
+
+@interface BBBulletin : NSObject
+@property (nonatomic, copy) NSString *accountIdentifier;
+- (BBSound*)sound;
+- (id)message;
+@property (nonatomic, copy) NSString *message;
+@property (nonatomic, retain) NSDictionary *context;
+@property (nonatomic, copy) NSString *section;
+
 @end

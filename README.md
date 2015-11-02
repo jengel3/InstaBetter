@@ -89,6 +89,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.3.3-6
 * Potentially fix iPhone 6(+) crashes
 
+### Release 1.3.4
+* Add Restart Instagram button to settings
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

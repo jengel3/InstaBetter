@@ -13,6 +13,30 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
+-(NSArray*)loadSounds:(id)target; {
+  NSLog(@"CALLED LOAD!!");
+  if (!self.sounds) {
+    NSMutableArray *allSounds = [[NSMutableArray alloc] init];
+
+    // NSFileManager *fileManager = [NSFileManager defaultManager];
+    // NSString *soundsPath = @"/System/Library/Audio/UISounds/";
+    // NSDirectoryEnumerator *enumerator = [fileManager enumeratorAtPath:soundsPath];
+    // NSString *subpath;
+    // while (subpath = [enumerator nextObject]) {
+    //   if ([[subpath pathExtension] isEqualToString:@"caf"]) {
+    //     NSString *path = [NSString stringWithFormat:@"%@%@", soundsPath, subpath];
+    //     if (![allSounds containsObject:path]) {
+    //       [allSounds addObject:path];
+    //     }
+    //   }
+    // }
+    self.sounds = allSounds;
+  }
+
+
+  return self.sounds;
+}
+
 // http://iphonedevwiki.net/index.php/PreferenceBundles
 -(id) readPreferenceValue:(PSSpecifier*)specifier {
   NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:valuesPath];
@@ -38,6 +62,13 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 
 - (void)openDesignerTwitter:(id)sender {
   [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.twitter.com/AOkhtenberg"]];
+}
+
+- (void)restartInstagram:(id)sender {
+  if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.burbn.instagram"]) {
+    return exit(0);
+  }
+  system("killall -9 Instagram");
 }
 
 @end
@@ -72,4 +103,5 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   [prefs setValue:keys forKey:@"muted_users"];
   [prefs writeToFile:valuesPath atomically:NO];
 }
+
 @end
