@@ -249,6 +249,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Follow Spoofing</string>
+			<key>footerText</key>
+			<string>Fake your user data. Only you can see these changes.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -341,6 +343,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Timestamps</string>
+			<key>footerText</key>
+			<string>Replace time ago (2d, 3hr, etc) with a timestamp.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -403,6 +407,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Muting</string>
+			<key>footerText</key>
+			<string>Mute users from your Instagram feed and activity timeline.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -479,6 +485,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Custom Notifications</string>
+			<key>footerText</key>
+			<string>Choose none for no sound, or default for the default iOS notification sound. Not selecting any sound will result in the default sound.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -488,7 +496,7 @@
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
-			<string>notification_enable</string>
+			<string>notifications_enable</string>
 			<key>label</key>
 			<string>Enabled</string>
 			<key>PostNotification</key>
@@ -497,14 +505,18 @@
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
-			<key>default</key>
-			<integer>0</integer>
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
-			<string>notification_like</string>
+			<string>notifications_like</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
 			<key>label</key>
 			<string>Like</string>
 			<key>PostNotification</key>
@@ -513,14 +525,18 @@
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
-			<key>default</key>
-			<integer>0</integer>
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
-			<string>notification_comment</string>
+			<string>notifications_comment</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
 			<key>label</key>
 			<string>Comment</string>
 			<key>PostNotification</key>
@@ -529,14 +545,14 @@
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
-			<key>default</key>
-			<integer>0</integer>
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
-			<string>notification_new_follower</string>
+			<string>notifications_new_follower</string>
 			<key>valuesDataSource</key>
 			<string>loadSounds:</string>
 			<key>titlesDataSource</key>
@@ -546,7 +562,86 @@
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
-
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>notifications_follow_request</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
+			<key>label</key>
+			<string>Follow Request</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>notifications_request_approved</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
+			<key>label</key>
+			<string>Request Approved</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>notifications_usertag</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
+			<key>label</key>
+			<string>Tagged in Photo</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>(none)</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>notifications_direct</string>
+			<key>valuesDataSource</key>
+			<string>loadSounds:</string>
+			<key>titlesDataSource</key>
+			<string>loadSounds:</string>
+			<key>label</key>
+			<string>Direct Message</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>

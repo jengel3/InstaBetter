@@ -19,5 +19,6 @@ include theos/makefiles/bundle.mk
 
 after-install::
 	install.exec "killall -9 Instagram"
+	install.exec "killall -9 Preferences"
 SUBPROJECTS += instabetterprefs
 include $(THEOS_MAKE_PATH)/aggregate.mk

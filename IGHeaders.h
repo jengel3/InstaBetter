@@ -558,9 +558,11 @@
 
 @interface BBSound : NSObject
 + (id)alertSoundWithSystemSoundID:(unsigned long)arg1;
++ (id)alertSoundWithSystemSoundPath:(id)arg1;
 @end
 
 @interface BBBulletin : NSObject
+@property (nonatomic, retain) BBSound *sound;
 @property (nonatomic, copy) NSString *accountIdentifier;
 - (BBSound*)sound;
 - (id)message;

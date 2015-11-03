@@ -13,27 +13,23 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
--(NSArray*)loadSounds:(id)target; {
-  NSLog(@"CALLED LOAD!!");
+- (NSArray*) loadSounds:(id)target {
   if (!self.sounds) {
-    NSMutableArray *allSounds = [[NSMutableArray alloc] init];
+    NSMutableArray *rawList = [[NSMutableArray alloc] init];
+    NSString *soundsPath = @"/System/Library/Audio/UISounds/";
 
-    // NSFileManager *fileManager = [NSFileManager defaultManager];
-    // NSString *soundsPath = @"/System/Library/Audio/UISounds/";
-    // NSDirectoryEnumerator *enumerator = [fileManager enumeratorAtPath:soundsPath];
-    // NSString *subpath;
-    // while (subpath = [enumerator nextObject]) {
-    //   if ([[subpath pathExtension] isEqualToString:@"caf"]) {
-    //     NSString *path = [NSString stringWithFormat:@"%@%@", soundsPath, subpath];
-    //     if (![allSounds containsObject:path]) {
-    //       [allSounds addObject:path];
-    //     }
-    //   }
-    // }
-    self.sounds = allSounds;
+    NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:soundsPath error:NULL];
+    [rawList addObject:@"(none)"];
+    [rawList addObject:@"Default"];
+    [files enumerateObjectsUsingBlock:^(id obj, NSUInteger index, BOOL *stop) {
+      NSString *filename = (NSString *)obj;
+      NSString *extension = [[filename pathExtension] lowercaseString];
+      if ([extension isEqualToString:@"caf"]) {
+        [rawList addObject:filename];    
+      }
+    }];
+    self.sounds = rawList;
   }
-
-
   return self.sounds;
 }
 

@@ -43,6 +43,15 @@ static BOOL accountSwitcher = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 
+static BOOL notificationsEnabled = YES;
+static NSString* notificationsLike = nil;
+static NSString* notificationsComment = nil;
+static NSString* notificationsNewFollower = nil;
+static NSString* notificationsRequestApproved = nil;
+static NSString* notificationsFollowRequest = nil;
+static NSString* notificationsUsertag = nil;
+static NSString* notificationsDirect = nil;
+
 IGFeedItem *cachedItem = nil;
 
 float origPosition = nil;
@@ -107,15 +116,28 @@ static NSDictionary* updatePrefs() {
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
 
+      // video and audio
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
       videoMode = [prefs objectForKey:@"video_mode"] ? [[prefs objectForKey:@"video_mode"] intValue] : 1;
 
+      // spoofing
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
 
+      // timestamps
       alwaysTimestamp = [prefs objectForKey:@"always_timestamp"] ? [[prefs objectForKey:@"always_timestamp"] boolValue] : NO;
       enableTimestamps = [prefs objectForKey:@"enable_timestamp"] ? [[prefs objectForKey:@"enable_timestamp"] boolValue] : YES;
       timestampFormat = [prefs objectForKey:@"timestamp_format"] ? [[prefs objectForKey:@"timestamp_format"] intValue] : 0;
+
+      // notifications
+      notificationsEnabled = [prefs objectForKey:@"notifications_enabled"] ? [[prefs objectForKey:@"notifications_enabled"] boolValue] : YES;
+      notificationsLike = [prefs objectForKey:@"notifications_like"] ? [prefs objectForKey:@"notifications_like"] : nil;
+      notificationsComment = [prefs objectForKey:@"notifications_comment"] ? [prefs objectForKey:@"notifications_comment"] : nil;
+      notificationsNewFollower = [prefs objectForKey:@"notifications_new_follower"] ? [prefs objectForKey:@"notifications_new_follower"] : nil;
+      notificationsFollowRequest = [prefs objectForKey:@"notifications_follow_request"] ? [prefs objectForKey:@"notifications_follow_request"] : nil;
+      notificationsRequestApproved = [prefs objectForKey:@"notifications_request_approved"] ? [prefs objectForKey:@"notifications_request_approved"] : nil;
+      notificationsUsertag = [prefs objectForKey:@"notifications_usertag"] ? [prefs objectForKey:@"notifications_usertag"] : nil;
+      notificationsDirect = [prefs objectForKey:@"notifications_direct"] ? [prefs objectForKey:@"notifications_direct"] : nil;
 
       [muted removeAllObjects];
       [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
@@ -1297,24 +1319,39 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %group sbHooks
 
 %hook BBBulletin
-// - (id)init {
-//   id thing = %orig;
-
-//   // NSLog(@"CALLED!!! %@ -- %@", self.section, self.context);
-//   %log;
-//   return thing;
-
-// }
-
-
-// comment
-// new_follower
-// like
-// 
 - (BBSound *)sound {
-  // NSLog(@"CALLED!!! %@ -- %@", self.section, self.context);
-  %log;
-  return [%c(BBSound) alertSoundWithSystemSoundID:1000];
+  if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
+  if (!(enabled && notificationsEnabled)) return %orig;
+  NSString *audioFile;
+  NSString *type = [self.context valueForKeyPath:@"remoteNotification.aps.category"];
+
+  if ([type isEqualToString:@"like"]) {
+    audioFile = notificationsLike;
+  } else if ([type isEqualToString:@"comment"]) {
+    audioFile = notificationsComment;
+  } else if ([type isEqualToString:@"new_follower"]) {
+    audioFile = notificationsNewFollower;
+  } else if ([type isEqualToString:@"private_user_follow_request"]) {
+    audioFile = notificationsFollowRequest;
+  } else if ([type isEqualToString:@"follow_request_approved"]) {
+    audioFile = notificationsRequestApproved;
+  } else if ([type isEqualToString:@"usertag"]) {
+    audioFile = notificationsUsertag;
+  } else if ([type hasPrefix:@"direct"]) {
+    //direct_v2_media_share
+    //direct_v2_like
+    //direct_v2_text
+    //direct_v2_media
+    audioFile = notificationsDirect;
+  }
+
+  if (!audioFile || [audioFile isEqualToString:@"Default"]) {
+    return [%c(BBSound) alertSoundWithSystemSoundID:1015];
+  } else if ([audioFile isEqualToString:@"(none)"]) {
+    return nil;
+  }
+
+  return [%c(BBSound) alertSoundWithSystemSoundPath:[NSString stringWithFormat:@"/System/Library/Audio/UISounds/%@", audioFile]];
 }
 %end
 
@@ -1350,7 +1387,6 @@ static void setupRingerCheck() {
 
   @autoreleasepool {
     NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
-    NSLog(@"[INSTABETTER] ATTEMPTING HOOK %@", bundle);
 
     updatePrefs();
 
@@ -1363,7 +1399,6 @@ static void setupRingerCheck() {
       CFNotificationSuspensionBehaviorCoalesce);
 
     if ([bundle isEqualToString:@"com.apple.springboard"]) {
-      NSLog(@"[INSTABETTER] REGISTERING!!!");
       %init(sbHooks);
     } else {
       setupRingerCheck();
