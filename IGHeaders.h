@@ -153,6 +153,7 @@
 - (void)setSaveButton:(UIButton *)value;
 -(void)shareItem:(id)sender;
 -(void)saveItem:(id)sender;
+-(void)saveNow;
 @end
 
 @interface AppDelegate : NSObject
@@ -570,4 +571,15 @@
 @property (nonatomic, retain) NSDictionary *context;
 @property (nonatomic, copy) NSString *section;
 
+@end
+
+@interface IGGrowingTextView : UIView
+@property (assign,nonatomic) int keyboardType; 
+@property (assign,nonatomic) int keyboardAppearance; 
+@property (assign,nonatomic) int returnKeyType; 
+@property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
+@end
+
+@interface IGCommentThreadViewController : IGViewController
+@property (nonatomic,retain) IGGrowingTextView * growingTextView; 
 @end

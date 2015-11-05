@@ -54,6 +54,12 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Saving and Sharing</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
@@ -63,6 +69,20 @@
 			<string>save_actions</string>
 			<key>label</key>
 			<string>Enable Save Actions</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>save_confirm</string>
+			<key>label</key>
+			<string>Save Confirmation</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>

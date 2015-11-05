@@ -34,6 +34,7 @@ static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
 static int saveMode = 1;
+static int saveConfirm = YES;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
 static BOOL enableTimestamps = YES;
@@ -100,21 +101,27 @@ static NSDictionary* updatePrefs() {
     }
     if (prefs) {
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
-      showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
-      saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
+  
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
+      showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
+
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       layoutSwitcher = [prefs objectForKey:@"layout_switcher"] ? [[prefs objectForKey:@"layout_switcher"] boolValue] : YES;
+
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
-      saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
+  
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
+
+      saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
+      saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
+      saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
 
       // video and audio
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
@@ -386,11 +393,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedViewController
 -(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(char)control {
-  // if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
-  //   return %orig(src, 2, control);
-  // } else {
-  //   return %orig;
-  // }
   id thing = %orig;
   if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
     [self setFeedLayout:2];
@@ -1067,16 +1069,24 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 -(void)saveItem:(id)sender {
+  if (!saveConfirm) {
+    return [self saveNow];
+  }
   [UIAlertView showWithTitle:@"Save content?"
   message:@"Did you want to save this content?"
   cancelButtonTitle:nil
   otherButtonTitles:@[@"Confirm", @"Cancel"]
   tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
     if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
-      IGFeedItem *item = self.feedItem;
-      saveMedia(item);
+      [self saveNow];
     }
   }];
+}
+
+%new
+-(void)saveNow {
+  IGFeedItem *item = self.feedItem;
+  saveMedia(item);
 }
 
 %new
@@ -1321,7 +1331,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook BBBulletin
 - (BBSound *)sound {
   if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
-  if (!(enabled && notificationsEnabled)) return %orig;
+  if (!(enabled && notificationsEnabled)) return nil;
   NSString *audioFile;
   NSString *type = [self.context valueForKeyPath:@"remoteNotification.aps.category"];
 
