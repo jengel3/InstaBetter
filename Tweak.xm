@@ -1331,6 +1331,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook BBBulletin
 - (BBSound *)sound {
   if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
+  NSLog(@"ENABLED %d AND NOTIFICATIONS %d", enabled, notificationsEnabled);
   if (!(enabled && notificationsEnabled)) return nil;
   NSString *audioFile;
   NSString *type = [self.context valueForKeyPath:@"remoteNotification.aps.category"];

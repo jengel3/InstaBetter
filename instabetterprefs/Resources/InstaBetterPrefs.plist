@@ -516,7 +516,7 @@
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
-			<string>notifications_enable</string>
+			<string>notifications_enabled</string>
 			<key>label</key>
 			<string>Enabled</string>
 			<key>PostNotification</key>
@@ -665,6 +665,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Most changes can be made without restarting, but some may require a restart.</string>
 		</dict>
 		<dict>
 			<key>action</key>
