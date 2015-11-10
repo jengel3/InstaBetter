@@ -92,6 +92,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.3.4
 * Add Restart Instagram button to settings
 * Add custom notification sounds
+* Add option to disable like confirmation for save button
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
@@ -110,7 +111,7 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 
 * Save high resolution media (Images & Videos) 
 * Hold down on images and profile pictures to zoom
-* Mute Users from home and activity feeds
+* Mute users from home and activity feeds
 * Hide Sponsored Ads
 * Select and name custom locations for media
 * Show follow status on user profile (Similar to Twitter) 
@@ -124,6 +125,7 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 * Enable or disable auto playing of video and sound
 * Save and zoom DM content
 * Manage multiple accounts with a native switcher
+* Set custom notification sounds for Instagram alerts
 
 InstaBetter will always be free, and does not add any ads to the Instagram app.
 

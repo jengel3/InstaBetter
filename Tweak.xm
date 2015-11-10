@@ -566,7 +566,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGWebViewController
 -(void)viewDidLoad {
   %orig;
-  if (!self.presentedViewController) return;
+  if (![self isModal]) return;
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeController)];
   [self.navigationItem setLeftBarButtonItem:doneButton];
 }

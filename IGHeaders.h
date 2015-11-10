@@ -551,6 +551,7 @@
 @end
 
 @interface IGWebViewController : IGFeedViewController
+-(BOOL)isModal;
 @end
 
 @interface SBRemoteNotificationServer
