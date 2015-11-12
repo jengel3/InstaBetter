@@ -59,50 +59,24 @@ float origPosition = nil;
 int ringerState;
 static BOOL ringerMuted;
 
-static NSString *instaMute = @"Mute";
-static NSString *instaUnmute = @"Unmute";
-static NSString *instaSave = @"Save Media";
-static NSString *prefsLoc = @"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist";
-
-static void initPrefs() {
-    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] init];
-    NSMutableArray *vals = [[NSMutableArray alloc] init];
-    [prefs setValue:@YES forKey:@"enabled"];
-    [prefs setValue:@YES forKey:@"hide_sponsored"];
-    [prefs setValue:@YES forKey:@"show_percents"];
-    [prefs setValue:@YES forKey:@"follow_status"];
-    [prefs setValue:@YES forKey:@"custom_locations"];
-    [prefs setValue:@YES forKey:@"save_actions"];
-    [prefs setValue:@NO forKey:@"disable_read_notification"];
-    [prefs setValue:@NO forKey:@"zoom_hi_res"];
-    [prefs setValue:@NO forKey:@"main_grid"];
-    [prefs setValue:0 forKey:@"mute_mode"];
-    [prefs setValue:@YES forKey:@"mute_activity"];
-    [prefs setValue:@1 forKey:@"save_mode"];
-    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"alert_mode"];
-    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"audio_mode"];
-    [prefs setValue:[NSNumber numberWithInt:1] forKey:@"video_mode"];
-    [prefs setValue:nil forKey:@"fake_follower_count"];
-    [prefs setValue:nil forKey:@"fake_following_count"];
-    [prefs setValue:vals forKey:@"muted_users"];
-    [prefs setValue:@NO forKey:@"always_timestamp"];
-    [prefs setValue:@YES forKey:@"enable_timestamp"];
-    [prefs setValue:@YES forKey:@"account_switcher"];
-    [prefs setValue:@YES forKey:@"layout_switcher"];
-    [prefs setValue:[NSNumber numberWithInt:0] forKey:@"timestamp_format"];
-    [prefs writeToFile:prefsLoc atomically:NO];
+static NSString* localizedString(NSString* key) {
+  return [bundle localizedStringForKey:key value:@"" table:nil];
 }
 
-static NSDictionary* updatePrefs() {
-    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
+static NSString *instaMute = localizedString(@"MUTE");
+static NSString *instaUnmute = localizedString(@"UNMUTE");
+static NSString *instaSave = localizedString(@"SAVE_MEDIA");
+static NSString *prefsLoc = @"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist";
 
-    if (!muted) {
-        muted = [[NSMutableArray alloc] init];
-    }
+static NSDictionary* loadPrefs() {
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:prefsLoc];
+
+  if (exists) {
+    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
     if (prefs) {
       enabled = [prefs objectForKey:@"enabled"] ? [[prefs objectForKey:@"enabled"] boolValue] : YES;
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
-  
+
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
@@ -115,7 +89,8 @@ static NSDictionary* updatePrefs() {
 
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
-  
+      muted = [prefs objectForKey:@"muted_users"] ? [prefs objectForKey:@"muted_users"] : [[NSMutableArray alloc] init];
+
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
       accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
 
@@ -146,14 +121,12 @@ static NSDictionary* updatePrefs() {
       notificationsUsertag = [prefs objectForKey:@"notifications_usertag"] ? [prefs objectForKey:@"notifications_usertag"] : nil;
       notificationsDirect = [prefs objectForKey:@"notifications_direct"] ? [prefs objectForKey:@"notifications_direct"] : nil;
 
-      [muted removeAllObjects];
-      [muted addObjectsFromArray:[prefs objectForKey:@"muted_users"]];
-    } else {
-      initPrefs();
-      return updatePrefs();
+      return prefs;
     }
+  }
+  muted = [[NSMutableArray alloc] init];
 
-    return prefs;
+  return nil;
 }
 
 static NSString * highestResImage(NSDictionary *versions) {
@@ -190,7 +163,7 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
       dispatch_async(dispatch_get_main_queue(), ^{
         status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
         status.mode = MBProgressHUDModeCustomView;
-        status.labelText = @"Saved!";
+        status.labelText = localizedString(@"SAVED");
 
         [status hide:YES afterDelay:1.0];
       });
@@ -202,7 +175,7 @@ static void saveImage(NSURL *imgUrl, MBProgressHUD *status) {
   if (!status) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
     status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-    status.labelText = @"Saving";
+    status.labelText = localizedString(@"SAVING");
   }
   dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   dispatch_async(queue, ^{
@@ -213,7 +186,7 @@ static void saveImage(NSURL *imgUrl, MBProgressHUD *status) {
     dispatch_async(dispatch_get_main_queue(), ^{
       status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
       status.mode = MBProgressHUDModeCustomView;
-      status.labelText = @"Saved!";
+      status.labelText = localizedString(@"SAVED");
 
       [status hide:YES afterDelay:1.0];
     });
@@ -224,7 +197,7 @@ static void saveMedia(IGPost *post) {
   if (enabled && saveActions) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-    status.labelText = @"Saving";
+    status.labelText = localizedString(@"SAVING");
     if (post.mediaType == 1) {
       NSString *versionURL = highestResImage(post.photo.imageVersions);
     
@@ -299,7 +272,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   self.view = [[UIView alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame]];
   self.view.backgroundColor = [UIColor whiteColor];
 
-  self.title = @"Select Location";
+  self.title = localizedString(@"SELECT_LOCATION");
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(hideSelection)];
   [self.navigationItem setLeftBarButtonItem:doneButton];
 
@@ -322,7 +295,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   MKPointAnnotation *loc = [[MKPointAnnotation alloc] init]; 
   loc.coordinate = tapPoint;
-  loc.title = @"Selected Location";
+  loc.title = localizedString(@"SELECTED_LOCATION");
 
   [self.mapView addAnnotation:loc];
 }
@@ -349,12 +322,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     NSDate *now = [NSDate date];
     BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
     if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-      [UIAlertView showWithTitle:@"Like Video?"
-        message:@"Did you want to like this video?"
+      [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+        message:localizedString(@"DID_WANT_LIKE_VIDEO")
         cancelButtonTitle:nil
-        otherButtonTitles:@[@"Confirm", @"Cancel"]
+        otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
         tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-          if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+          if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
             %orig;
           } 
         }];
@@ -374,12 +347,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-    [UIAlertView showWithTitle:@"Like photo?"
-    message:@"Did you want to like this photo?"
+    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+    message:localizedString(@"DID_WANT_LIKE_VIDEO")
     cancelButtonTitle:nil
-    otherButtonTitles:@[@"Confirm", @"Cancel"]
+    otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
     tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
         %orig;
       }
     }];
@@ -508,11 +481,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       int followed_by = [[status objectForKey:@"followed_by"] intValue];
       int following = [[status objectForKey:@"following"] intValue];
       if (followed_by == 1 && following == 1) {
-        statusLabel.text = @"You follow each other";
+        statusLabel.text = localizedString(@"FOLLOW_EACH_OTHER");
       } else if (followed_by == 1) {
-        statusLabel.text = [NSString stringWithFormat:@"%@ follows you", self.username];
+        statusLabel.text = [NSString stringWithFormat:localizedString(@"FOLLOWS_YOU"), self.username];
       } else if (followed_by == 0) {
-        statusLabel.text = [NSString stringWithFormat:@"%@ does not follow you", self.username];
+        statusLabel.text = [NSString stringWithFormat:localizedString(@"DOES_NOT_FOLLOW"), self.username];
+
       }
       statusLabel.textColor = [UIColor colorWithWhite:0.333333 alpha:1.0];
       statusLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:12];
@@ -599,11 +573,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if ([self.content isKindOfClass:[%c(IGDirectPhoto) class]]) {
     // provide action sheet in case image saving does not appear in share sheet
     UIActionSheet *actions = [[UIActionSheet alloc]
-      initWithTitle:@"Actions"
+      initWithTitle:localizedString(@"ACTIONS")
       delegate:self
-      cancelButtonTitle:@"Cancel"
+      cancelButtonTitle:localizedString(@"CANCEL")
       destructiveButtonTitle:nil
-      otherButtonTitles:@"Save Image", @"Zoom", nil];
+      otherButtonTitles:localizedString(@"SAVE_IMAGE"), localizedString(@"ZOOM"), nil];
     actions.tag = 182;
 
     [actions showInView:[UIApplication sharedApplication].keyWindow];
@@ -611,11 +585,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     // confirm that we want to save the video
     
     UIActionSheet *actions = [[UIActionSheet alloc]
-      initWithTitle:@"Actions"
+      initWithTitle:localizedString(@"ACTIONS")
       delegate:self
-      cancelButtonTitle:@"Cancel"
+      cancelButtonTitle:localizedString(@"CANCEL")
       destructiveButtonTitle:nil
-      otherButtonTitles:@"Save Video", nil];
+      otherButtonTitles:localizedString(@"SAVE_VIDEO"), nil];
     actions.tag = 181;
 
     [actions showInView:[UIApplication sharedApplication].keyWindow];
@@ -831,7 +805,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         if (cachedItem && cachedItem.user == current) {
           cachedItem = nil;
         } else {
-          [self addButtonWithTitle:@"Share" style:0]; 
+          [self addButtonWithTitle:localizedString(@"SHARE") style:0]; 
         }
       }    
     }
@@ -885,19 +859,17 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {
-        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        [muted addObject:self.user.username];
-        [prefs setValue:muted forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:NO];
-        updatePrefs();
+      NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
+      [muted addObject:self.user.username];
+      [prefs setValue:muted forKey:@"muted_users"];
+      [prefs writeToFile:prefsLoc atomically:NO];
     } else if ([title isEqualToString:instaUnmute]) {
-        NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
-        [muted removeObject:self.user.username];
-        [prefs setValue:muted forKey:@"muted_users"];
-        [prefs writeToFile:prefsLoc atomically:NO];
-        updatePrefs();
+      NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
+      [muted removeObject:self.user.username];
+      [prefs setValue:muted forKey:@"muted_users"];
+      [prefs writeToFile:prefsLoc atomically:NO];
     } else {
-        %orig;
+      %orig;
     }
   } else {
     %orig;
@@ -1072,12 +1044,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (!saveConfirm) {
     return [self saveNow];
   }
-  [UIAlertView showWithTitle:@"Save content?"
-  message:@"Did you want to save this content?"
+  [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
+  message:localizedString(@"DID_WANT_SAVE_CONTENT")
   cancelButtonTitle:nil
-  otherButtonTitles:@[@"Confirm", @"Cancel"]
+  otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
   tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Confirm"]) {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
       [self saveNow];
     }
   }];
@@ -1114,7 +1086,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     if ([title isEqualToString:instaSave]) {
       IGFeedItem *item = self.feedItem;
       saveMedia(item);
-    } else if ([title isEqualToString:@"Share"] && saveActions && saveMode == 1) {
+    } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       IGFeedItem *item = self.feedItem;
       if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
@@ -1160,7 +1132,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   [self setTempLocation:loc];
 
-  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Display" message:@"Enter the name for the location." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Done", nil];
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"LOCATION_DISPLAY") message:localizedString(@"LOCATION_DISPLAY_MSG") delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Done", nil];
   alert.alertViewStyle = UIAlertViewStylePlainTextInput;
   alert.tag = 107;
   [alert show];
@@ -1172,7 +1144,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (alertView.tag == 107) {
     if (buttonIndex == 0) return;
     [self.tempLocation setName:text];
-    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Location Address" message:@"Enter the address for the location. (not required)" delegate:self cancelButtonTitle:nil otherButtonTitles:@"Done", nil];
+    UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"LOCATION_ADDRESS") message:localizedString(@"LOCATION_ADDRESS_MSG") delegate:self cancelButtonTitle:nil otherButtonTitles:@"Done", nil];
     alert.alertViewStyle = UIAlertViewStylePlainTextInput;
     alert.tag = 7;
     [alert show];
@@ -1295,7 +1267,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   IGGroupedTableViewCell* cell = %orig;
   int count = [[self settingSectionRows] count];
   if (indexPath.section == 2 && ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5))) {
-    cell.textLabel.text = @"InstaBetter Settings";
+    cell.textLabel.text = localizedString(@"INSTABETTER_SETTINGS");
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   }
   return cell;
@@ -1331,7 +1303,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook BBBulletin
 - (BBSound *)sound {
   if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
-  NSLog(@"ENABLED %d AND NOTIFICATIONS %d", enabled, notificationsEnabled);
   if (!(enabled && notificationsEnabled)) return nil;
   NSString *audioFile;
   NSString *type = [self.context valueForKeyPath:@"remoteNotification.aps.category"];
@@ -1369,7 +1340,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 static void handlePrefsChange(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-  updatePrefs();
+  loadPrefs();
 }
 
 static void setRingerState(uint64_t state) {
@@ -1386,9 +1357,9 @@ static void setupRingerCheck() {
   notify_register_dispatch("com.apple.springboard.ringerstate",
     &ringerState,
     dispatch_get_main_queue(), ^(int t) {
-        uint64_t state;
-        notify_get_state(ringerState, &state);
-        setRingerState(state);
+      uint64_t state;
+      notify_get_state(ringerState, &state);
+      setRingerState(state);
     });
 
   notify_post("com.apple.springboard.ringerstate");
@@ -1399,7 +1370,7 @@ static void setupRingerCheck() {
   @autoreleasepool {
     NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
 
-    updatePrefs();
+    loadPrefs();
 
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(), 
