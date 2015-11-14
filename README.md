@@ -101,6 +101,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Add localization support:
 - Russian: Mik Ovchinnikov
 - Thai: @kn3w
+- Khmer: /u/fidele007
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
