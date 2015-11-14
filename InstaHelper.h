@@ -3,7 +3,7 @@
 #import <Foundation/Foundation.h>
 
 @interface InstaHelper : NSObject
-+ (IGRootViewController*) rootViewController;
-+ (UIViewController*) currentController;
-+ (IGUser*) currentUser;
+  + (IGRootViewController*) rootViewController;
+  + (UIViewController*) currentController;
+  + (IGUser*) currentUser;
 @end

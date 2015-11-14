@@ -23,13 +23,13 @@
 @interface IGAuthHelper
 @property (nonatomic,retain) IGUser * currentUser; 
 +(id)sharedAuthHelper;
--(void)logInWithAuthenticatedUser:(id)arg1 ;
--(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2 ;
--(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(BOOL)arg2 ;
--(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(BOOL)arg2 ;
+-(void)logInWithAuthenticatedUser:(id)arg1;
+-(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2;
+-(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(BOOL)arg2;
+-(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(BOOL)arg2;
 -(void)clearCurrentUser;
--(void)setCurrentUser:(IGUser *)arg1 ;
--(void)updateCurrentUser:(id)arg1 ;
+-(void)setCurrentUser:(IGUser *)arg1;
+-(void)updateCurrentUser:(id)arg1;
 @end
 
 @interface IGAuthenticatedUser
@@ -67,9 +67,9 @@
 @interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UILongPressGestureRecognizerDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
 @property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
--(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1 ;
--(void)setStyledString:(IGStyledString *)arg1 ;
--(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3 ;
+-(void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1;
+-(void)setStyledString:(IGStyledString *)arg1;
+-(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3;
 @end
 
 @interface IGPhoto
@@ -85,20 +85,19 @@
 @end
 
 @interface IGDate : NSObject <NSCoding> 
-
 @property (nonatomic,readonly) long long microseconds;
 @property (nonatomic,copy,readonly) NSString * stringValue; 
--(id)initWithMicroseconds:(long long)arg1 ;
--(id)initWithCoder:(id)arg1 ;
--(void)encodeWithCoder:(id)arg1 ;
+-(id)initWithMicroseconds:(long long)arg1;
+-(id)initWithCoder:(id)arg1;
+-(void)encodeWithCoder:(id)arg1;
 -(id)description;
--(int)compare:(id)arg1 ;
+-(int)compare:(id)arg1;
 -(id)date;
 -(double)timeIntervalSinceNow;
--(id)initWithString:(id)arg1 ;
+-(id)initWithString:(id)arg1;
 -(double)timeIntervalSince1970;
--(id)initWithObject:(id)arg1 ;
--(id)initWithTimeInterval:(double)arg1 ;
+-(id)initWithObject:(id)arg1;
+-(id)initWithTimeInterval:(double)arg1;
 @end
 
 @interface IGPost : NSObject
@@ -118,7 +117,7 @@
 @interface IGFeedItem : IGPost
 @property (readonly) IGDate * takenAt; 
 +(int)fullSizeImageVersionForDevice;
-- (id)imageURLForImageVersion:(int)arg1;
+-(id)imageURLForImageVersion:(int)arg1;
 -(id)description;
 -(BOOL)isHidden;
 -(id)getMediaId;
@@ -129,15 +128,13 @@
 @end
 
 @interface IGAssetWriter
-
 @property (nonatomic,retain) UIImage *image;
-+ (void)writeVideo:(id)arg1 toInstagramAlbum:(BOOL)arg2 completionBlock:(id)arg3;
-+ (void)writeVideoToCameraRoll:(id)arg1;
-+ (void)writeVideoToInstagramAlbum:(id)arg1 completionBlock:(id)arg2;
-- (id)initWithImage:(id)arg1 metadata:(id)arg2;
-- (void)writeToInstagramAlbum;
-- (id)init;
-
++(void)writeVideo:(id)arg1 toInstagramAlbum:(BOOL)arg2 completionBlock:(id)arg3;
++(void)writeVideoToCameraRoll:(id)arg1;
++(void)writeVideoToInstagramAlbum:(id)arg1 completionBlock:(id)arg2;
+-(id)initWithImage:(id)arg1 metadata:(id)arg2;
+-(void)writeToInstagramAlbum;
+-(id)init;
 @end
 
 @interface IGFeedItemActionCell : UICollectionViewCell
@@ -149,32 +146,32 @@
 -(id)initWithFrame:(CGRect)frame;
 -(void)actionSheetDismissedWithButtonTitled:(NSString *)title;
 -(UINavigationController*)window;
-- (UIButton *)saveButton;
-- (void)setSaveButton:(UIButton *)value;
+-(UIButton *)saveButton;
+-(void)setSaveButton:(UIButton *)value;
 -(void)shareItem:(id)sender;
 -(void)saveItem:(id)sender;
 -(void)saveNow;
 @end
 
 @interface AppDelegate : NSObject
-- (void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated;
-- (void)applicationDidEnterBackground:(id)arg1;
-- (id)window;
+-(void)startMainAppWithMainFeedSource:(id)source animated:(BOOL)animated;
+-(void)applicationDidEnterBackground:(id)arg1;
+-(id)window;
 -(id)navigationController;
--(BOOL)application:(id)arg1 handleOpenURL:(id)arg2 ;
+-(BOOL)application:(id)arg1 handleOpenURL:(id)arg2;
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2;
--(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2 fetchCompletionHandler:(/*^block*/id)arg3 ;
--(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2 ;
--(void)application:(id)arg1 handleActionWithIdentifier:(id)arg2 forRemoteNotification:(id)arg3 completionHandler:(/*^block*/id)arg4 ;
+-(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2 fetchCompletionHandler:(/*^block*/id)arg3;
+-(void)application:(id)arg1 didReceiveRemoteNotification:(id)arg2;
+-(void)application:(id)arg1 handleActionWithIdentifier:(id)arg2 forRemoteNotification:(id)arg3 completionHandler:(/*^block*/id)arg4;
 @end
 
 @interface IGFeedViewController : UIViewController
 @property (assign,nonatomic) int feedLayout;
 -(void)handleDidDisplayFeedItem:(IGFeedItem*)item;
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
--(void)setFeedLayout:(int)arg1 ;
+-(void)setFeedLayout:(int)arg1;
 -(int)feedLayout;
--(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(BOOL)arg3 ;
+-(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(BOOL)arg3;
 -(void)startVideoForCellMovingOnScreen;
 -(id)videoCellForAutoPlay;
 -(BOOL)isDeviceSupportAlwaysAutoPlay;
@@ -195,15 +192,14 @@
 -(BOOL)shouldAutoPlayVideo;
 @end
 
-
 @interface IGUserDetailHeaderView : UIView
 @property(retain, nonatomic) IGFollowButton *followButton;
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
--(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3 ;
+-(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
 @property (assign,nonatomic) id delegate;
--(void)onFeedViewModeChanged:(int)arg1 ;
+-(void)onFeedViewModeChanged:(int)arg1;
 -(void)onEditProfileTapped;
--(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2 ;
+-(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -212,8 +208,8 @@
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 -(void)animateSwitchUsersTableView;
 -(void)onNeedsFullReload;
--(void)setDisplayingSwitchUsersTableView:(BOOL)arg1 ;
--(void)setUser:(IGUser *)arg1 ;
+-(void)setDisplayingSwitchUsersTableView:(BOOL)arg1;
+-(void)setUser:(IGUser *)arg1;
 -(void)openSwitcher; // new method
 @end
 
@@ -240,16 +236,16 @@
 @end
 
 @interface IGShakeWindow : UIWindow
-- (id)rootViewController;
+-(id)rootViewController;
 @end
 
 @interface IGActionSheet : UIActionSheet
 @property (nonatomic,retain) NSMutableArray * buttons; 
 @property (nonatomic,retain) UILabel * titleLabel;  
 +(void)hideImmediately;
-- (void)addButtonWithTitle:(NSString *)title style:(int)style;
+-(void)addButtonWithTitle:(NSString *)title style:(int)style;
 +(int)tag;
-+(void)setTag:(int)arg1 ;
++(void)setTag:(int)arg1;
 @end
 
 @protocol IGFeedHeaderItem <NSObject>
@@ -293,39 +289,39 @@
 @end
 
 @interface IGStorableObject : NSObject
--(id)initWithDictionary:(id)arg1 ;
+-(id)initWithDictionary:(id)arg1;
 @end
 
 @interface IGLocation : IGStorableObject
 -(id)dictionaryRepresentation;
 -(id)name;
--(void)setLocationCoord:(CLLocation *)arg1 ;
--(void)setStreetAddress:(NSString *)arg1 ;
--(void)setExternalSource:(NSString *)arg1 ;
--(void)setExternalIDSource:(NSString *)arg1 ;
--(void)setFacebookPlacesID:(NSString *)arg1 ;
--(void)setFoursquareV2ID:(NSString *)arg1 ;
--(void)setName:(NSString *)arg1 ;
+-(void)setLocationCoord:(CLLocation *)arg1;
+-(void)setStreetAddress:(NSString *)arg1;
+-(void)setExternalSource:(NSString *)arg1;
+-(void)setExternalIDSource:(NSString *)arg1;
+-(void)setFacebookPlacesID:(NSString *)arg1;
+-(void)setFoursquareV2ID:(NSString *)arg1;
+-(void)setName:(NSString *)arg1;
 @end
 
 @interface IGLocationDataSource : NSObject <UITableViewDataSource> 
--(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2 ;
--(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2 ;
--(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2 ;
--(id)tableView:(id)arg1 locationCellForRowAtIndexPath:(id)arg2 ;
+-(id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2;
+-(id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2;
+-(id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2;
+-(id)tableView:(id)arg1 locationCellForRowAtIndexPath:(id)arg2;
 
 -(void)reloadData;
--(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2 ;
--(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
--(int)numberOfSectionsInTableView:(id)arg1 ;
+-(int)tableView:(id)arg1 numberOfRowsInSection:(int)arg2;
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+-(int)numberOfSectionsInTableView:(id)arg1;
 -(BOOL)isLoading;
--(void)setIsLoading:(BOOL)arg1 ;
+-(void)setIsLoading:(BOOL)arg1;
 -(NSArray *)locations;
 @property (nonatomic,retain) NSString * responseQueryText;  
 @end
 
 @interface IGURLHelper : NSObject
-+(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(BOOL)arg3 controls:(BOOL)arg4 completionHandler:(/*^block*/id)arg5 ;
++(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(BOOL)arg3 controls:(BOOL)arg4 completionHandler:(/*^block*/id)arg5;
 @end
 
 @interface IGImageView : UIImageView
@@ -341,15 +337,13 @@
 @end
 
 @interface IGDirectContent : NSObject
-
 @end
 
 @interface IGDirectContentCell : UICollectionViewCell <UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate, UIActionSheetDelegate>
 @property (nonatomic,retain) IGDirectContent * content;
--(void)onContentMenuPress:(id)arg1 ;
+-(void)onContentMenuPress:(id)arg1;
 @property (nonatomic,retain) UILongPressGestureRecognizer * contentMenuLongPressRecognizer;
 @end
-
 
 @interface IGDirectContentExpandableCell : IGDirectContentCell <UILongPressGestureRecognizerDelegate>
 -(void)layoutSubviews;
@@ -363,7 +357,6 @@
 @property (nonatomic,retain) IGVideo * video;
 @end 
 
-
 @interface IGDirectPhotoExpandableCell 
 @property (nonatomic,retain) IGImageProgressView * photoImageView; 
 -(void)layoutSubviews;
@@ -376,16 +369,16 @@
 @end
 
 @interface IGDirectThreadViewController
--(void)sendSeenTimestampForContent:(id)arg1 ;
+-(void)sendSeenTimestampForContent:(id)arg1;
 @end
 
 @interface IGDirectedPostRecipient
 -(BOOL)hasRead;
--(void)setHasRead:(BOOL)arg1 ;
+-(void)setHasRead:(BOOL)arg1;
 @end
 
 @interface IGDirectThread
--(id)seenAtForItemsWithId:(id)arg1 ;
+-(id)seenAtForItemsWithId:(id)arg1;
 @end
 
 @interface IGDirectSharingHelper
@@ -399,10 +392,10 @@
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
 @property (nonatomic,retain) IGUser * user; 
 -(id)initWithFrame:(CGRect)arg1;
--(id)initWithFrame:(CGRect)arg1 user:(id)arg2 ;
--(void)tapped:(id)arg1 ;
+-(id)initWithFrame:(CGRect)arg1 user:(id)arg2;
+-(void)tapped:(id)arg1;
 @property (assign,nonatomic) BOOL buttonDisabled;
--(void)setButtonDisabled:(BOOL)arg1 ;
+-(void)setButtonDisabled:(BOOL)arg1;
 -(BOOL)buttonDisabled;
 @end
 
@@ -428,12 +421,12 @@
 
 @interface IGFeedPhotoView
 @property (nonatomic,retain) IGUsertagGroup * usertags; 
--(void)onDoubleTap:(id)arg1 ;
+-(void)onDoubleTap:(id)arg1;
 @property (assign,nonatomic) IGFeedItemPhotoCell * parentCellView;
 @end
 
 @interface IGFeedItemVideoView
--(void)onDoubleTap:(id)arg1 ;
+-(void)onDoubleTap:(id)arg1;
 @property (nonatomic,readonly) IGPost * post;
 @end
 
@@ -445,7 +438,7 @@
 @interface IGVideoPlayer : NSObject
 @property (assign,nonatomic) BOOL muted;
 -(BOOL)isMuted;
--(void)setMuted:(BOOL)arg1 ;
+-(void)setMuted:(BOOL)arg1;
 -(void)playFromStart;
 -(void)stop;
 @end
@@ -453,15 +446,14 @@
 @interface IGFeedVideoPlayer : NSObject
 @property (assign,nonatomic) BOOL audioEnabled;
 -(BOOL)isAudioEnabled;
--(void)setAudioEnabled:(BOOL)arg1 ;
--(void)setReadyToPlay:(BOOL)arg1 ;
+-(void)setAudioEnabled:(BOOL)arg1;
+-(void)setReadyToPlay:(BOOL)arg1;
 -(void)play;
 -(id)player;
 @end
 
 @interface IGFeedItemVideoCell
 @property (nonatomic,retain) IGFeedItemVideoView * videoView; 
-
 @end
 
 @interface IGTableView : UITableView
@@ -491,25 +483,24 @@
 -(id)followSectionRows;
 -(id)settingSectionRows;
 -(id)sessionSectionRows;
--(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2 ;
+-(void)tableView:(id)arg1 didSelectSettingsRow:(int)arg2;
 @end
 
 @interface IGTabBarController : UIViewController <UIActionSheetDelegate, UIAlertViewDelegate>
 @property (nonatomic,readonly) UIView * tabBar; 
 -(void)profileButtonPressed;
--(void)profileButtonLongPressed:(id)arg1 ;
+-(void)profileButtonLongPressed:(id)arg1;
 -(void)animateSwitchUsersTableView;
--(void)setIsDisplayingSwitchUsersTableView:(BOOL)arg1 ;
--(id)navigationControllerForTabBarItem:(int)arg1 ;
+-(void)setIsDisplayingSwitchUsersTableView:(BOOL)arg1;
+-(id)navigationControllerForTabBarItem:(int)arg1;
 -(int)selectedTabBarItem;
-
 @end
 
 @interface IGAuthService
 +(IGAuthService*)sharedAuthService;
 -(IGAuthenticatedUser *)currentUser;
--(void)setCurrentUser:(IGAuthenticatedUser *)arg1 ;
--(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion ;
+-(void)setCurrentUser:(IGAuthenticatedUser *)arg1;
+-(void)logInWithUsername:(id)arg1 password:(id)arg2 userInfo:(id)arg3 completionHandler:(void(^)(IGAuthenticatedUser *user))completion;
 @end
 
 @protocol LocationSelectionDelegate <NSObject>
@@ -518,9 +509,9 @@
 @end
 
 @interface IGLocationPickerViewController : UIViewController <LocationSelectionDelegate>
--(void)locationPickerViewController:(id)arg1 didFinish:(BOOL)arg2 withLocation:(id)arg3 ;
-- (IGLocation *)tempLocation;
-- (void)setTempLocation:(IGLocation *)value;
+-(void)locationPickerViewController:(id)arg1 didFinish:(BOOL)arg2 withLocation:(id)arg3;
+-(IGLocation *)tempLocation;
+-(void)setTempLocation:(IGLocation *)value;
 @end
 
 @interface LocationSelectorViewController : UIViewController <UILongPressGestureRecognizerDelegate>
@@ -542,12 +533,11 @@
 @end
 
 @interface IGNewsTableViewController : IGGroupedTableViewController
-+(id)storiesWithDictionaries:(id)arg1 ;
-
++(id)storiesWithDictionaries:(id)arg1;
 @end
 
 @interface IGNewsFollowingTableViewController : IGNewsTableViewController
--(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 ;
+-(id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
 @end
 
 @interface IGWebViewController : IGFeedViewController
@@ -555,23 +545,22 @@
 @end
 
 @interface SBRemoteNotificationServer
-- (void)noteDidReceiveMessage:(id)arg1 withType:(long long)arg2 fromClient:(id)arg3;
+-(void)noteDidReceiveMessage:(id)arg1 withType:(long long)arg2 fromClient:(id)arg3;
 @end
 
 @interface BBSound : NSObject
-+ (id)alertSoundWithSystemSoundID:(unsigned long)arg1;
-+ (id)alertSoundWithSystemSoundPath:(id)arg1;
++(id)alertSoundWithSystemSoundID:(unsigned long)arg1;
++(id)alertSoundWithSystemSoundPath:(id)arg1;
 @end
 
 @interface BBBulletin : NSObject
 @property (nonatomic, retain) BBSound *sound;
 @property (nonatomic, copy) NSString *accountIdentifier;
-- (BBSound*)sound;
-- (id)message;
+-(BBSound*)sound;
+-(id)message;
 @property (nonatomic, copy) NSString *message;
 @property (nonatomic, retain) NSDictionary *context;
 @property (nonatomic, copy) NSString *section;
-
 @end
 
 @interface IGGrowingTextView : UIView
@@ -579,11 +568,11 @@
 @property (assign,nonatomic) int keyboardAppearance; 
 @property (assign,nonatomic) int returnKeyType; 
 @property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
--(void)setMaxNumberOfLines:(int)arg1 ;
--(void)setKeyboardType:(int)arg1 ;
--(BOOL)textViewShouldBeginEditing:(UITextView*)arg1 ;
--(BOOL)textView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3 ;
--(void)textViewDidChange:(id)arg1 ;
+-(void)setMaxNumberOfLines:(int)arg1;
+-(void)setKeyboardType:(int)arg1;
+-(BOOL)textViewShouldBeginEditing:(UITextView*)arg1;
+-(BOOL)textView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3;
+-(void)textViewDidChange:(id)arg1;
 -(void)updateTextView;
 -(void)updateSizeConstraints;
 @end
@@ -591,8 +580,8 @@
 @interface IGCommentThreadViewController : IGViewController
 @property (nonatomic,retain) IGGrowingTextView * growingTextView; 
 @property (nonatomic,retain) UIView * keyboard; 
--(BOOL)growingTextViewShouldReturn:(id)arg1 ;
+-(BOOL)growingTextViewShouldReturn:(id)arg1;
 -(BOOL)growingTextView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3;
--(void)growingTextViewDidChange:(id)arg1 ;
--(void)growingTextView:(id)arg1 willChangeHeight:(float)arg2 ;
+-(void)growingTextViewDidChange:(id)arg1;
+-(void)growingTextView:(id)arg1 willChangeHeight:(float)arg2;
 @end
