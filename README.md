@@ -94,6 +94,14 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Add custom notification sounds
 * Add option to disable like confirmation for save button
 
+### Release 1.3.5
+* Add done button to Instagram web view
+* Rewrite preference loading to reduce preference file size and hopefully resolve crashes
+* Add return key to captions and comments to create multiline posts and comments
+* Add localization support:
+Russian: 
+Thai: @kn3w
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

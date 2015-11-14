@@ -579,8 +579,11 @@
 @property (assign,nonatomic) int keyboardAppearance; 
 @property (assign,nonatomic) int returnKeyType; 
 @property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
+-(void)setKeyboardType:(int)arg1 ;
+-(BOOL)textViewShouldBeginEditing:(UITextView*)arg1 ;
 @end
 
 @interface IGCommentThreadViewController : IGViewController
 @property (nonatomic,retain) IGGrowingTextView * growingTextView; 
+@property (nonatomic,retain) UIView * keyboard; 
 @end

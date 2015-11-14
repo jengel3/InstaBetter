@@ -313,6 +313,44 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %group instaHooks
 
+
+// add return key to Instagram caption
+%hook IGCaptionCell
+-(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
+  BOOL ori = %orig;
+  [textView setKeyboardType:0];
+  [textView setReturnKeyType:UIReturnKeyDefault];
+
+  return ori;
+}
+%end
+
+
+%hook IGGrowingTextView
+-(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
+  BOOL ori = %orig;
+  [textView setKeyboardType:0];
+  [textView setReturnKeyType:UIReturnKeyDefault];
+
+  return ori;
+}
+-(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+if (range.length == 0) {
+    if ([text isEqualToString:@"\n"]) {
+        // [textView resignFirstResponder];
+        // NSIndexPath *path = [NSIndexPath indexPathForRow:0 inSection:0];
+        // [self.tableView scrollToRowAtIndexPath:path atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        // [self.tableView setScrollEnabled:NO];
+        return NO;
+    }
+}
+
+return YES;
+
+}
+%end
+
+
 // double-tap like confirmation
 
 %hook IGFeedItemVideoView
