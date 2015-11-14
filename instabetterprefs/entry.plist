@@ -1,10 +1,10 @@
 {
-    entry = {
+  entry = {
 		bundle = InstaBetterPrefs;
 		cell = PSLinkCell;
 		detail = InstaBetterPrefsController;
 		icon = InstaBetter.png;
 		isController = 1;
 		label = InstaBetter;
-    };
+  };
 }

@@ -25,8 +25,8 @@
 +(id)sharedAuthHelper;
 -(void)logInWithAuthenticatedUser:(id)arg1 ;
 -(void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2 ;
--(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(char)arg2 ;
--(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(char)arg2 ;
+-(void)logInWithAuthenticatedUser:(id)arg1 isSwitchingUsers:(BOOL)arg2 ;
+-(void)switchToAuthenticatedUserWithForce:(id)arg1 fromLogin:(BOOL)arg2 ;
 -(void)clearCurrentUser;
 -(void)setCurrentUser:(IGUser *)arg1 ;
 -(void)updateCurrentUser:(id)arg1 ;
@@ -174,7 +174,7 @@
 -(id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 -(void)setFeedLayout:(int)arg1 ;
 -(int)feedLayout;
--(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(char)arg3 ;
+-(id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(BOOL)arg3 ;
 -(void)startVideoForCellMovingOnScreen;
 -(id)videoCellForAutoPlay;
 -(BOOL)isDeviceSupportAlwaysAutoPlay;
@@ -212,7 +212,7 @@
 @property(retain, nonatomic) IGUserDetailHeaderView *headerView;
 -(void)animateSwitchUsersTableView;
 -(void)onNeedsFullReload;
--(void)setDisplayingSwitchUsersTableView:(char)arg1 ;
+-(void)setDisplayingSwitchUsersTableView:(BOOL)arg1 ;
 -(void)setUser:(IGUser *)arg1 ;
 -(void)openSwitcher; // new method
 @end
@@ -325,7 +325,7 @@
 @end
 
 @interface IGURLHelper : NSObject
-+(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(char)arg3 controls:(char)arg4 completionHandler:(/*^block*/id)arg5 ;
++(void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(BOOL)arg3 controls:(BOOL)arg4 completionHandler:(/*^block*/id)arg5 ;
 @end
 
 @interface IGImageView : UIImageView
@@ -389,7 +389,7 @@
 @end
 
 @interface IGDirectSharingHelper
-+(id)seenUsersForContent:(id)arg1 thread:(id)arg2 pendingMode:(char)arg3;
++(id)seenUsersForContent:(id)arg1 thread:(id)arg2 pendingMode:(BOOL)arg3;
 @end
 
 @interface IGFeedItemPhotoCell
@@ -454,7 +454,7 @@
 @property (assign,nonatomic) BOOL audioEnabled;
 -(BOOL)isAudioEnabled;
 -(void)setAudioEnabled:(BOOL)arg1 ;
--(void)setReadyToPlay:(char)arg1 ;
+-(void)setReadyToPlay:(BOOL)arg1 ;
 -(void)play;
 -(id)player;
 @end
@@ -499,7 +499,7 @@
 -(void)profileButtonPressed;
 -(void)profileButtonLongPressed:(id)arg1 ;
 -(void)animateSwitchUsersTableView;
--(void)setIsDisplayingSwitchUsersTableView:(char)arg1 ;
+-(void)setIsDisplayingSwitchUsersTableView:(BOOL)arg1 ;
 -(id)navigationControllerForTabBarItem:(int)arg1 ;
 -(int)selectedTabBarItem;
 
@@ -518,7 +518,7 @@
 @end
 
 @interface IGLocationPickerViewController : UIViewController <LocationSelectionDelegate>
--(void)locationPickerViewController:(id)arg1 didFinish:(char)arg2 withLocation:(id)arg3 ;
+-(void)locationPickerViewController:(id)arg1 didFinish:(BOOL)arg2 withLocation:(id)arg3 ;
 - (IGLocation *)tempLocation;
 - (void)setTempLocation:(IGLocation *)value;
 @end
@@ -579,11 +579,20 @@
 @property (assign,nonatomic) int keyboardAppearance; 
 @property (assign,nonatomic) int returnKeyType; 
 @property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
+-(void)setMaxNumberOfLines:(int)arg1 ;
 -(void)setKeyboardType:(int)arg1 ;
 -(BOOL)textViewShouldBeginEditing:(UITextView*)arg1 ;
+-(BOOL)textView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3 ;
+-(void)textViewDidChange:(id)arg1 ;
+-(void)updateTextView;
+-(void)updateSizeConstraints;
 @end
 
 @interface IGCommentThreadViewController : IGViewController
 @property (nonatomic,retain) IGGrowingTextView * growingTextView; 
 @property (nonatomic,retain) UIView * keyboard; 
+-(BOOL)growingTextViewShouldReturn:(id)arg1 ;
+-(BOOL)growingTextView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3;
+-(void)growingTextViewDidChange:(id)arg1 ;
+-(void)growingTextView:(id)arg1 willChangeHeight:(float)arg2 ;
 @end

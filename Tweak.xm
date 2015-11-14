@@ -29,6 +29,7 @@ static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
+static BOOL returnKey = YES;
 static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
@@ -80,6 +81,7 @@ static NSDictionary* loadPrefs() {
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
+      returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : YES;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
@@ -313,43 +315,45 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %group instaHooks
 
-
 // add return key to Instagram caption
 %hook IGCaptionCell
 -(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
   BOOL ori = %orig;
+  if (!(enabled && returnKey)) return ori;
   [textView setKeyboardType:0];
   [textView setReturnKeyType:UIReturnKeyDefault];
-
   return ori;
 }
 %end
 
+// add return key to comments
+
+%hook IGCommentThreadViewController
+-(BOOL)growingTextViewShouldReturn:(id)textView {
+  if (!(enabled && returnKey)) return %orig;
+  return YES;
+}
+-(BOOL)growingTextView:(id)textView shouldChangeTextInRange:(NSRange)range replacementText:(id)text {
+  if (!(enabled && returnKey)) return %orig;
+  return YES;
+}
+%end
 
 %hook IGGrowingTextView
 -(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
   BOOL ori = %orig;
+  if (!(enabled && returnKey)) return ori;
   [textView setKeyboardType:0];
   [textView setReturnKeyType:UIReturnKeyDefault];
-
+  [self setMaxNumberOfLines:30];
+  textView.textContainer.maximumNumberOfLines = 10;
   return ori;
 }
 -(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-if (range.length == 0) {
-    if ([text isEqualToString:@"\n"]) {
-        // [textView resignFirstResponder];
-        // NSIndexPath *path = [NSIndexPath indexPathForRow:0 inSection:0];
-        // [self.tableView scrollToRowAtIndexPath:path atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        // [self.tableView setScrollEnabled:NO];
-        return NO;
-    }
-}
-
-return YES;
-
+  if (!(enabled && returnKey)) return %orig;
+  return YES;
 }
 %end
-
 
 // double-tap like confirmation
 
@@ -403,7 +407,7 @@ return YES;
 // grid view
 
 %hook IGFeedViewController
--(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(char)control {
+-(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
   id thing = %orig;
   if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
     [self setFeedLayout:2];
@@ -426,7 +430,7 @@ return YES;
 // auto play audio
 
 %hook IGFeedVideoPlayer
--(void)setReadyToPlay:(char)arg1 {
+-(void)setReadyToPlay:(BOOL)ready {
   if (enabled) {
     if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
       [self setAudioEnabled:YES];
@@ -455,7 +459,7 @@ return YES;
 
 
 %hook IGDirectThreadViewController
--(void)sendSeenTimestampForContent:(id)arg1 {
+-(void)sendSeenTimestampForContent:(id)content {
   if (enabled && disableDMRead) {
     return;
   }
@@ -1018,7 +1022,7 @@ return YES;
 %end
 
 %hook AppDelegate
-- (void)applicationDidEnterBackground:(id)arg1 {
+- (void)applicationDidEnterBackground:(id)application {
   if (enabled && showPercents) {
     [likesDict removeAllObjects];
   }
@@ -1028,7 +1032,7 @@ return YES;
 
 // save media
 %hook IGFeedItemActionCell
--(void)onMoreButtonPressed:(id)arg1 {
+-(void)onMoreButtonPressed:(id)sender {
   cachedItem = self.feedItem;
   %orig;
 }
