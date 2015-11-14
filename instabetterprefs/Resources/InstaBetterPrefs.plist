@@ -14,7 +14,7 @@
 			<key>key</key>
 			<string>enabled</string>
 			<key>label</key>
-			<string>Enable</string>
+			<string>ENABLED</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -22,7 +22,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Features</string>
+			<string>FEATURES</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -34,7 +34,7 @@
 			<key>key</key>
 			<string>show_percents</string>
 			<key>label</key>
-			<string>Show Like Percentages</string>
+			<string>SHOW_LIKE_PERCENTAGES</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -48,7 +48,7 @@
 			<key>key</key>
 			<string>return_key</string>
 			<key>label</key>
-			<string>Enable Return Key</string>
+			<string>ENABLE_RETURN_KEY</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -62,7 +62,7 @@
 			<key>key</key>
 			<string>follow_status</string>
 			<key>label</key>
-			<string>Show Follow Status</string>
+			<string>SHOW_FOLLOW_STATUS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -70,7 +70,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Saving and Sharing</string>
+			<string>SAVING_AND_SHARING</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -82,7 +82,7 @@
 			<key>key</key>
 			<string>save_actions</string>
 			<key>label</key>
-			<string>Enable Save Actions</string>
+			<string>ENABLE_SAVE_ACTIONS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -96,7 +96,7 @@
 			<key>key</key>
 			<string>save_confirm</string>
 			<key>label</key>
-			<string>Save Confirmation</string>
+			<string>SAVE_CONFIRMATION</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -112,11 +112,11 @@
 			<key>key</key>
 			<string>save_mode</string>
 			<key>label</key>
-			<string>Save Mode</string>
+			<string>SAVE_MODE</string>
 			<key>validTitles</key>
 			<array>
-				<string>Buttons</string>
-				<string>Action Sheet</string>
+				<string>BUTTONS</string>
+				<string>ACTION_SHEET</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -130,7 +130,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Tweaks</string>
+			<string>TWEAKS</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -142,7 +142,7 @@
 			<key>key</key>
 			<string>custom_locations</string>
 			<key>label</key>
-			<string>Enable Custom Locations</string>
+			<string>ENABLE_CUSTOM_LOCATIONS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -156,7 +156,7 @@
 			<key>key</key>
 			<string>account_switcher</string>
 			<key>label</key>
-			<string>Account Switcher</string>
+			<string>ACCOUNT_SWITCHER</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -170,7 +170,7 @@
 			<key>key</key>
 			<string>app_browser</string>
 			<key>label</key>
-			<string>Open links in Instagram</string>
+			<string>OPEN_IN_INSTAGRAM</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -184,7 +184,7 @@
 			<key>key</key>
 			<string>disable_read_notification</string>
 			<key>label</key>
-			<string>Disable DM Seen Check</string>
+			<string>DISABLE_DM_SEEN</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -198,7 +198,7 @@
 			<key>key</key>
 			<string>zoom_hi_res</string>
 			<key>label</key>
-			<string>Load hi-res for zoom</string>
+			<string>LOAD_HI_RES</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -214,12 +214,12 @@
 			<key>key</key>
 			<string>alert_mode</string>
 			<key>label</key>
-			<string>Double Tap Confirmation</string>
+			<string>DOUBLE_TAP_CONFIRMATION</string>
 			<key>validTitles</key>
 			<array>
-				<string>Never</string>
-				<string>Older than 24hrs</string>
-				<string>Always</string>
+				<string>NEVER</string>
+				<string>OLDER_THAN</string>
+				<string>ALWAYS</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -246,7 +246,7 @@
 			<key>key</key>
 			<string>main_grid</string>
 			<key>label</key>
-			<string>Grid View</string>
+			<string>GRID_VIEW</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -260,7 +260,7 @@
 			<key>key</key>
 			<string>layout_switcher</string>
 			<key>label</key>
-			<string>Layout Button</string>
+			<string>LAYOUT_BUTTON</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -274,7 +274,7 @@
 			<key>key</key>
 			<string>hide_sponsored</string>
 			<key>label</key>
-			<string>Hide Sponsored Posts</string>
+			<string>HIDE_SPONSORED_POSTS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -282,7 +282,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Follow Spoofing</string>
+			<string>FOLLOW_SPOOFING</string>
 			<key>footerText</key>
 			<string>Fake your user data. Only you can see these changes.</string>
 		</dict>
@@ -294,7 +294,7 @@
 			<key>key</key>
 			<string>fake_follower_count</string>
 			<key>label</key>
-			<string>Fake Follower Count</string>
+			<string>FAKE_FOLLOWER_COUNT</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -306,7 +306,7 @@
 			<key>key</key>
 			<string>fake_following_count</string>
 			<key>label</key>
-			<string>Fake Following Count</string>
+			<string>FAKE_FOLLOWING_COUNT</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -314,7 +314,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Audio &amp; Video</string>
+			<string>AUDIO_AND_VIDEO</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -328,12 +328,12 @@
 			<key>key</key>
 			<string>video_mode</string>
 			<key>label</key>
-			<string>Auto-Play Video</string>
+			<string>AUTO_PLAY_VIDEO</string>
 			<key>validTitles</key>
 			<array>
-				<string>Never</string>
-				<string>Follow Ringer</string>
-				<string>Always</string>
+				<string>NEVER</string>
+				<string>FOLLOW_RINGER</string>
+				<string>ALWAYS</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -356,12 +356,12 @@
 			<key>key</key>
 			<string>audio_mode</string>
 			<key>label</key>
-			<string>Auto-Play Audio</string>
+			<string>AUTO_PLAY_AUDIO</string>
 			<key>validTitles</key>
 			<array>
-				<string>Never</string>
-				<string>Follow Ringer</string>
-				<string>Always</string>
+				<string>NEVER</string>
+				<string>FOLLOW_RINGER</string>
+				<string>ALWAYS</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -376,7 +376,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Timestamps</string>
+			<string>TIMESTAMPS</string>
 			<key>footerText</key>
 			<string>Replace time ago (2d, 3hr, etc) with a timestamp.</string>
 		</dict>
@@ -390,7 +390,7 @@
 			<key>key</key>
 			<string>enable_timestamp</string>
 			<key>label</key>
-			<string>Enable Timestamps</string>
+			<string>ENABLE_TIMESTAMPS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -404,7 +404,7 @@
 			<key>key</key>
 			<string>always_timestamp</string>
 			<key>label</key>
-			<string>Always Show Timestamp</string>
+			<string>ALAWYS_SHOW_TIMESTAMPS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -420,12 +420,12 @@
 			<key>key</key>
 			<string>timestamp_format</string>
 			<key>label</key>
-			<string>Timestamp Format</string>
+			<string>TIMESTAMP_FORMAT</string>
 			<key>validTitles</key>
 			<array>
-				<string>Short</string>
-				<string>Medium</string>
-				<string>Long</string>
+				<string>SHORT</string>
+				<string>MEDIUM</string>
+				<string>LONG</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -440,7 +440,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Muting</string>
+			<string>MUTING</string>
 			<key>footerText</key>
 			<string>Mute users from your Instagram feed and activity timeline.</string>
 		</dict>
@@ -454,7 +454,7 @@
 			<key>key</key>
 			<string>enable_muting</string>
 			<key>label</key>
-			<string>Enable Muting</string>
+			<string>ENABLE_MUTING</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -468,7 +468,7 @@
 			<key>key</key>
 			<string>mute_activity</string>
 			<key>label</key>
-			<string>Mute From Activity Feeds</string>
+			<string>MUTE_FROM_ACTIVITY</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -484,7 +484,7 @@
 			<key>key</key>
 			<string>muted_users</string>
 			<key>label</key>
-			<string>Muted Users</string>
+			<string>MUTED_USERS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -500,11 +500,11 @@
 			<key>key</key>
 			<string>mute_mode</string>
 			<key>label</key>
-			<string>Mode</string>
+			<string>MODE</string>
 			<key>validTitles</key>
 			<array>
-				<string>Blacklist</string>
-				<string>Whitelist</string>
+				<string>BLACKLIST</string>
+				<string>WHITELIST</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -518,7 +518,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Custom Notifications</string>
+			<string>CUSTOM_NOTIFICATIONS</string>
 			<key>footerText</key>
 			<string>Choose none for no sound, or default for the default iOS notification sound. Not selecting any sound will result in the default sound.</string>
 		</dict>
@@ -532,7 +532,7 @@
 			<key>key</key>
 			<string>notifications_enabled</string>
 			<key>label</key>
-			<string>Enabled</string>
+			<string>ENABLED</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -552,7 +552,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Like</string>
+			<string>LIKE</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -572,7 +572,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Comment</string>
+			<string>COMMENT</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -592,7 +592,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>New Follower</string>
+			<string>NEW_FOLLOWER</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -612,7 +612,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Follow Request</string>
+			<string>FOLLOW_REQUEST</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -632,7 +632,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Request Approved</string>
+			<string>REQUEST_APPROVED</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -652,7 +652,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Tagged in Photo</string>
+			<string>TAGGED_IN_PHOTO</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -672,7 +672,7 @@
 			<key>titlesDataSource</key>
 			<string>loadSounds:</string>
 			<key>label</key>
-			<string>Direct Message</string>
+			<string>DIRECT_MESSAGE</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -688,13 +688,13 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Restart Instagram</string>
+			<string>RESTART_INSTAGRAM</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Support</string>
+			<string>SUPPORT</string>
 		</dict>
 		<dict>
 			<key>action</key>
@@ -702,7 +702,7 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Follow @itsjake88</string>
+			<string>FOLLOW_DEV</string>
 			<key>icon</key>
 			<string>TwitterIcon.png</string>
 		</dict>
@@ -712,7 +712,7 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Follow @AOkhtenberg (design)</string>
+			<string>FOLLOW_DESIGN</string>
 			<key>icon</key>
 			<string>TwitterIcon.png</string>
 		</dict>
