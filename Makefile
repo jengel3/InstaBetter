@@ -7,8 +7,6 @@ ADDITIONAL_OBJCFLAGS = -fobjc-arc
 include theos/makefiles/common.mk
 
 TWEAK_NAME = InstaBetter
-BUNDLE_NAME = InstaBetterResources
-InstaBetterResources_INSTALL_PATH = /Library/Application Support/InstaBetter
 InstaBetter_FILES = InstaHelper.xm Tweak.xm instabetterprefs/InstaBetterPrefs.mm $(wildcard lib/*.m)
 InstaBetter_LDFLAGS += -Wl,-segalign,4000
 InstaBetter_FRAMEWORKS = UIKit Foundation CoreGraphics ImageIO Accelerate QuartzCore MapKit CoreLocation

@@ -11,7 +11,7 @@
 #import <MapKit/MapKit.h>
 #import "InstaHelper.h"
 
-#define ibBundle @"/Library/Application Support/InstaBetter/InstaBetterResources.bundle"
+#define ibBundle @"/Library/Application Support/InstaBetter"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
 
 static NSMutableArray *muted = nil;
@@ -29,7 +29,7 @@ static BOOL openInApp = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
-static BOOL returnKey = YES;
+static BOOL returnKey = NO;
 static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
@@ -81,7 +81,7 @@ static NSDictionary* loadPrefs() {
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
       showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
-      returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : YES;
+      returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : NO;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
@@ -456,7 +456,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // disable DM seen checks
-
 
 %hook IGDirectThreadViewController
 -(void)sendSeenTimestampForContent:(id)content {
@@ -1036,6 +1035,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   cachedItem = self.feedItem;
   %orig;
 }
+
 -(void)layoutSubviews {
   %orig;
 
@@ -1410,7 +1410,7 @@ static void setupRingerCheck() {
 %ctor {
 
   @autoreleasepool {
-    NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
+    NSString *curBundle = [NSBundle mainBundle].bundleIdentifier;
 
     loadPrefs();
 
@@ -1422,9 +1422,10 @@ static void setupRingerCheck() {
       NULL, 
       CFNotificationSuspensionBehaviorCoalesce);
 
-    if ([bundle isEqualToString:@"com.apple.springboard"]) {
+    if ([curBundle isEqualToString:@"com.apple.springboard"]) {
       %init(sbHooks);
     } else {
+      [bundle load];
       setupRingerCheck();
 
       %init(instaHooks);
