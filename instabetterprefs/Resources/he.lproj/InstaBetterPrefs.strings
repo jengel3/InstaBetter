@@ -11,10 +11,10 @@
 "ACTION_SHEET" = "דף פעולות";
 "TWEAKS" = "טוויקים";
 "ENABLE_CUSTOM_LOCATIONS" = "אפשר זיוף מיקום";
-"ACCOUNT_SWITCHER" = "מחליף חשבונות";
+"ACCOUNT_SWITCHER" = "מחליף חשבונות מהיר";
 "OPEN_IN_INSTAGRAM" = "פתח לינקים בInstagram";
-"DISABLE_DM_SEEN" = "בטל קבלות קריאה של הודעות ישירות";
-"LOAD_HI_RES" = "טען באיכות מחאה להתקרבות";
+"DISABLE_DM_SEEN" = "בטל קבלות קריאה של הודעות";
+"LOAD_HI_RES" = "טען באיכות מלאה להתקרבות";
 "DOUBLE_TAP_CONFIRMATION" = "אישור לחיצה כפולה";
 "NEVER" = "לעולם לא";
 "FOLLOW_RINGER" = "לפי מתג ההשתק";

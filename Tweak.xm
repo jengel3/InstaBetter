@@ -389,8 +389,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
-    message:localizedString(@"DID_WANT_LIKE_VIDEO")
+    [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
+    message:localizedString(@"DID_WANT_LIKE_PHOTO")
     cancelButtonTitle:nil
     otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
     tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
