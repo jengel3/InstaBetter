@@ -823,15 +823,21 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGActionSheet
 - (void)show {
-
   if (enabled) {
     UIViewController *currentController = [InstaHelper currentController];
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
-    if (isProfileView && [self.buttons count] == 5 && !self.titleLabel.text) {
-        IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
-
+    IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
+    // BOOL isFollowing = NO;
+    // if (isProfileView) {
+    //   int status = userView.user.followStatus;
+    //   if (status == 3) {
+    //     isFollowing = YES;
+    //   }
+    // }
+    // if (isProfileView && (([self.buttons count] == 6 && isFollowing) || ([self.buttons count] == 5 && !isFollowing)) && !self.titleLabel.text) {
+    if (isProfileView && !cachedItem && !self.titleLabel.text) {
         IGUser *current = [InstaHelper currentUser];
         if ([current.username isEqualToString:userView.user.username]) return %orig;
         if ([muted containsObject:userView.user.username]) {
@@ -851,6 +857,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       }    
     }
   }
+  %orig;
+}
+-(void)hideAndReset {
+  cachedItem = nil;
   %orig;
 }
 %end

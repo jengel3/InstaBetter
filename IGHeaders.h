@@ -8,6 +8,8 @@
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
 @property (retain) NSURL *profilePicURL; 
+@property (assign) int followStatus; 
+@property (assign) int lastFollowStatus; 
 +(void)fetchFollowStatusInBulk:(NSArray*)users;
 -(id)followingCount;
 -(id)followerCount;
@@ -246,6 +248,7 @@
 -(void)addButtonWithTitle:(NSString *)title style:(int)style;
 +(int)tag;
 +(void)setTag:(int)arg1;
+-(void)hideAndReset;
 @end
 
 @protocol IGFeedHeaderItem <NSObject>

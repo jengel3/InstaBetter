@@ -94,7 +94,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Add custom notification sounds
 * Add option to disable like confirmation for save button
 
-### Release 1.3.6
+### Release 1.4.0
 * Add done button to Instagram web view
 * Rewrite preference loading to reduce preference file size and hopefully resolve crashes
 * Add return key to captions and comments to create multiline posts and comments (use two blank lines between each)
@@ -139,6 +139,7 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 * Save and zoom DM content
 * Manage multiple accounts with a native switcher
 * Set custom notification sounds for Instagram alerts
+* Available in English, Russian, Italian, Arabic, Hebrew, and more.
 
 InstaBetter will always be free, and does not add any ads to the Instagram app.
 
