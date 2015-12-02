@@ -107,6 +107,11 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Swedish: /u/andreashenriksson
 - Hebrew: Aran Shavit (@Aranshavit)
 
+### Release 1.4.1
+- Fix Russian translation not displaying correctly
+- Fix potential crash in activity tab
+* Compatible with Instagram 7.11 and older.
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
@@ -144,3 +149,5 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 InstaBetter will always be free, and does not add any ads to the Instagram app.
 
 InstaBetter is not affiliated with Instagram or Facebook.
+
+Compatible with iOS 8 and 9. See changelog for supported Instagram versions.

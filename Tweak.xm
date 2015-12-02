@@ -876,7 +876,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
         if ([muted containsObject:[words objectAtIndex:0]]) {
-          [finalArray removeObjectAtIndex:index];
+          if ([muted count] >= (index - 1)) {
+            [finalArray removeObjectAtIndex:index];
+          }
         }
       }
       index++;

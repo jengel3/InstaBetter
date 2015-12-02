@@ -1,11 +1,11 @@
-"MUTE" = "Не отображать в ленте";
-"UNMUTE" = "Снова отображать";
+"MUTE" = "Скрыть посты  в ленте";
+"UNMUTE" = "Снова показывать посты";
 "SAVE_MEDIA" = "Сохранить файл";
 "SAVE_VIDEO" = "Сохранить видео";
 "SAVE_PHOTO" = "Сохранить фото";
-"SAVE_CONTENT" = "Сохранить?";
-"SAVED" = "Сохранено!";
-"SAVING" = "Сохраняю";
+"SAVE_CONTENT" = "Сохранение";
+"SAVED" = "Сохранено :)";
+"SAVING" = "Сохраняю…";
 "SELECT_LOCATION" = "Выбрать место";
 "SELECTED_LOCATION" = "Выбранное место";
 "LIKE_VIDEO" = "Лайкнуть это видео?";
@@ -24,5 +24,5 @@
 "LOCATION_ADDRESS_MSG" = "Введите адрес места (не обязательно)";
 "INSTABETTER_SETTINGS" = "Настройки InstaBetter";
 "FOLLOW_EACH_OTHER" = "Вы подписаны друг на друга";
-"FOLLOWS_YOU" = "%@ подписан на Вас";
-"DOES_NOT_FOLLOW" = "%@ не подписан на Вас";
+"FOLLOWS_YOU" = "%@ подписан(а) на Вас";
+"DOES_NOT_FOLLOW" = "%@ не подписан(а) на Вас";
