@@ -513,24 +513,42 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
     if (isProfileView) {
       IGUserDetailViewController *userView = (IGUserDetailViewController*) currentController;
+      if (userView.headerView.statusLabel != nil) return %orig;
+      CGRect containerFrame = userView.headerView.infoLabelContainerView.frame;
+      CGRect addedContainer = CGRectMake(containerFrame.origin.x, containerFrame.origin.y + 5, 
+        containerFrame.size.width, containerFrame.size.height);
+      [userView.headerView.infoLabelContainerView setFrame:addedContainer];
+
       CGRect oldFrame = userView.headerView.followButton.frame;
-      CGRect screenRect = [[UIScreen mainScreen] bounds];
-      CGFloat screenWidth = screenRect.size.width;
-      oldFrame.origin.y = oldFrame.size.height + oldFrame.origin.y;
-      oldFrame.size.width = screenWidth - oldFrame.origin.x;
+      oldFrame.origin.y = oldFrame.size.height + oldFrame.origin.y + 5;
+
       UILabel *statusLabel = [[UILabel alloc] initWithFrame:oldFrame];
+      statusLabel.numberOfLines = 1;
+      statusLabel.backgroundColor = [UIColor colorWithRed:(246/255.0) green:(246/255.0) blue:(246/255.0) alpha:1];
+      statusLabel.textColor = [UIColor colorWithRed:(99/255.0) green:(99/255.0) blue:(99/255.0) alpha:1];
+      statusLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:12];
+      statusLabel.textAlignment = NSTextAlignmentCenter;
+      statusLabel.layer.masksToBounds = YES;
+      statusLabel.layer.cornerRadius = 8.0;
+      CGPathRef shadowPath = CGPathCreateWithRect(statusLabel.bounds, NULL);
+      statusLabel.layer.shadowPath = shadowPath;
+
       int followed_by = [[status objectForKey:@"followed_by"] intValue];
       int following = [[status objectForKey:@"following"] intValue];
       if (followed_by == 1 && following == 1) {
         statusLabel.text = localizedString(@"FOLLOW_EACH_OTHER");
       } else if (followed_by == 1) {
-        statusLabel.text = [NSString stringWithFormat:localizedString(@"FOLLOWS_YOU"), self.username];
+        statusLabel.text = localizedString(@"FOLLOWS_YOU");
       } else if (followed_by == 0) {
-        statusLabel.text = [NSString stringWithFormat:localizedString(@"DOES_NOT_FOLLOW"), self.username];
-
+        statusLabel.text = localizedString(@"DOES_NOT_FOLLOW");
       }
-      statusLabel.textColor = [UIColor colorWithWhite:0.333333 alpha:1.0];
-      statusLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:12];
+
+      CGSize expectedSize = [statusLabel.text sizeWithAttributes:
+        @{NSFontAttributeName: statusLabel.font}];
+      oldFrame.size.width = expectedSize.width + 8;
+      oldFrame.size.height = ceilf(expectedSize.height) + 4;
+      statusLabel.frame = oldFrame;
+      [userView.headerView setStatusLabel:statusLabel];
       [userView.headerView addSubview:statusLabel];
     }
   }
@@ -575,6 +593,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   } else {
     %orig;
   }
+}
+%new
+- (UILabel *)statusLabel {
+  return objc_getAssociatedObject(self, @selector(statusLabel));
+}
+
+%new
+- (void)setStatusLabel:(UILabel *)value {
+  objc_setAssociatedObject(self, @selector(statusLabel), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 %end
 
@@ -1337,7 +1364,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeSettings)];
     rootController.navigationItem.rightBarButtonItem = doneButton;
     if (rootController) {
-        [[InstaHelper rootViewController] presentViewController:navigationController animated:YES completion:nil];
+      [[InstaHelper rootViewController] presentViewController:navigationController animated:YES completion:nil];
     }
     return;
   }

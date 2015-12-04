@@ -197,11 +197,14 @@
 @interface IGUserDetailHeaderView : UIView
 @property(retain, nonatomic) IGFollowButton *followButton;
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
+@property (nonatomic,retain) UIView * infoLabelContainerView;
 -(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
 @property (assign,nonatomic) id delegate;
 -(void)onFeedViewModeChanged:(int)arg1;
 -(void)onEditProfileTapped;
 -(void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2;
+-(UILabel *)statusLabel;
+-(void)setStatusLabel:(UILabel *)value;
 @end
 
 @interface IGUserDetailViewController : IGViewController

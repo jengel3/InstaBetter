@@ -42,7 +42,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
 			<string>com.jake0oo0.instabetter</string>
 			<key>key</key>
