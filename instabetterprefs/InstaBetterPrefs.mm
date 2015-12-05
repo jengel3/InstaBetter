@@ -60,13 +60,16 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.twitter.com/AOkhtenberg"]];
 }
 
+- (void)openPayPal:(id)sender {
+  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://paypal.me/itsjake"]];
+}
+
 - (void)restartInstagram:(id)sender {
   if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.burbn.instagram"]) {
     return exit(0);
   }
   system("killall -9 Instagram");
 }
-
 @end
  
 @implementation EditableListController
