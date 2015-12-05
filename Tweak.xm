@@ -269,7 +269,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 @end
 
 @implementation LocationSelectorViewController
--(void)viewDidLoad {
+- (void)viewDidLoad {
   [super viewDidLoad];
   self.view = [[UIView alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame]];
   self.view.backgroundColor = [UIColor whiteColor];
@@ -288,7 +288,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [self.view addSubview:self.mapView];
 }
 
--(void)selectedLocation:(UITapGestureRecognizer *)recognizer {
+- (void)selectedLocation:(UITapGestureRecognizer *)recognizer {
   if (recognizer.state != UIGestureRecognizerStateBegan) return;
   [self.mapView removeAnnotations:self.mapView.annotations];
 
@@ -302,7 +302,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [self.mapView addAnnotation:loc];
 }
 
--(void)hideSelection {
+- (void)hideSelection {
   if (self.delegate) {
     MKPointAnnotation *annotation = [self.mapView.annotations firstObject];
     if (annotation) {
@@ -317,7 +317,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // add return key to Instagram caption
 %hook IGCaptionCell
--(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
   BOOL ori = %orig;
   if (!(enabled && returnKey)) return ori;
   [textView setKeyboardType:0];
@@ -329,18 +329,18 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // add return key to comments
 
 %hook IGCommentThreadViewController
--(BOOL)growingTextViewShouldReturn:(id)textView {
+- (BOOL)growingTextViewShouldReturn:(id)textView {
   if (!(enabled && returnKey)) return %orig;
   return YES;
 }
--(BOOL)growingTextView:(id)textView shouldChangeTextInRange:(NSRange)range replacementText:(id)text {
+- (BOOL)growingTextView:(id)textView shouldChangeTextInRange:(NSRange)range replacementText:(id)text {
   if (!(enabled && returnKey)) return %orig;
   return YES;
 }
 %end
 
 %hook IGGrowingTextView
--(BOOL)textViewShouldBeginEditing:(UITextView*)textView {
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
   BOOL ori = %orig;
   if (!(enabled && returnKey)) return ori;
   [textView setKeyboardType:0];
@@ -349,7 +349,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   textView.textContainer.maximumNumberOfLines = 10;
   return ori;
 }
--(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   if (!(enabled && returnKey)) return %orig;
   return YES;
 }
@@ -358,9 +358,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // double-tap like confirmation
 
 %hook IGFeedItemVideoView
--(void)onDoubleTap:(UITapGestureRecognizer*)tap {
+- (void)onDoubleTap:(UITapGestureRecognizer *)tap {
   if (enabled) {
-    IGPost *post = ((IGFeedItemVideoView*)[tap view]).post;
+    IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
     NSDate *now = [NSDate date];
     BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
     if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
@@ -383,8 +383,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedPhotoView
--(void)onDoubleTap:(id)tap {
-  IGPost *post = ((IGFeedPhotoView*)[tap view]).parentCellView.post;
+- (void)onDoubleTap:(id)tap {
+  IGPost *post = ((IGFeedPhotoView *)[tap view]).parentCellView.post;
   NSDate *now = [NSDate date];
   BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
 
@@ -407,7 +407,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // grid view
 
 %hook IGFeedViewController
--(id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
+- (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
   id thing = %orig;
   if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
     [self setFeedLayout:2];
@@ -416,7 +416,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 // auto play video
--(void)startVideoForCellMovingOnScreen {
+- (void)startVideoForCellMovingOnScreen {
   if (enabled) {
     if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
       return %orig;
@@ -430,7 +430,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // auto play audio
 
 %hook IGFeedVideoPlayer
--(void)setReadyToPlay:(BOOL)ready {
+- (void)setReadyToPlay:(BOOL)ready {
   if (enabled) {
     if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
       [self setAudioEnabled:YES];
@@ -446,7 +446,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // disable app rating
 
 %hook Appirater
--(void)showRatingAlert {
+- (void)showRatingAlert {
   if (enabled && hideSponsored) {
     return;
   } else {
@@ -458,7 +458,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // disable DM seen checks
 
 %hook IGDirectThreadViewController
--(void)sendSeenTimestampForContent:(id)content {
+- (void)sendSeenTimestampForContent:(id)content {
   if (enabled && disableDMRead) {
     return;
   }
@@ -467,19 +467,19 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGDirectedPost
--(void)performRead {
+- (void)performRead {
   if (enabled && disableDMRead) {
     return;
   }
   %orig;
 }
--(BOOL)isRead {
+- (BOOL)isRead {
   if (enabled && disableDMRead) {
     return false;
   }
   return %orig;
 }
--(void)setIsRead:(BOOL)read {
+- (void)setIsRead:(BOOL)read {
   if (enabled && disableDMRead) {
     return %orig(NO);
   }
@@ -488,13 +488,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGDirectedPostRecipient
--(BOOL)hasRead {
+- (BOOL)hasRead {
   if (enabled && disableDMRead) {
     return false;
   }
   return %orig;
 }
--(void)setHasRead:(BOOL)read {
+- (void)setHasRead:(BOOL)read {
   if (enabled && disableDMRead) {
     return %orig(NO);
   }
@@ -505,14 +505,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // follow status
 
 %hook IGUser
-- (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req {
+- (void)onFriendStatusReceived:(NSDictionary *)status fromRequest:(id)req {
   if (enabled && followStatus) {
     UIViewController *currentController = [InstaHelper currentController];
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
     if (isProfileView) {
-      IGUserDetailViewController *userView = (IGUserDetailViewController*) currentController;
+      IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
       if (userView.headerView.statusLabel != nil) return %orig;
       CGRect containerFrame = userView.headerView.infoLabelContainerView.frame;
       CGRect addedContainer = CGRectMake(containerFrame.origin.x, containerFrame.origin.y + 5, 
@@ -558,7 +558,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // fake following count
 
--(id)followingCount {
+- (id)followingCount {
   UIViewController *currentController = [InstaHelper currentController];
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
@@ -571,7 +571,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // fake follower count
 
--(id)followerCount {
+- (id)followerCount {
   UIViewController *currentController = [InstaHelper currentController];
 
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
@@ -586,7 +586,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // open links in app
 
 %hook IGUserDetailHeaderView 
--(void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
+- (void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
   if (enabled && openInApp) {
     UIViewController *rootViewController = [InstaHelper rootViewController];
     [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
@@ -606,7 +606,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGWebViewController
--(void)viewDidLoad {
+- (void)viewDidLoad {
   %orig;
   if (![self isModal]) return;
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(closeController)];
@@ -614,7 +614,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)closeController {
+- (void)closeController {
   [self dismissViewControllerAnimated:YES completion:nil];
 }
 %end
@@ -622,7 +622,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // save images and videos in direct messages
 
 %hook IGDirectContentExpandableCell
--(void)layoutSubviews{
+- (void)layoutSubviews{
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
@@ -635,7 +635,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)callShare:(UIGestureRecognizer *)longPress {
+- (void)callShare:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
 
   if ([self.content isKindOfClass:[%c(IGDirectPhoto) class]]) {
@@ -668,7 +668,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (void)actionSheet:(UIActionSheet *)popup didDismissWithButtonIndex:(NSInteger)buttonIndex {
   if (popup.tag == 181) {
     if (buttonIndex != 0) return;
-    IGVideo *media = ((IGDirectVideo*)self.content).video;
+    IGVideo *media = ((IGDirectVideo *)self.content).video;
     NSString *versionURL = highestResImage(media.videoVersions);
 
     NSURL *vidURL = [NSURL URLWithString:versionURL];
@@ -676,7 +676,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     saveVideo(vidURL, nil);
   } else if (popup.tag == 182) {
     if (buttonIndex == 0) {
-      IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
+      IGPhoto *media = ((IGDirectPhoto *)self.content).photo;
       
       NSString *versionURL = highestResImage(media.imageVersions);
       NSURL *imgUrl = [NSURL URLWithString:versionURL];
@@ -691,7 +691,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
       photosViewController.delegate = self;
       [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
-      IGPhoto *media = ((IGDirectPhoto*)self.content).photo;
+      IGPhoto *media = ((IGDirectPhoto *)self.content).photo;
       
       NSString *versionURL = highestResImage(media.imageVersions);
       NSURL *imgUrl = [NSURL URLWithString:versionURL];
@@ -713,7 +713,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // share sheet text
 
 %hook IGCoreTextView
--(void)layoutSubviews {
+- (void)layoutSubviews {
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
@@ -724,7 +724,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)callShare:(UIGestureRecognizer *)longPress {
+- (void)callShare:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[[self.styledString.attributedString string]]
@@ -734,7 +734,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedMediaView
--(void)layoutSubviews {
+- (void)layoutSubviews {
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
@@ -745,10 +745,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)longPressed:(UIGestureRecognizer *)longPress {
+- (void)longPressed:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
-  IGFeedItemPhotoCell *photoCell = (IGFeedItemPhotoCell*) self.superview.superview;
+  IGFeedItemPhotoCell *photoCell = (IGFeedItemPhotoCell *) self.superview.superview;
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
   UIImage *original = self.photoImageView.photoImageView.image;
   if (!loadHighRes && original) {
@@ -809,7 +809,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
--(void)setUserInteractionEnabled:(BOOL)opt {
+- (void)setUserInteractionEnabled:(BOOL)opt {
   if (enabled) {
     %orig(YES);
   } else {
@@ -818,7 +818,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)longPressed:(UIGestureRecognizer *)longPress {
+- (void)longPressed:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
@@ -886,7 +886,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
   %orig;
 }
--(void)hideAndReset {
+- (void)hideAndReset {
   cachedItem = nil;
   %orig;
 }
@@ -894,7 +894,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // mute users from activity
 %hook IGNewsTableViewController
-+(id)storiesWithDictionaries:(id)arr {
++ (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
     NSMutableArray *finalArray = [arr mutableCopy];
     NSUInteger index = 0;
@@ -919,7 +919,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGUserDetailViewController
 // manage multiple users
--(void)viewDidLoad {
+- (void)viewDidLoad {
   %orig;
   if (!(enabled && accountSwitcher)) return;
   IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
@@ -928,7 +928,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   self.navigationItem.leftBarButtonItem = userButton;
 }
 
--(void)switchUsersController:(id)contrl tableViewDidSelectRowWithUser:(id)user {
+- (void)switchUsersController:(id)contrl tableViewDidSelectRowWithUser:(id)user {
   %orig;
   [self animateSwitchUsersTableView];
   AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
@@ -936,7 +936,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 // mute users
--(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+- (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaMute]) {
       NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:prefsLoc];
@@ -957,14 +957,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)openSwitcher {
+- (void)openSwitcher {
   [self onNeedsFullReload];
   [self animateSwitchUsersTableView];
 }
 %end
 
 %hook IGMainFeedViewController
--(BOOL)shouldHideFeedItem:(IGFeedItem *)item {
+- (BOOL)shouldHideFeedItem:(IGFeedItem *)item {
   if (enabled) {
     BOOL contains = [muted containsObject:item.user.username];
     if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
@@ -977,7 +977,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
--(void)viewDidLoad {
+- (void)viewDidLoad {
   %orig;
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
@@ -992,7 +992,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)changeView {
+- (void)changeView {
   if (self.feedLayout == 2) {
     [self setFeedLayout:1];
     [self.navigationItem setLeftBarButtonItem:gridItem animated:YES];
@@ -1004,7 +1004,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedItemTextCell
--(IGStyledString*)styledStringForLikesWithFeedItem:(IGFeedItem*)item {
+- (IGStyledString *)styledStringForLikesWithFeedItem:(IGFeedItem *)item {
     IGStyledString *styled = %orig;
     if (enabled && showPercents) {
       int likeCount = [[likesDict objectForKey:[item getMediaId]] intValue];
@@ -1070,12 +1070,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // save media
 %hook IGFeedItemActionCell
--(void)onMoreButtonPressed:(id)sender {
+- (void)onMoreButtonPressed:(id)sender {
   cachedItem = self.feedItem;
   %orig;
 }
 
--(void)layoutSubviews {
+- (void)layoutSubviews {
   %orig;
 
   if (!(enabled && saveActions && saveMode == 0)) return;
@@ -1121,7 +1121,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)saveItem:(id)sender {
+- (void)saveItem:(id)sender {
   if (!saveConfirm) {
     return [self saveNow];
   }
@@ -1137,13 +1137,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)saveNow {
+- (void)saveNow {
   IGFeedItem *item = self.feedItem;
   saveMedia(item);
 }
 
 %new
--(void)shareItem:(id)sender {
+- (void)shareItem:(id)sender {
   IGFeedItem *item = self.feedItem;
   NSURL *link = [NSURL URLWithString:[item permalink]];
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
@@ -1162,7 +1162,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
--(void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+- (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaSave]) {
       IGFeedItem *item = self.feedItem;
@@ -1186,7 +1186,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // custom locations
 %hook IGLocationPickerViewController
--(void)viewDidLoad {
+- (void)viewDidLoad {
   %orig;
   if (!(enabled && customLocations)) return;
   UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"location-pin-inactive.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(selectCustom)];
@@ -1194,7 +1194,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)selectCustom {
+- (void)selectCustom {
   LocationSelectorViewController *sel = [[LocationSelectorViewController alloc] init];
   UINavigationController *selNav = [[UINavigationController alloc] initWithRootViewController:sel];
   selNav.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -1204,7 +1204,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)didSelectLocation:(CLLocationCoordinate2D)location {
+- (void)didSelectLocation:(CLLocationCoordinate2D)location {
   double longitude = location.longitude;
   double latitude = location.latitude;
   CLLocation *rawLocation = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
@@ -1252,7 +1252,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // hide sponsored posts
 
 %hook IGFeedItemTimelineLayoutAttributes
--(BOOL)sponsoredContext {
+- (BOOL)sponsoredContext {
   if (enabled && hideSponsored) {
     return false;
   } else {
@@ -1262,7 +1262,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedItemHeader
--(void)layoutSubviews {
+- (void)layoutSubviews {
   %orig;
   if (enabled && enableTimestamps) {
     if (alwaysTimestamp) {
@@ -1278,7 +1278,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)showTimestamp {
+- (void)showTimestamp {
   if (self.timestampLabel.frame.origin.x == origPosition) {
     showTimestamp(self, true);
   }
@@ -1286,7 +1286,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedItemActionCell   
--(BOOL)sponsoredPostAllowed {    
+- (BOOL)sponsoredPostAllowed {    
   if (enabled && hideSponsored) {    
     return false;    
   } else {   
@@ -1296,28 +1296,28 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGSponsoredPostInfo
--(BOOL)showIcon {
+- (BOOL)showIcon {
   if (enabled && hideSponsored) {
     return false;
   } else {
     return %orig;
   }
 }
--(BOOL)hideCommentButton {
+- (BOOL)hideCommentButton {
   if (enabled && hideSponsored) {
     return true;
   } else {
     return %orig;
   }
 }
--(BOOL)isHoldout {
+- (BOOL)isHoldout {
   if (enabled && hideSponsored) {
     return true;
   } else {
     return %orig;
   }
 }
--(BOOL)hideComments {
+- (BOOL)hideComments {
   if (enabled && hideSponsored) {
     return true;
   } else {
@@ -1327,7 +1327,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGAccountSettingsViewController
--(id)settingSectionRows {
+- (id)settingSectionRows {
   NSArray *thing = %orig;
   if ([thing count] == 4) {
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, nil];
@@ -1337,14 +1337,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   return nil;
 }
 
--(int)tableView:(id)tableView numberOfRowsInSection:(int)sections {
+- (int)tableView:(id)tableView numberOfRowsInSection:(int)sections {
   if (sections == 2) {
     return [[self settingSectionRows] count];
   }
   return %orig;
 }
 
--(id)tableView:(id)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+- (id)tableView:(id)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   IGGroupedTableViewCell* cell = %orig;
   int count = [[self settingSectionRows] count];
   if (indexPath.section == 2 && ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5))) {
@@ -1354,11 +1354,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   return cell;
 }
 
--(void)tableView:(id)tableView didSelectSettingsRow:(int)index {
+- (void)tableView:(id)tableView didSelectSettingsRow:(int)index {
   int count = [[self settingSectionRows] count];
   if ((count == 5 && index == 4) || (count == 6 && index == 5)) {
     InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
-    UIViewController *rootController = (UIViewController*) settings;
+    UIViewController *rootController = (UIViewController *) settings;
 
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:rootController];
     UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeSettings)];
@@ -1372,7 +1372,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
--(void)closeSettings {
+- (void)closeSettings {
   [[InstaHelper rootViewController] dismissViewControllerAnimated:YES completion:nil];
 }
 %end

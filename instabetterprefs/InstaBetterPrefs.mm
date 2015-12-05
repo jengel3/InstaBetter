@@ -13,7 +13,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
-- (NSArray*) loadSounds:(id)target {
+- (NSArray *)loadSounds:(id)target {
   if (!self.sounds) {
     NSMutableArray *rawList = [[NSMutableArray alloc] init];
     NSString *soundsPath = @"/System/Library/Audio/UISounds/";
@@ -34,7 +34,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 }
 
 // http://iphonedevwiki.net/index.php/PreferenceBundles
--(id) readPreferenceValue:(PSSpecifier*)specifier {
+- (id)readPreferenceValue:(PSSpecifier*)specifier {
   NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:valuesPath];
   if (!settings[specifier.properties[@"key"]]) {
     return specifier.properties[@"default"];
@@ -42,7 +42,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return settings[specifier.properties[@"key"]];
 }
  
--(void) setPreferenceValue:(id)value specifier:(PSSpecifier*)specifier {
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier*)specifier {
   NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
   [defaults addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:valuesPath]];
   [defaults setObject:value forKey:specifier.properties[@"key"]];
@@ -92,7 +92,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
--(void)removedUsername:(PSSpecifier*)specifier {
+- (void)removedUsername:(PSSpecifier*)specifier {
   NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:valuesPath];
   NSMutableArray *keys = [prefs objectForKey:@"muted_users"];
   [keys removeObject:[specifier name]];

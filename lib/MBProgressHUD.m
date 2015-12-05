@@ -752,7 +752,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
 	CGFloat radians = 0;
 	if (UIInterfaceOrientationIsLandscape(orientation)) {
-		if (orientation == UIInterfaceOrientationLandscapeLeft) { radians = -(CGFloat)M_PI_2; } 
+		if (orientation == UIInterfaceOrientationLandscapeLeft) { radians = - (CGFloat)M_PI_2; } 
 		else { radians = (CGFloat)M_PI_2; }
 		// Window coordinates differ!
 		self.bounds = CGRectMake(0, 0, self.bounds.size.height, self.bounds.size.width);
