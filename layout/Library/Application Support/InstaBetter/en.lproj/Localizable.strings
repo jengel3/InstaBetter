@@ -23,6 +23,6 @@
 "LOCATION_ADDRESS" = "Location Address";
 "LOCATION_ADDRESS_MSG" = "Enter the address for the location. (not required)";
 "INSTABETTER_SETTINGS" = "InstaBetter Settings";
-"FOLLOW_EACH_OTHER" = "FOLLOWING EACH OTHER";
-"FOLLOWS_YOU" = "FOLLOWS YOU";
-"DOES_NOT_FOLLOW" = "NOT FOLLOWING YOU";
+"FOLLOW_EACH_OTHER" = "Following Each Other";
+"FOLLOWS_YOU" = "Follows You";
+"DOES_NOT_FOLLOW" = "Not Following You";

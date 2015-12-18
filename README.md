@@ -112,6 +112,10 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix potential crash in activity tab
 * Compatible with Instagram 7.11 and older.
 
+### Release 1.4.2
+- Codebase cleanup
+- Fix Instagram 7.13 crash
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

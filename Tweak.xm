@@ -1007,33 +1007,39 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (IGStyledString *)styledStringForLikesWithFeedItem:(IGFeedItem *)item {
     IGStyledString *styled = %orig;
     if (enabled && showPercents) {
-      int likeCount = [[likesDict objectForKey:[item getMediaId]] intValue];
+      id mediaId = nil;
+      if ([item respondsToSelector:@selector(getMediaId)]) {
+        mediaId = [item getMediaId];
+      } else {
+        mediaId = [item mediaId];
+      }
+      int likeCount = [[likesDict objectForKey:mediaId] intValue];
       if (likeCount && likeCount == item.likeCount) {
         return styled;
       } else {
         if (item.user.followerCount) {
-          [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:[item getMediaId]];
-            int followers = [item.user.followerCount intValue];
-            float percent = ((float)item.likeCount / (float)followers) * 100.0;
-            NSString *display = [NSString stringWithFormat:@" (%.01f%%)", percent];
-            NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
-            NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
-            UIColor *col = nil;
-            if (percent <= 20.0) {
-              col = [UIColor redColor];
-            } else if (percent > 20.0 && percent <= 45.0) {
-              col = [UIColor orangeColor];
-            } else if (percent > 45.0 && percent <= 72.0) {
-              col = [UIColor yellowColor];
-            } else {
-              col = [UIColor greenColor];
-            }
-            [attributes setObject:col forKey:NSForegroundColorAttributeName];
-            NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
-            [original appendAttributedString:formatted];
-            [styled setAttributedString:original];
-            return styled;
+          [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:mediaId];
+          int followers = [item.user.followerCount intValue];
+          float percent = ((float)item.likeCount / (float)followers) * 100.0;
+          NSString *display = [NSString stringWithFormat:@" (%.01f%%)", percent];
+          NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
+          NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
+          UIColor *col = nil;
+          if (percent <= 20.0) {
+            col = [UIColor redColor];
+          } else if (percent > 20.0 && percent <= 45.0) {
+            col = [UIColor orangeColor];
+          } else if (percent > 45.0 && percent <= 72.0) {
+            col = [UIColor yellowColor];
+          } else {
+            col = [UIColor greenColor];
           }
+          [attributes setObject:col forKey:NSForegroundColorAttributeName];
+          NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
+          [original appendAttributedString:formatted];
+          [styled setAttributedString:original];
+          return styled;
+        }
       }
     }
     return styled;

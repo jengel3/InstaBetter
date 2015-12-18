@@ -118,6 +118,7 @@
 
 @interface IGFeedItem : IGPost
 @property (readonly) IGDate *takenAt; 
+@property (readonly) NSString * mediaId; 
 + (int)fullSizeImageVersionForDevice;
 - (id)imageURLForImageVersion:(int)arg1;
 - (id)description;
