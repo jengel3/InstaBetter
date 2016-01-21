@@ -434,6 +434,29 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     %orig;
   }
 }
+
+
+// instagram 7.14+(?)
+-(void)reloadWithNewObjects:(NSArray*)items {
+  BOOL isMainFeed = [[InstaHelper currentController] isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
+
+  NSMutableArray *origCopy = [items mutableCopy];
+
+  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
+  for (IGFeedItem *item in items) {
+    if ([muted containsObject:item.user.username]) {
+      [toRemove addObject:item];
+    }
+  }
+
+  for (IGFeedItem *removable in toRemove) {
+    [origCopy removeObject:removable];
+  }
+
+  return %orig([origCopy copy]);
+  
+}
 %end
 
 // auto play audio
@@ -1019,6 +1042,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGMainFeedViewController
+// instagram > 7.14
 - (BOOL)shouldHideFeedItem:(IGFeedItem *)item {
   if (enabled) {
     BOOL contains = [muted containsObject:item.user.username];

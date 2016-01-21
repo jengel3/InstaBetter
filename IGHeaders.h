@@ -197,6 +197,7 @@
 - (void)startVideoForCellMovingOnScreen;
 - (id)videoCellForAutoPlay;
 - (BOOL)isDeviceSupportAlwaysAutoPlay;
+-(void)reloadWithNewObjects:(NSArray*)arg1 ;
 @end
 
 @interface IGMainFeedViewController : IGFeedViewController
