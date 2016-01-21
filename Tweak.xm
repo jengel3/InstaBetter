@@ -15,10 +15,10 @@
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
 
 static NSMutableArray *muted = nil;
-static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
+// static NSMutableDictionary *likesDict = [[NSMutableDictionary alloc] init];
 
 static BOOL enabled = YES;
-static BOOL showPercents = YES;
+// static BOOL showPercents = YES;
 static BOOL hideSponsored = YES;
 static int muteMode = 0;
 static BOOL muteActivity = YES;
@@ -38,6 +38,7 @@ static int saveMode = 1;
 static int saveConfirm = YES;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
+static BOOL fakeVerified = NO;
 static BOOL enableTimestamps = YES;
 static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
@@ -79,7 +80,7 @@ static NSDictionary* loadPrefs() {
       hideSponsored = [prefs objectForKey:@"hide_sponsored"] ? [[prefs objectForKey:@"hide_sponsored"] boolValue] : YES;
 
       followStatus = [prefs objectForKey:@"follow_status"] ? [[prefs objectForKey:@"follow_status"] boolValue] : YES;
-      showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
+      // showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : NO;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
@@ -107,6 +108,7 @@ static NSDictionary* loadPrefs() {
       // spoofing
       fakeFollowers = [prefs objectForKey:@"fake_follower_count"] ? [[prefs objectForKey:@"fake_follower_count"] intValue] : nil;
       fakeFollowing = [prefs objectForKey:@"fake_following_count"] ? [[prefs objectForKey:@"fake_following_count"] intValue] : nil;
+      fakeVerified = [prefs objectForKey:@"fake_verified"] ? [[prefs objectForKey:@"fake_verified"] boolValue] : NO;
 
       // timestamps
       alwaysTimestamp = [prefs objectForKey:@"always_timestamp"] ? [[prefs objectForKey:@"always_timestamp"] boolValue] : NO;
@@ -323,6 +325,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [textView setKeyboardType:0];
   [textView setReturnKeyType:UIReturnKeyDefault];
   return ori;
+}
+%end
+
+%hook IGUnreadBubbleView
+-(void)setUnreadCount:(int)arg1 {
+  if (!enabled) return;
+  self.label.text = [NSString stringWithFormat:@"%d", arg1];
 }
 %end
 
@@ -564,7 +573,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
   if (enabled && isProfileView && fakeFollowing) {
-    return [NSNumber numberWithInt:fakeFollowing];
+    IGUserDetailViewController *profileView = (IGUserDetailViewController*)currentController;
+    IGUser *curUser = [InstaHelper currentUser];
+
+    if ([profileView.user.username isEqualToString:curUser.username]) {
+      return [NSNumber numberWithInt:fakeFollowing];
+    }
   }
   return %orig;
 }
@@ -577,7 +591,28 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
 
   if (enabled && isProfileView && fakeFollowers) {
-    return [NSNumber numberWithInt:fakeFollowers];
+    IGUserDetailViewController *profileView = (IGUserDetailViewController*)currentController;
+    IGUser *curUser = [InstaHelper currentUser];
+
+    if ([profileView.user.username isEqualToString:curUser.username]) {
+      return [NSNumber numberWithInt:fakeFollowers];
+    }
+  }
+  return %orig;
+}
+
+- (BOOL)isVerified {
+  UIViewController *currentController = [InstaHelper currentController];
+
+  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+
+  if (enabled && isProfileView && fakeVerified) {
+    IGUserDetailViewController *profileView = (IGUserDetailViewController*)currentController;
+    IGUser *curUser = [InstaHelper currentUser];
+
+    if ([profileView.user.username isEqualToString:curUser.username]) {
+      return YES;
+    }
   }
   return %orig;
 }
@@ -799,6 +834,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
+  // NSLog(@"CALLED FOR SUPER");
   %orig;
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
@@ -806,6 +842,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [longPress setMinimumPressDuration:1];
     [self addGestureRecognizer:longPress];
     [self setUserInteractionEnabled:YES];
+    self.buttonDisabled = NO;
   }
 }
 
@@ -819,6 +856,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 - (void)longPressed:(UIGestureRecognizer *)longPress {
+  // NSLog(@"CALLED PRESS!!");
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
@@ -864,22 +902,39 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     //   }
     // }
     // if (isProfileView && (([self.buttons count] == 6 && isFollowing) || ([self.buttons count] == 5 && !isFollowing)) && !self.titleLabel.text) {
+    BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
     if (isProfileView && !cachedItem && !self.titleLabel.text) {
         IGUser *current = [InstaHelper currentUser];
         if ([current.username isEqualToString:userView.user.username]) return %orig;
         if ([muted containsObject:userView.user.username]) {
+          if (responds) {
+            [self addButtonWithTitle:instaUnmute style:0 image:nil accessibilityIdentifier:nil];
+          } else {
             [self addButtonWithTitle:instaUnmute style:0];
+          }
         } else {
+          if (responds) {
+            [self addButtonWithTitle:instaMute style:0 image:nil accessibilityIdentifier:nil];
+          } else {
             [self addButtonWithTitle:instaMute style:0];
+          }
         }
     } else if (!self.titleLabel.text && !isWebView) {
       if (saveActions && saveMode == 1) { 
-        [self addButtonWithTitle:instaSave style:0];
+        if (responds) {
+          [self addButtonWithTitle:instaSave style:0 image:nil accessibilityIdentifier:nil];
+        } else {
+          [self addButtonWithTitle:instaSave style:0];
+        }
         IGUser *current = [InstaHelper currentUser];
         if (cachedItem && cachedItem.user == current) {
           cachedItem = nil;
         } else {
-          [self addButtonWithTitle:localizedString(@"SHARE") style:0]; 
+          if (responds) {
+            [self addButtonWithTitle:localizedString(@"SHARE") style:0 image:nil accessibilityIdentifier:nil]; 
+          } else {
+            [self addButtonWithTitle:localizedString(@"SHARE") style:0]; 
+          }
         }
       }    
     }
@@ -1003,76 +1058,76 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-%hook IGFeedItemTextCell
-- (IGStyledString *)styledStringForLikesWithFeedItem:(IGFeedItem *)item {
-    IGStyledString *styled = %orig;
-    if (enabled && showPercents) {
-      id mediaId = nil;
-      if ([item respondsToSelector:@selector(getMediaId)]) {
-        mediaId = [item getMediaId];
-      } else {
-        mediaId = [item mediaId];
-      }
-      int likeCount = [[likesDict objectForKey:mediaId] intValue];
-      if (likeCount && likeCount == item.likeCount) {
-        return styled;
-      } else {
-        if (item.user.followerCount) {
-          [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:mediaId];
-          int followers = [item.user.followerCount intValue];
-          float percent = ((float)item.likeCount / (float)followers) * 100.0;
-          NSString *display = [NSString stringWithFormat:@" (%.01f%%)", percent];
-          NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
-          NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
-          UIColor *col = nil;
-          if (percent <= 20.0) {
-            col = [UIColor redColor];
-          } else if (percent > 20.0 && percent <= 45.0) {
-            col = [UIColor orangeColor];
-          } else if (percent > 45.0 && percent <= 72.0) {
-            col = [UIColor yellowColor];
-          } else {
-            col = [UIColor greenColor];
-          }
-          [attributes setObject:col forKey:NSForegroundColorAttributeName];
-          NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
-          [original appendAttributedString:formatted];
-          [styled setAttributedString:original];
-          return styled;
-        }
-      }
-    }
-    return styled;
-}
-%end
+// %hook IGFeedItemTextCell
+// - (IGStyledString *)styledStringForLikesWithFeedItem:(IGFeedItem *)item {
+//     IGStyledString *styled = %orig;
+//     if (enabled && showPercents) {
+//       id mediaId = nil;
+//       if ([item respondsToSelector:@selector(getMediaId)]) {
+//         mediaId = [item getMediaId];
+//       } else {
+//         mediaId = [item mediaId];
+//       }
+//       int likeCount = [[likesDict objectForKey:mediaId] intValue];
+//       if (likeCount && likeCount == item.likeCount) {
+//         return styled;
+//       } else {
+//         if (item.user.followerCount) {
+//           [likesDict setObject:[NSNumber numberWithInt:item.likeCount] forKey:mediaId];
+//           int followers = [item.user.followerCount intValue];
+//           float percent = ((float)item.likeCount / (float)followers) * 100.0;
+//           NSString *display = [NSString stringWithFormat:@" (%.01f%%)", percent];
+//           NSMutableAttributedString *original = [[NSMutableAttributedString alloc] initWithAttributedString:[styled attributedString]];
+//           NSMutableDictionary *attributes = [[original attributesAtIndex:0 effectiveRange:NULL] mutableCopy];
+//           UIColor *col = nil;
+//           if (percent <= 20.0) {
+//             col = [UIColor redColor];
+//           } else if (percent > 20.0 && percent <= 45.0) {
+//             col = [UIColor orangeColor];
+//           } else if (percent > 45.0 && percent <= 72.0) {
+//             col = [UIColor yellowColor];
+//           } else {
+//             col = [UIColor greenColor];
+//           }
+//           [attributes setObject:col forKey:NSForegroundColorAttributeName];
+//           NSMutableAttributedString *formatted = [[NSMutableAttributedString alloc] initWithString:display attributes:attributes];
+//           [original appendAttributedString:formatted];
+//           [styled setAttributedString:original];
+//           return styled;
+//         }
+//       }
+//     }
+//     return styled;
+// }
+// %end
 
-%hook IGFeedItem
-- (id)initWithDictionary:(id)data {
-  id item = %orig;
-  if (enabled && showPercents) {
-    UIViewController *currentController = [InstaHelper currentController];
+// %hook IGFeedItem
+// - (id)initWithDictionary:(id)data {
+//   id item = %orig;
+//   if (enabled && showPercents) {
+//     UIViewController *currentController = [InstaHelper currentController];
 
-    BOOL isPostsView = [currentController isKindOfClass:[%c(IGPostsFeedViewController) class]];
-    BOOL isMainView = [currentController isKindOfClass:[%c(IGMainFeedViewController) class]];
-    if (isPostsView || isMainView) {
-      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-      dispatch_async(queue, ^{
-        [self.user fetchAdditionalUserDataWithCompletion:nil];
-      });
-    }
-  }
-  return item;
-}
-%end
+//     BOOL isPostsView = [currentController isKindOfClass:[%c(IGPostsFeedViewController) class]];
+//     BOOL isMainView = [currentController isKindOfClass:[%c(IGMainFeedViewController) class]];
+//     if (isPostsView || isMainView) {
+//       dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+//       dispatch_async(queue, ^{
+//         [self.user fetchAdditionalUserDataWithCompletion:nil];
+//       });
+//     }
+//   }
+//   return item;
+// }
+// %end
 
-%hook AppDelegate
-- (void)applicationDidEnterBackground:(id)application {
-  if (enabled && showPercents) {
-    [likesDict removeAllObjects];
-  }
-  %orig;
-}
-%end
+// %hook AppDelegate
+// - (void)applicationDidEnterBackground:(id)application {
+//   if (enabled && showPercents) {
+//     [likesDict removeAllObjects];
+//   }
+//   %orig;
+// }
+// %end
 
 // save media
 %hook IGFeedItemActionCell
@@ -1132,14 +1187,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     return [self saveNow];
   }
   [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
-  message:localizedString(@"DID_WANT_SAVE_CONTENT")
-  cancelButtonTitle:nil
-  otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-  tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-      [self saveNow];
-    }
-  }];
+    message:localizedString(@"DID_WANT_SAVE_CONTENT")
+    cancelButtonTitle:nil
+    otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+    tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+        [self saveNow];
+      }
+    }];
 }
 
 %new

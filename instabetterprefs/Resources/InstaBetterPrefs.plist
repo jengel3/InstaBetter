@@ -24,7 +24,7 @@
 			<key>label</key>
 			<string>FEATURES</string>
 		</dict>
-		<dict>
+<!-- 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -37,7 +37,7 @@
 			<string>SHOW_LIKE_PERCENTAGES</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict>
+		</dict> -->
 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
@@ -307,6 +307,20 @@
 			<string>fake_following_count</string>
 			<key>label</key>
 			<string>FAKE_FOLLOWING_COUNT</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>fake_verified</string>
+			<key>label</key>
+			<string>FAKE_VERIFIED</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>

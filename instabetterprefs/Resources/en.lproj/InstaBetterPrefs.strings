@@ -26,6 +26,7 @@
 "FOLLOW_SPOOFING" = "Follow Spoofing";
 "FAKE_FOLLOWER_COUNT" = "Fake Follower Count";
 "FAKE_FOLLOWING_COUNT" = "Fake Following Count";
+"FAKE_VERIFIED" = "Fake Verified Account";
 "AUDIO_AND_VIDEO" = "Audio & Video";
 "AUTO_PLAY_VIDEO" = "Auto Play Video";
 "AUTO_PLAY_AUDIO" = "Auto Play Audio";

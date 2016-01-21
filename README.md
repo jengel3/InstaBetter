@@ -115,6 +115,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.4.2
 - Codebase cleanup
 - Fix Instagram 7.13 crash
+- New follow status label
+
+### Release 1.4.4
+- Support Instagram 7.14
+- Fix crash when opening action menus
+- Remove like percentages. They caused too many issues, including the No Internet Connection bug. They also display terribly with the latest updates.
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

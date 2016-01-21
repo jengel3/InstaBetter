@@ -13,6 +13,7 @@
 + (void)fetchFollowStatusInBulk:(NSArray*)users;
 - (id)followingCount;
 - (id)followerCount;
+- (BOOL)isVerified;
 - (void)fetchAdditionalUserDataWithCompletion:(id)fp8;
 - (id)initWithDictionary:(id)data;
 - (void)onFriendStatusReceived:(NSDictionary*)status fromRequest:(id)req;
@@ -20,6 +21,24 @@
 - (id)primaryName;
 - (id)fullOrDisplayName;
 - (id)toDict;
+@end
+
+@interface IGNewsInboxTableViewController
+-(void)unreadCountUpdated:(id)arg1 ;
+@end
+
+@interface IGPassthroughLabel : UILabel
+@end
+
+
+@interface IGUnreadBubbleView
+@property (nonatomic,retain) IGPassthroughLabel * label;
+-(void)setUnreadCount:(int)arg1 ;
+
+@end
+
+@interface IGNewsDataSourceSection
+@property (nonatomic,copy) NSOrderedSet * stories;
 @end
 
 @interface IGAuthHelper
@@ -250,6 +269,8 @@
 @property (nonatomic, retain) UILabel *titleLabel;  
 + (void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
+- (void)buttonWithTitle:(NSString *)title style:(int)style;
+-(void)addButtonWithTitle:(id)arg1 style:(int)arg2 image:(id)arg3 accessibilityIdentifier:(id)arg4 ;
 + (int)tag;
 + (void)setTag:(int)arg1;
 - (void)hideAndReset;
