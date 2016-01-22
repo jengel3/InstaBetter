@@ -124,9 +124,11 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ### Release 1.4.5
 - Further support Instagram 7.14
+- Fix mute/save/share buttons not appearing in menus
 - Rewrite muting to support future versions
 - Add fake verified symbol, similar to spoofing followers
 - Make spoofed followers/following/verified only appear for your profile
+- Support return key in future versions
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
