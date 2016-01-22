@@ -349,7 +349,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGGrowingTextView
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
+// instagram 7.14+, backwards compatible (untested)
+- (BOOL)textViewDidBeginEditing:(UITextView *)textView {
   BOOL ori = %orig;
   if (!(enabled && returnKey)) return ori;
   [textView setKeyboardType:0];
@@ -358,6 +359,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   textView.textContainer.maximumNumberOfLines = 10;
   return ori;
 }
+
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
   if (!(enabled && returnKey)) return %orig;
   return YES;
@@ -499,18 +501,21 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGDirectedPost
+// instagram > 7.14
 - (void)performRead {
   if (enabled && disableDMRead) {
     return;
   }
   %orig;
 }
+// instagram > 7.14
 - (BOOL)isRead {
   if (enabled && disableDMRead) {
     return false;
   }
   return %orig;
 }
+// instagram > 7.14
 - (void)setIsRead:(BOOL)read {
   if (enabled && disableDMRead) {
     return %orig(NO);
@@ -520,12 +525,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGDirectedPostRecipient
+// instagram > 7.14
 - (BOOL)hasRead {
   if (enabled && disableDMRead) {
     return false;
   }
   return %orig;
 }
+// instagram > 7.14
 - (void)setHasRead:(BOOL)read {
   if (enabled && disableDMRead) {
     return %orig(NO);

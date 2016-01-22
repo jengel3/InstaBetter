@@ -599,6 +599,7 @@
 @property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
 - (void)setMaxNumberOfLines:(int)arg1;
 - (void)setKeyboardType:(int)arg1;
+- (void)textViewDidBeginEditing:(UITextView*)arg1 ;
 - (BOOL)textViewShouldBeginEditing:(UITextView*)arg1;
 - (BOOL)textView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3;
 - (void)textViewDidChange:(id)arg1;

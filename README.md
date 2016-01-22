@@ -122,6 +122,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix crash when opening action menus
 - Remove like percentages. They caused too many issues, including the No Internet Connection bug. They also display terribly with the latest updates.
 
+### Release 1.4.5
+- Further support Instagram 7.14
+- Rewrite muting to support future versions
+- Add fake verified symbol, similar to spoofing followers
+- Make spoofed followers/following/verified only appear for your profile
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
