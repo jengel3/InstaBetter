@@ -395,7 +395,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedPhotoView
 - (void)onDoubleTap:(id)tap {
-  IGPost *post = ((IGFeedPhotoView *)[tap view]).parentCellView.post;
+  IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
   NSDate *now = [NSDate date];
   BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
 
@@ -420,7 +420,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGFeedViewController
 - (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
   id thing = %orig;
-  if (mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+  if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
     [self setFeedLayout:2];
   }
   return thing;
@@ -710,7 +710,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       delegate:self
       cancelButtonTitle:localizedString(@"CANCEL")
       destructiveButtonTitle:nil
-      otherButtonTitles:localizedString(@"SAVE_IMAGE"), localizedString(@"ZOOM"), nil];
+      otherButtonTitles:localizedString(@"SAVE_PHOTO"), localizedString(@"ZOOM"), nil];
     actions.tag = 182;
 
     [actions showInView:[UIApplication sharedApplication].keyWindow];

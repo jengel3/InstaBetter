@@ -130,6 +130,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Make spoofed followers/following/verified only appear for your profile
 - Support return key in future versions
 
+
+### Release 1.4.6
+- Support Instagram 7.15
+- Fix DM image saving displaying wrong text
+- Fix crash when double clicking to like photos
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

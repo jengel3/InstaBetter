@@ -1,7 +1,7 @@
 Package: com.jake0oo0.instabetter
 Name: InstaBetter
 Depends: firmware (>= 7.0)
-Version: 1.4.4
+Version: 1.4.5
 Architecture: iphoneos-arm
 Description: The most comprehensive Instagram tweak yet
 Maintainer: Jake0oo0 <jake0oo0dev@gmail.com>
