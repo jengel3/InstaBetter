@@ -449,7 +449,7 @@
 - (void)setButtonDisabled:(BOOL)arg1;
 - (BOOL)buttonDisabled;
 - (void)longPressed:(id)sender;
-- (void)displayProfilePic:(id)longPress;
+- (void)displayProfilePic;
 @end
 
 @interface IGFeedToggleView : UIView

@@ -458,7 +458,7 @@
 			<key>footerText</key>
 			<string>Mute users from your Instagram feed and activity timeline.</string>
 		</dict>
-		<dict>
+<!-- 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -469,6 +469,20 @@
 			<string>enable_muting</string>
 			<key>label</key>
 			<string>ENABLE_MUTING</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict> -->
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>mute_feed</string>
+			<key>label</key>
+			<string>MUTE_FROM_MAIN_FEED</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>

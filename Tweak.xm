@@ -22,6 +22,7 @@ static BOOL enabled = YES;
 static BOOL hideSponsored = YES;
 static int muteMode = 0;
 static BOOL muteActivity = YES;
+static BOOL muteFeed = YES;
 static BOOL saveActions = YES;
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
@@ -92,6 +93,7 @@ static NSDictionary* loadPrefs() {
 
       muteMode = [prefs objectForKey:@"mute_mode"] ? [[prefs objectForKey:@"mute_mode"] intValue] : 0;
       muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
+      muteFeed = [prefs objectForKey:@"mute_feed"] ? [[prefs objectForKey:@"mute_feed"] boolValue] : YES;
       muted = [prefs objectForKey:@"muted_users"] ? [prefs objectForKey:@"muted_users"] : [[NSMutableArray alloc] init];
 
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
@@ -460,36 +462,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 -(void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-  // %log;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  // NSLog(@"MAIN FEED? %d", isMainFeed);
-  // NSLog(@"CURRENT %@ KIND %@", self.class, [%c(IGMainFeedViewController) class]);
-  if (!isMainFeed) return %orig;
-
-  NSMutableArray *origCopy = [items mutableCopy];
-
-  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
-  for (IGFeedItem *item in items) {
-    BOOL contains = [muted containsObject:item.user.username];
-    if ((contains && muteMode == 0) || (!contains && muteMode == 1) || item.sponsoredPostInfo) {
-      [toRemove addObject:item];
-    }
-  }
-
-  // NSLog(@"CALLED HERE!!");
-
-  for (IGFeedItem *removable in toRemove) {
-    [origCopy removeObject:removable];
-  }
-
-  return %orig([origCopy copy], arg2, arg3, arg4, arg5);
-}
-
-
-
-// instagram 7.14+(?)
--(void)reloadWithNewObjects:(NSArray*)items {
-  // %log;
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
   BOOL isMainFeed = [[InstaHelper currentController] isKindOfClass:[%c(IGMainFeedViewController) class]];
   if (!isMainFeed) return %orig;
 
@@ -498,7 +471,31 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   NSMutableArray *toRemove = [[NSMutableArray alloc] init];
   for (IGFeedItem *item in items) {
     BOOL contains = [muted containsObject:item.user.username];
-    if ((contains && muteMode == 0) || (!contains && muteMode == 1) || item.sponsoredPostInfo) {
+    if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
+      [toRemove addObject:item];
+    }
+  }
+
+  for (IGFeedItem *removable in toRemove) {
+    [origCopy removeObject:removable];
+  }
+
+
+  return %orig([origCopy copy], arg2, arg3, arg4, arg5);
+}
+
+// instagram 7.14+(?)
+-(void)reloadWithNewObjects:(NSArray*)items {
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [[InstaHelper currentController] isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
+
+  NSMutableArray *origCopy = [items mutableCopy];
+
+  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
+  for (IGFeedItem *item in items) {
+    BOOL contains = [muted containsObject:item.user.username];
+    if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
       [toRemove addObject:item];
     }
   }
@@ -923,16 +920,24 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   %log;
   %orig;
   if (enabled) {
-    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
-    [longPress setMinimumPressDuration:1];
-    [self.profilePicButton addGestureRecognizer:longPress];
-    [self setUserInteractionEnabled:YES];
-    self.buttonDisabled = NO;
+    // UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self.profilePicButton action:@selector(longPressed:)];
+    // [longPress setDelegate:self];
+    // [longPress setMinimumPressDuration:1];
+
+    // [self.profilePicButton addGestureRecognizer:longPress];
+    // [self setUserInteractionEnabled:YES];
+    // self.buttonDisabled = NO;
+    // UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    // tapGesture.numberOfTapsRequired = 2;
+    // [self.profilePicButton addGestureRecognizer:tapGesture];
   }
+
 }
 
-
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+    %log;
+    return YES;
+}
 
 - (void)setUserInteractionEnabled:(BOOL)opt {
   if (enabled) {
@@ -943,10 +948,37 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
-- (void)longPressed:(UIGestureRecognizer *)longPress {
+- (void)longPressed:(UITapGestureRecognizer *)longPress {
   %log;
-  // NSLog(@"CALLED PRESS!!");
-  if (longPress.state != UIGestureRecognizerStateBegan) return;
+  // if (longPress.state != UIGestureRecognizerStateBegan) return;
+  [self displayProfilePic];
+}
+
+-(void)tapped:(id)recognizer {
+  NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+  NSLog(@"source %@", sourceString);
+    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+
+    NSLog(@"Stack = %@", [array objectAtIndex:0]);
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+
+  NSLog(@"RECOGNIZER %@", [recognizer class]);
+  UIViewController *currentController = [InstaHelper currentController];
+  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+  if (!isProfileView) return %orig;
+  %orig;
+  [self displayProfilePic];
+}
+
+
+%new
+-(void)displayProfilePic {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
 
@@ -974,7 +1006,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // action sheet manager
-
 %hook IGActionSheetCallbackProxy
 -(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
   if (enabled) {

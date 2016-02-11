@@ -148,6 +148,10 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Add InstaMute as a conflict to prevent issues
 - Use Safari Web Views for opening links in supported iOS versions
 
+### Release 1.4.9
+- Remove muted users and sponsored posts from the grid view
+- Add options for only muting the main feed and/or the activity feed
+
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

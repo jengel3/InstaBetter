@@ -40,6 +40,7 @@
 "MUTING" = "Muting";
 "ENABLE_MUTING" = "Enable Muting";
 "MUTE_FROM_ACTIVITY" = "Mute From Activity Feeds";
+"MUTE_FROM_MAIN_FEED" = "Mute From Main Feed";
 "MUTED_USERS" = "Muted Users";
 "MODE" = "Mode";
 "BLACKLIST" = "Blacklist";
