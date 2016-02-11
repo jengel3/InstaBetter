@@ -135,9 +135,17 @@
 - (id)imageURLForFullSizeImage;
 @end
 
+@interface IGSponsoredPostInfo
+- (BOOL)showIcon;
+- (BOOL)hideCommentButton;
+- (BOOL)isHoldout;
+- (BOOL)hideComments;
+@end
+
 @interface IGFeedItem : IGPost
 @property (readonly) IGDate *takenAt; 
 @property (readonly) NSString * mediaId; 
+@property (readonly) IGSponsoredPostInfo * sponsoredPostInfo; 
 + (int)fullSizeImageVersionForDevice;
 - (id)imageURLForImageVersion:(int)arg1;
 - (id)description;
@@ -198,6 +206,10 @@
 - (id)videoCellForAutoPlay;
 - (BOOL)isDeviceSupportAlwaysAutoPlay;
 -(void)reloadWithNewObjects:(NSArray*)arg1 ;
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
+-(void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)arg1;
+-(void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
+-(void)reloadWithCurrentObjectsAnimated:(char)arg1 ;
 @end
 
 @interface IGMainFeedViewController : IGFeedViewController
@@ -213,6 +225,10 @@
 
 @interface IGMediaCaptureViewController
 - (BOOL)shouldAutoPlayVideo;
+@end
+
+@interface SFSafariViewController : NSObject
+-(id)initWithURL:(id)arg1;
 @end
 
 @interface IGUserDetailHeaderView : UIView
@@ -271,10 +287,18 @@
 + (void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 - (void)buttonWithTitle:(NSString *)title style:(int)style;
+-(void)setActionDelegate:(id)arg1 ;
 -(void)addButtonWithTitle:(id)arg1 style:(int)arg2 image:(id)arg3 accessibilityIdentifier:(id)arg4 ;
 + (int)tag;
 + (void)setTag:(int)arg1;
 - (void)hideAndReset;
+@end
+
+@interface IGActionSheetCallbackProxy
+-(void)setCallback:(id)arg1 ;
++(id)delegateWithCallback:(/*^block*/id)arg1 ;
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
+-(void)actionSheetFinishedHiding;
 @end
 
 @protocol IGFeedHeaderItem <NSObject>
@@ -292,12 +316,6 @@
 - (BOOL)sponsoredContext;
 @end
 
-@interface IGSponsoredPostInfo
-- (BOOL)showIcon;
-- (BOOL)hideCommentButton;
-- (BOOL)isHoldout;
-- (BOOL)hideComments;
-@end
 
 @interface IGCollectionView : UICollectionView
 @end
@@ -418,14 +436,20 @@
 @property (nonatomic, retain) IGPost *post;
 @end
 
+@interface IGSimpleButton : UIButton
+@end
+
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
 @property (nonatomic, retain) IGUser *user; 
 @property (assign,nonatomic) BOOL buttonDisabled;
+@property (nonatomic,readonly) IGSimpleButton * profilePicButton;
 - (id)initWithFrame:(CGRect)arg1;
 - (id)initWithFrame:(CGRect)arg1 user:(id)arg2;
 - (void)tapped:(id)arg1;
 - (void)setButtonDisabled:(BOOL)arg1;
 - (BOOL)buttonDisabled;
+- (void)longPressed:(id)sender;
+- (void)displayProfilePic:(id)longPress;
 @end
 
 @interface IGFeedToggleView : UIView

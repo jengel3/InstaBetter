@@ -135,6 +135,19 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Support Instagram 7.15
 - Fix DM image saving displaying wrong text
 - Fix crash when double clicking to like photos
+- Fix grid mode still being enabled with InstaBetter disabled
+
+### Release 1.4.7
+- More Instagram 7.15 support
+- Fix not being able to save images/videos from action menu
+- Fix mute button not working
+
+### Release 1.4.8
+- Fix whitelist mode not working
+- Fix muted posts still appearing sometimes
+- Add InstaMute as a conflict to prevent issues
+- Use Safari Web Views for opening links in supported iOS versions
+
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
