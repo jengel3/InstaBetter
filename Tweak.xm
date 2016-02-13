@@ -919,52 +919,36 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// %hook UITapGestureRecognizer
-// +(id)alloc {
-//   NSLog(@"[INSTABETTER] CALLED CREATE!!");
-//   return %orig;
-// }
-
-// - (id)initWithTarget:(id)arg1 action:(SEL)arg2 {
-//   NSLog(@"[INSTABETTER] %@, %@", arg1, NSStringFromSelector(arg2));
-//   %log;
-//   return %orig;
-// }
-// %end
-
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
-  %log;
-  // %orig;
   if (enabled) {
+    UIView *superView = (UIView*)[self nextResponder];
+    // NSLog(@"%@ CURRENT", superView);
+    BOOL isProfileView = [superView isKindOfClass:[%c(IGUserDetailHeaderView) class]];
+    if (!isProfileView) return %orig;
     [self setDidTap:NO];
-    // UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    // [longPress setDelegate:self];
-    // [longPress setMinimumPressDuration:1];
 
-    // [self addGestureRecognizer:longPress];
     [self setUserInteractionEnabled:YES];
     self.buttonDisabled = NO;
+
+    // double tap 
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
     doubleTap.numberOfTapsRequired = 2;
-    // doubleTap.numberOfTouchesRequired = 0;
     [self addGestureRecognizer:doubleTap];
   
+
+    // single tap -- original
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapped:)];
     singleTap.numberOfTapsRequired = 1;
-    // singleTap.numberOfTouchesRequired = 1;
     [singleTap requireGestureRecognizerToFail: doubleTap];
 
     [self addGestureRecognizer:singleTap];
 
+  } else {
+    %orig;
   }
 
 }
-
-// - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
-//     // %log;
-//     return YES;
-// }
 
 - (void)setUserInteractionEnabled:(BOOL)opt {
   if (enabled) {
@@ -976,12 +960,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 - (void)longPressed:(UILongPressGestureRecognizer *)longPress {
-  %log;
 }
 
 %new
 - (void)singleTapped:(UITapGestureRecognizer *)longPress {
-  %log;
   [self setDidTap:YES];
   [self tapped:self.profilePicButton];
 }
@@ -989,8 +971,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %new
 - (void)doubleTapped:(UITapGestureRecognizer *)longPress {
   [self setDidTap:NO];
-  %log;
-  // if (longPress.state != UIGestureRecognizerStateBegan) return;
   [self displayProfilePic];
 }
 
@@ -1006,39 +986,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   objc_setAssociatedObject(self, @selector(didTap), number, OBJC_ASSOCIATION_RETAIN);
 }
 
-// %new
-// - (void)longPressed:(UILongPressGestureRecognizer *)longPress {
-//   %log;
-//   if (longPress.state != UIGestureRecognizerStateBegan) return;
-//   [self displayProfilePic];
-// }
-
 -(void)tapped:(id)recognizer {
-  NSLog(@"DID TAP %d", [self didTap]);
   if (![self didTap]) return;
-  %log;
   %orig;
   [self setDidTap:NO];
-//   return;
-//   // // NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
-//   // // NSLog(@"source %@", sourceString);
-//   // //   // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
-//   // //   NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
-//   // //   NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
-//   // //   [array removeObject:@""];
-
-//   // //   NSLog(@"Stack = %@", [array objectAtIndex:0]);
-//   // //   NSLog(@"Framework = %@", [array objectAtIndex:1]);
-//   // //   NSLog(@"Memory address = %@", [array objectAtIndex:2]);
-//   // //   NSLog(@"Class caller = %@", [array objectAtIndex:3]);
-//   // //   NSLog(@"Function caller = %@", [array objectAtIndex:4]);
-
-//   // NSLog(@"RECOGNIZER %@", [recognizer class]);
-//   // UIViewController *currentController = [InstaHelper currentController];
-//   // BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
-//   // if (!isProfileView) return %orig;
-//   // %orig;
-//   // [self displayProfilePic];
 }
 
 
@@ -1046,6 +997,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 -(void)displayProfilePic {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
+
+  NSLog(@"USER %@ -- %@ -- %@", self.user, [self.user HDProfilePicURL], self.user.HDProfilePicVersions);
 
   if (self.user && self.user.username) {
     photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];

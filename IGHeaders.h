@@ -10,6 +10,8 @@
 @property (retain) NSURL *profilePicURL; 
 @property (assign) int followStatus; 
 @property (assign) int lastFollowStatus; 
+@property (retain) NSArray * HDProfilePicVersions; 
+- (id)HDProfilePicURL;
 + (void)fetchFollowStatusInBulk:(NSArray*)users;
 - (id)followingCount;
 - (id)followerCount;
