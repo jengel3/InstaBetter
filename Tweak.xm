@@ -998,8 +998,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
 
-  NSLog(@"USER %@ -- %@ -- %@", self.user, [self.user HDProfilePicURL], self.user.HDProfilePicVersions);
-
   if (self.user && self.user.username) {
     photo.attributedCaptionCredit = [[NSMutableAttributedString alloc] initWithString:self.user.username attributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor]}];
   }
@@ -1008,7 +1006,12 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
 
+
+  // remove the stupid low-res limitation from profile pics
   NSURL *imgUrl = self.user.profilePicURL;
+  NSString *tempString = [imgUrl absoluteString];
+  tempString = [tempString stringByReplacingOccurrencesOfString:@"s150x150/" withString:@""];
+  imgUrl = [NSURL URLWithString:tempString];
   dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   dispatch_async(queue, ^{
     NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
@@ -1111,6 +1114,36 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+// %hook IGMainFeedNetworkSource
+// -(BOOL)fetchDataWithParameters:(id)arg1 {
+//   %log;
+//   return %orig;
+// }
+// %end
+
+// %hook IGFeedNetworkSource
+// -(void)willFetchDataWithParameters:(NSDictionary*)arg1 {
+//   NSMutableDictionary* copy = [arg1 mutableCopy];
+
+//   [copy setObject:@"20" forKey:@"count"];
+//   %log;
+//   NSDictionary *nonm = [copy copy];
+//   // id ori = %orig;
+//   // NSLog(@"LOGGEd %@", ori);
+//   return %orig(nonm);
+// }
+// -(id)URLToFetch:(int)arg1 parameters:(NSDictionary*)arg2 {
+//   NSMutableDictionary* copy = [arg2 mutableCopy];
+
+//   [copy setObject:@"20" forKey:@"count"];
+//   %log;
+//   NSDictionary *nonm = [copy copy];
+//   // id ori = %orig;
+//   // NSLog(@"LOGGEd %@", ori);
+//   return %orig(5, nonm);
+// }
+// %end
+
 // mute users from activity
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
@@ -1125,7 +1158,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       // NSLog(@"LINKS %@", links);
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
-        if ([muted containsObject:[words objectAtIndex:0]]) {
+        BOOL contains = [muted containsObject:[words objectAtIndex:0]];
+        if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
           if ([muted count] >= (index - 1)) {
             [finalArray removeObjectAtIndex:index];
           }

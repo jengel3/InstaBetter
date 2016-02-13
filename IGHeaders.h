@@ -467,9 +467,14 @@
 
 @interface IGFeedNetworkSource
 + (id)feedWithLatest;
+-(void)willFetchDataWithParameters:(NSDictionary*)arg1 ;
+-(id)URLToFetch:(int)arg1 parameters:(NSDictionary*)arg2 ;
 @end
 
+
+
 @interface IGMainFeedNetworkSource
+-(BOOL)fetchDataWithParameters:(id)arg1 ;
 @end
 
 @interface IGUsertagGroup

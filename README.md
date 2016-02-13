@@ -153,8 +153,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Add options for only muting the main feed and/or the activity feed
 
 ### Release 1.5.0
-- Fix crash when sharing your own posts
+- Fix crash when sharing your own posts - thanks Justin!
 - Fix your own posts not being savable
+- Fix profile picture zooming. You can now double tap on profile pictures to zoom
+- Make profile zooming only work on the actual profiles, not in feeds/timelines
+- Make profile pictures high-res when zooming
+- Possibly make whitelist mode work on activity feed (activity feed muting needs more testing)
 
 
 
@@ -174,7 +178,8 @@ InstaBetter is not affiliated with Instagram or Facebook.
 The most comprehensive tweak for Instagram yet, with over 15 new features.
 
 * Save high resolution media (Images & Videos) 
-* Hold down on images and profile pictures to zoom
+* Hold down on images to zoom
+* Double tap on profile pictures to view a high-res version
 * Mute users from home and activity feeds
 * Hide Sponsored Ads
 * Select and name custom locations for media
@@ -185,10 +190,9 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 * View DMs without notifying the sender
 * Toggle grid layout with the press of a button
 * Confirm double-tap likes with an alert
-* Press times to display timestamps
+* Tap times to display timestamps
 * Enable or disable auto playing of video and sound
 * Save and zoom DM content
-* Manage multiple accounts with a native switcher
 * Set custom notification sounds for Instagram alerts
 * Available in English, Russian, Italian, Arabic, Hebrew, and more.
 
