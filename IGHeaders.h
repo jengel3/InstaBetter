@@ -450,6 +450,8 @@
 - (BOOL)buttonDisabled;
 - (void)longPressed:(id)sender;
 - (void)displayProfilePic;
+- (BOOL)didTap;
+- (void)setDidTap:(BOOL)didTap;
 @end
 
 @interface IGFeedToggleView : UIView

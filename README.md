@@ -152,6 +152,11 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Remove muted users and sponsored posts from the grid view
 - Add options for only muting the main feed and/or the activity feed
 
+### Release 1.5.0
+- Fix crash when sharing your own posts
+- Fix your own posts not being savable
+
+
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

@@ -429,21 +429,25 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 -(void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
+  // NSLog(@"CALLED CACHE SET!! %@", cell.feedItem);
   cachedItem = cell.feedItem;
   %orig;
 }
 
 -(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
   if (enabled) {
+    // NSLog(@"CACHED %@", cachedItem);
     IGFeedItem *item = cachedItem;
     if ([title isEqualToString:instaSave]) {
       return saveMedia(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+      // NSLog(@"CALLED HERE!! %@", item);
       if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[link]
         applicationActivities:nil];
+      // NSLog(@"DIDNT MAKE IT!!");
       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     }
   }
@@ -915,29 +919,52 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+// %hook UITapGestureRecognizer
+// +(id)alloc {
+//   NSLog(@"[INSTABETTER] CALLED CREATE!!");
+//   return %orig;
+// }
+
+// - (id)initWithTarget:(id)arg1 action:(SEL)arg2 {
+//   NSLog(@"[INSTABETTER] %@, %@", arg1, NSStringFromSelector(arg2));
+//   %log;
+//   return %orig;
+// }
+// %end
+
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
   %log;
-  %orig;
+  // %orig;
   if (enabled) {
-    // UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self.profilePicButton action:@selector(longPressed:)];
+    [self setDidTap:NO];
+    // UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
     // [longPress setDelegate:self];
     // [longPress setMinimumPressDuration:1];
 
-    // [self.profilePicButton addGestureRecognizer:longPress];
-    // [self setUserInteractionEnabled:YES];
-    // self.buttonDisabled = NO;
-    // UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    // tapGesture.numberOfTapsRequired = 2;
-    // [self.profilePicButton addGestureRecognizer:tapGesture];
+    // [self addGestureRecognizer:longPress];
+    [self setUserInteractionEnabled:YES];
+    self.buttonDisabled = NO;
+    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
+    doubleTap.numberOfTapsRequired = 2;
+    // doubleTap.numberOfTouchesRequired = 0;
+    [self addGestureRecognizer:doubleTap];
+  
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapped:)];
+    singleTap.numberOfTapsRequired = 1;
+    // singleTap.numberOfTouchesRequired = 1;
+    [singleTap requireGestureRecognizerToFail: doubleTap];
+
+    [self addGestureRecognizer:singleTap];
+
   }
 
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
-    %log;
-    return YES;
-}
+// - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+//     // %log;
+//     return YES;
+// }
 
 - (void)setUserInteractionEnabled:(BOOL)opt {
   if (enabled) {
@@ -948,32 +975,70 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 %new
-- (void)longPressed:(UITapGestureRecognizer *)longPress {
+- (void)longPressed:(UILongPressGestureRecognizer *)longPress {
+  %log;
+}
+
+%new
+- (void)singleTapped:(UITapGestureRecognizer *)longPress {
+  %log;
+  [self setDidTap:YES];
+  [self tapped:self.profilePicButton];
+}
+
+%new
+- (void)doubleTapped:(UITapGestureRecognizer *)longPress {
+  [self setDidTap:NO];
   %log;
   // if (longPress.state != UIGestureRecognizerStateBegan) return;
   [self displayProfilePic];
 }
 
+%new
+- (BOOL)didTap {
+  NSNumber *number = objc_getAssociatedObject(self, @selector(didTap));
+  return [number boolValue]; 
+}
+
+%new
+- (void)setDidTap:(BOOL)value {
+  NSNumber *number = [NSNumber numberWithBool: value];
+  objc_setAssociatedObject(self, @selector(didTap), number, OBJC_ASSOCIATION_RETAIN);
+}
+
+// %new
+// - (void)longPressed:(UILongPressGestureRecognizer *)longPress {
+//   %log;
+//   if (longPress.state != UIGestureRecognizerStateBegan) return;
+//   [self displayProfilePic];
+// }
+
 -(void)tapped:(id)recognizer {
-  NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
-  NSLog(@"source %@", sourceString);
-    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
-    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
-    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
-    [array removeObject:@""];
-
-    NSLog(@"Stack = %@", [array objectAtIndex:0]);
-    NSLog(@"Framework = %@", [array objectAtIndex:1]);
-    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
-    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
-    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
-
-  NSLog(@"RECOGNIZER %@", [recognizer class]);
-  UIViewController *currentController = [InstaHelper currentController];
-  BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
-  if (!isProfileView) return %orig;
+  NSLog(@"DID TAP %d", [self didTap]);
+  if (![self didTap]) return;
+  %log;
   %orig;
-  [self displayProfilePic];
+  [self setDidTap:NO];
+//   return;
+//   // // NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+//   // // NSLog(@"source %@", sourceString);
+//   // //   // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+//   // //   NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+//   // //   NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+//   // //   [array removeObject:@""];
+
+//   // //   NSLog(@"Stack = %@", [array objectAtIndex:0]);
+//   // //   NSLog(@"Framework = %@", [array objectAtIndex:1]);
+//   // //   NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+//   // //   NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+//   // //   NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+
+//   // NSLog(@"RECOGNIZER %@", [recognizer class]);
+//   // UIViewController *currentController = [InstaHelper currentController];
+//   // BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+//   // if (!isProfileView) return %orig;
+//   // %orig;
+//   // [self displayProfilePic];
 }
 
 
@@ -1074,7 +1139,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         }
         IGUser *current = [InstaHelper currentUser];
         if (cachedItem && cachedItem.user == current) {
-          cachedItem = nil;
+          // cachedItem = nil;
         } else {
           if (responds) {
             [self addButtonWithTitle:localizedString(@"SHARE") style:0 image:nil accessibilityIdentifier:nil]; 
@@ -1096,11 +1161,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // mute users from activity
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
+  // NSLog(@"CALLED");
   if (enabled && muteActivity) {
+    // %log;
+    // NSLog(@"ATTEMPTING TO MUTE!!");
     NSMutableArray *finalArray = [arr mutableCopy];
     NSUInteger index = 0;
     for (NSDictionary* dict in arr) {
       NSArray *links = [dict valueForKeyPath:@"args.links"];
+      // NSLog(@"LINKS %@", links);
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
         if ([muted containsObject:[words objectAtIndex:0]]) {
