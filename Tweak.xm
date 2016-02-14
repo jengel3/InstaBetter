@@ -958,19 +958,19 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
-%new
-- (void)longPressed:(UILongPressGestureRecognizer *)longPress {
-}
+// %new
+// - (void)longPressed:(UILongPressGestureRecognizer *)longPress {
+// }
 
 %new
 - (void)singleTapped:(UITapGestureRecognizer *)longPress {
-  [self setDidTap:YES];
+  [self setDidTap:NO];
   [self tapped:self.profilePicButton];
 }
 
 %new
 - (void)doubleTapped:(UITapGestureRecognizer *)longPress {
-  [self setDidTap:NO];
+  [self setDidTap:YES];
   [self displayProfilePic];
 }
 
@@ -987,9 +987,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 -(void)tapped:(id)recognizer {
-  if (![self didTap]) return;
+  if ([self didTap]) return;
   %orig;
-  [self setDidTap:NO];
+  [self setDidTap:![self didTap]];
 }
 
 
