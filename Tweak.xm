@@ -43,7 +43,6 @@ static BOOL fakeVerified = NO;
 static BOOL enableTimestamps = YES;
 static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
-static BOOL accountSwitcher = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 
@@ -97,7 +96,6 @@ static NSDictionary* loadPrefs() {
       muted = [prefs objectForKey:@"muted_users"] ? [prefs objectForKey:@"muted_users"] : [[NSMutableArray alloc] init];
 
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
-      accountSwitcher = [prefs objectForKey:@"account_switcher"] ? [[prefs objectForKey:@"account_switcher"] boolValue] : YES;
 
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
@@ -369,7 +367,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 // double-tap like confirmation
-
 %hook IGFeedItemVideoView
 - (void)onDoubleTap:(UITapGestureRecognizer *)tap {
   if (enabled) {
@@ -397,6 +394,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedPhotoView
 - (void)onDoubleTap:(id)tap {
+  %log;
   IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
   NSDate *now = [NSDate date];
   BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
@@ -417,8 +415,92 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// grid view
+// replacement for auto starting videos in ig >= 7.14
+%hook IGFeedVideoCellManager
+- (BOOL)startVideoForCellIfApplicable:(id)arg1 {
+  if (enabled && (videoMode == 2 || (videoMode == 1 && !ringerMuted))) {
+    return NO;
+  } else {
+    return %orig;
+  }
+}
+%end
 
+%hook IGFeedViewController_DEPRECATED
+- (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
+  id thing = %orig;
+  if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+    [self setFeedLayout:2];
+  }
+  return thing;
+}
+
+- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
+  cachedItem = cell.feedItem;
+  %orig;
+}
+
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+  if (enabled) {
+    IGFeedItem *item = cachedItem;
+    if ([title isEqualToString:instaSave]) {
+      return saveMedia(item);
+    } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+      if (item.user == [InstaHelper currentUser]) return %orig;
+      NSURL *link = [NSURL URLWithString:[item permalink]];
+      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+        initWithActivityItems:@[link]
+        applicationActivities:nil];
+      return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+    }
+  }
+  %orig;
+}
+
+// muting in instagram 7.14+(?)
+- (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
+
+  NSArray *final = [self getMutedList:items];
+
+  return %orig(final, arg2, arg3, arg4, arg5);
+}
+
+// muting in instagram 7.14+(?)
+- (void)reloadWithNewObjects:(NSArray*)items {
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
+
+  NSArray *final = [self getMutedList:items];
+  return %orig(final);
+}
+
+
+%new
+- (NSArray*)getMutedList:(NSArray*)items {
+  NSMutableArray *origCopy = [items mutableCopy];
+
+  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
+  for (IGFeedItem *item in items) {
+    BOOL contains = [muted containsObject:item.user.username];
+    if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
+      [toRemove addObject:item];
+    }
+  }
+
+  for (IGFeedItem *removable in toRemove) {
+    [origCopy removeObject:removable];
+  }
+
+  return [origCopy copy];
+}
+%end
+
+
+// replaced with IGFeedViewController_DEPRECATED in 7.16
 %hook IGFeedViewController
 - (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
   id thing = %orig;
@@ -428,26 +510,22 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   return thing;
 }
 
--(void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
-  // NSLog(@"CALLED CACHE SET!! %@", cell.feedItem);
+- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
   cachedItem = cell.feedItem;
   %orig;
 }
 
--(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
   if (enabled) {
-    // NSLog(@"CACHED %@", cachedItem);
     IGFeedItem *item = cachedItem;
     if ([title isEqualToString:instaSave]) {
       return saveMedia(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
-      // NSLog(@"CALLED HERE!! %@", item);
       if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
         initWithActivityItems:@[link]
         applicationActivities:nil];
-      // NSLog(@"DIDNT MAKE IT!!");
       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     }
   }
@@ -455,6 +533,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 
 // auto play video
+// deprecated instagram <= 7.14
 - (void)startVideoForCellMovingOnScreen {
   if (enabled) {
     if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
@@ -465,35 +544,32 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
--(void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
+
+// muting in instagram 7.14+(?)
+- (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
   if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [[InstaHelper currentController] isKindOfClass:[%c(IGMainFeedViewController) class]];
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
   if (!isMainFeed) return %orig;
 
-  NSMutableArray *origCopy = [items mutableCopy];
+  NSArray *final = [self getMutedList:items];
 
-  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
-  for (IGFeedItem *item in items) {
-    BOOL contains = [muted containsObject:item.user.username];
-    if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
-      [toRemove addObject:item];
-    }
-  }
-
-  for (IGFeedItem *removable in toRemove) {
-    [origCopy removeObject:removable];
-  }
-
-
-  return %orig([origCopy copy], arg2, arg3, arg4, arg5);
+  return %orig(final, arg2, arg3, arg4, arg5);
 }
 
-// instagram 7.14+(?)
--(void)reloadWithNewObjects:(NSArray*)items {
+// muting in instagram 7.14+(?)
+- (void)reloadWithNewObjects:(NSArray*)items {
   if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [[InstaHelper currentController] isKindOfClass:[%c(IGMainFeedViewController) class]];
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
   if (!isMainFeed) return %orig;
 
+  NSArray *final = [self getMutedList:items];
+
+  return %orig(final);
+}
+
+
+%new
+- (NSArray*)getMutedList:(NSArray*)items {
   NSMutableArray *origCopy = [items mutableCopy];
 
   NSMutableArray *toRemove = [[NSMutableArray alloc] init];
@@ -508,8 +584,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [origCopy removeObject:removable];
   }
 
-  return %orig([origCopy copy]);
-  
+  return [origCopy copy];
 }
 %end
 
@@ -527,7 +602,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   %orig;
 }
 %end
-
 
 // disable app rating
 
@@ -958,10 +1032,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
-// %new
-// - (void)longPressed:(UILongPressGestureRecognizer *)longPress {
-// }
-
 %new
 - (void)singleTapped:(UITapGestureRecognizer *)longPress {
   [self setDidTap:NO];
@@ -1005,7 +1075,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   [photos addObject:photo];
 
   NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithPhotos:photos];
-
 
   // remove the stupid low-res limitation from profile pics
   NSURL *imgUrl = self.user.profilePicURL;
@@ -1061,14 +1130,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
-    // BOOL isFollowing = NO;
-    // if (isProfileView) {
-    //   int status = userView.user.followStatus;
-    //   if (status == 3) {
-    //     isFollowing = YES;
-    //   }
-    // }
-    // if (isProfileView && (([self.buttons count] == 6 && isFollowing) || ([self.buttons count] == 5 && !isFollowing)) && !self.titleLabel.text) {
+  
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
     if (isProfileView && !cachedItem && !self.titleLabel.text) {
         IGUser *current = [InstaHelper currentUser];
@@ -1095,7 +1157,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         }
         IGUser *current = [InstaHelper currentUser];
         if (cachedItem && cachedItem.user == current) {
-          // cachedItem = nil;
         } else {
           if (responds) {
             [self addButtonWithTitle:localizedString(@"SHARE") style:0 image:nil accessibilityIdentifier:nil]; 
@@ -1114,48 +1175,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// %hook IGMainFeedNetworkSource
-// -(BOOL)fetchDataWithParameters:(id)arg1 {
-//   %log;
-//   return %orig;
-// }
-// %end
-
-// %hook IGFeedNetworkSource
-// -(void)willFetchDataWithParameters:(NSDictionary*)arg1 {
-//   NSMutableDictionary* copy = [arg1 mutableCopy];
-
-//   [copy setObject:@"20" forKey:@"count"];
-//   %log;
-//   NSDictionary *nonm = [copy copy];
-//   // id ori = %orig;
-//   // NSLog(@"LOGGEd %@", ori);
-//   return %orig(nonm);
-// }
-// -(id)URLToFetch:(int)arg1 parameters:(NSDictionary*)arg2 {
-//   NSMutableDictionary* copy = [arg2 mutableCopy];
-
-//   [copy setObject:@"20" forKey:@"count"];
-//   %log;
-//   NSDictionary *nonm = [copy copy];
-//   // id ori = %orig;
-//   // NSLog(@"LOGGEd %@", ori);
-//   return %orig(5, nonm);
-// }
-// %end
-
 // mute users from activity
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
-  // NSLog(@"CALLED");
   if (enabled && muteActivity) {
-    // %log;
-    // NSLog(@"ATTEMPTING TO MUTE!!");
+
     NSMutableArray *finalArray = [arr mutableCopy];
     NSUInteger index = 0;
     for (NSDictionary* dict in arr) {
       NSArray *links = [dict valueForKeyPath:@"args.links"];
-      // NSLog(@"LINKS %@", links);
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
         BOOL contains = [muted containsObject:[words objectAtIndex:0]];
@@ -1175,23 +1203,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 
 %hook IGUserDetailViewController
-// manage multiple users
-- (void)viewDidLoad {
-  %orig;
-  if (!(enabled && accountSwitcher)) return;
-  IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
-  if (self.user != [authHelper currentUser]) return;
-  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"tabsPeopleIcon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(openSwitcher)];
-  self.navigationItem.leftBarButtonItem = userButton;
-}
-
-- (void)switchUsersController:(id)contrl tableViewDidSelectRowWithUser:(id)user {
-  %orig;
-  [self animateSwitchUsersTableView];
-  AppDelegate *igDelegate = [UIApplication sharedApplication].delegate;
-  [igDelegate application:nil didFinishLaunchingWithOptions:nil];
-}
-
 // mute users
 - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
@@ -1211,12 +1222,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   } else {
     %orig;
   }
-}
-
-%new
-- (void)openSwitcher {
-  [self onNeedsFullReload];
-  [self animateSwitchUsersTableView];
 }
 %end
 
@@ -1426,6 +1431,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
+// deprecated in Instagram >= 7.15
 - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
   if (enabled) {
     if ([title isEqualToString:instaSave]) {

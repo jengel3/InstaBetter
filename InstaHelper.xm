@@ -17,6 +17,9 @@
 
 + (IGUser *)currentUser {
   IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
-  return authHelper.currentUser;
+  if ([authHelper respondsToSelector:@selector(currentUser)]) {
+    return authHelper.currentUser;
+  }
+  return [%c(IGAuthHelper) currentUser];
 }
 @end

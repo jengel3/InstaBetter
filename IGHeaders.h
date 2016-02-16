@@ -43,7 +43,7 @@
 @property (nonatomic,copy) NSOrderedSet * stories;
 @end
 
-@interface IGAuthHelper
+@interface IGAuthHelper : NSObject
 @property (nonatomic, retain) IGUser *currentUser; 
 + (id)sharedAuthHelper;
 - (void)logInWithAuthenticatedUser:(id)arg1;
@@ -197,6 +197,24 @@
 - (void)application:(id)arg1 handleActionWithIdentifier:(id)arg2 forRemoteNotification:(id)arg3 completionHandler:(/*^block*/id)arg4;
 @end
 
+@interface IGFeedViewController_DEPRECATED : UIViewController
+@property (assign,nonatomic) int feedLayout;
+- (void)handleDidDisplayFeedItem:(IGFeedItem*)item;
+- (id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
+- (void)setFeedLayout:(int)arg1;
+- (int)feedLayout;
+- (id)initWithFeedNetworkSource:(id)arg1 feedLayout:(int)arg2 showsPullToRefresh:(BOOL)arg3;
+- (void)startVideoForCellMovingOnScreen;
+- (id)videoCellForAutoPlay;
+- (BOOL)isDeviceSupportAlwaysAutoPlay;
+- (void)reloadWithNewObjects:(NSArray*)arg1 ;
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
+- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)arg1;
+- (void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
+- (void)reloadWithCurrentObjectsAnimated:(char)arg1 ;
+- (NSArray*)getMutedList:(NSArray*)items;
+@end
+
 @interface IGFeedViewController : UIViewController
 @property (assign,nonatomic) int feedLayout;
 - (void)handleDidDisplayFeedItem:(IGFeedItem*)item;
@@ -207,11 +225,16 @@
 - (void)startVideoForCellMovingOnScreen;
 - (id)videoCellForAutoPlay;
 - (BOOL)isDeviceSupportAlwaysAutoPlay;
--(void)reloadWithNewObjects:(NSArray*)arg1 ;
--(void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
--(void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)arg1;
--(void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
--(void)reloadWithCurrentObjectsAnimated:(char)arg1 ;
+- (void)reloadWithNewObjects:(NSArray*)arg1 ;
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
+- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)arg1;
+- (void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
+- (void)reloadWithCurrentObjectsAnimated:(char)arg1;
+- (NSArray*)getMutedList:(NSArray*)items;
+@end
+
+@interface IGFeedMainConfiguration : NSObject
+-(BOOL)shouldAutoplayVideos;
 @end
 
 @interface IGMainFeedViewController : IGFeedViewController
@@ -516,6 +539,10 @@
 
 @interface IGFeedItemVideoCell
 @property (nonatomic, retain) IGFeedItemVideoView *videoView; 
+@end
+
+@interface IGFeedVideoCellManager
+- (BOOL)startVideoForCellIfApplicable:(id)arg1 ;
 @end
 
 @interface IGTableView : UITableView

@@ -130,7 +130,6 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Make spoofed followers/following/verified only appear for your profile
 - Support return key in future versions
 
-
 ### Release 1.4.6
 - Support Instagram 7.15
 - Fix DM image saving displaying wrong text
@@ -160,7 +159,13 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Make profile pictures high-res when zooming
 - Possibly make whitelist mode work on activity feed (activity feed muting needs more testing)
 
-
+### Release 1.5.1
+- Fix profile pictures not using their default action
+- Another attempt at fixing muted posts reappearing
+- Add support for Instagram 7.16
+- Fix various crashes on 7.16
+- Potentially fix double tap like confirmations
+- Fix disabling auto playing videos didn't work
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
