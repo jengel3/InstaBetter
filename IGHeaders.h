@@ -53,6 +53,9 @@
 - (void)clearCurrentUser;
 - (void)setCurrentUser:(IGUser *)arg1;
 - (void)updateCurrentUser:(id)arg1;
+- (BOOL)hasMultipleAccounts;
+- (BOOL)passesMultipleAccountsQE;
+- (BOOL)hasMaximumNumberOfAccounts;
 @end
 
 @interface IGAuthenticatedUser
@@ -312,28 +315,33 @@
 + (void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 - (void)buttonWithTitle:(NSString *)title style:(int)style;
--(void)setActionDelegate:(id)arg1 ;
--(void)addButtonWithTitle:(id)arg1 style:(int)arg2 image:(id)arg3 accessibilityIdentifier:(id)arg4 ;
+- (void)setActionDelegate:(id)arg1 ;
+- (void)addButtonWithTitle:(id)arg1 style:(int)arg2 image:(id)arg3 accessibilityIdentifier:(id)arg4 ;
 + (int)tag;
 + (void)setTag:(int)arg1;
 - (void)hideAndReset;
 @end
 
 @interface IGActionSheetCallbackProxy
--(void)setCallback:(id)arg1 ;
-+(id)delegateWithCallback:(/*^block*/id)arg1 ;
--(void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
--(void)actionSheetFinishedHiding;
+- (void)setCallback:(id)arg1 ;
++ (id)delegateWithCallback:(/*^block*/id)arg1 ;
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
+- (void)actionSheetFinishedHiding;
 @end
 
 @protocol IGFeedHeaderItem <NSObject>
 @property (readonly) IGDate *takenAt; 
 @end
 
+@interface IGFeedItemHeaderViewModel : NSObject 
+@property (nonatomic,readonly) IGFeedItem *feedItem;
+@end
+
 @interface IGFeedItemHeader : UIView
 @property (nonatomic, retain) UIButton *timestampButton;
 @property (nonatomic, retain) UILabel *timestampLabel;
 @property (nonatomic, retain) id<IGFeedHeaderItem> feedItem;
+@property (nonatomic,readonly) IGFeedItemHeaderViewModel *viewModel;
 - (BOOL)sponsoredPostAllowed;
 @end
 

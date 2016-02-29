@@ -6,4 +6,5 @@
 + (IGRootViewController *)rootViewController;
 + (UIViewController *)currentController;
 + (IGUser *)currentUser;
++ (NSDate *)takenAt:(IGFeedItem*)feedItem;
 @end

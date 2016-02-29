@@ -221,7 +221,17 @@ static void saveMedia(IGPost *post) {
 // header - IGFeedItemheader for relevant IGFeedItem
 // animated - whether or not displaying the timestamp should be animated
 static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
-  NSDate *takenAt = [header.feedItem.takenAt date];
+  IGFeedItem *feedItem = nil;
+  BOOL responds = [header respondsToSelector:@selector(viewModel)];
+  if (responds) {
+    IGFeedItemHeaderViewModel *model = [header viewModel];
+    feedItem = [model feedItem];
+  } else {
+    feedItem = [header feedItem];
+  }
+
+
+  NSDate *takenAt = [InstaHelper takenAt:feedItem];
 
   NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 
@@ -372,7 +382,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (enabled) {
     IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
     NSDate *now = [NSDate date];
-    BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
+    BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
     if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
       [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
         message:localizedString(@"DID_WANT_LIKE_VIDEO")
@@ -394,10 +404,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGFeedPhotoView
 - (void)onDoubleTap:(id)tap {
-  %log;
   IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
   NSDate *now = [NSDate date];
-  BOOL needsAlert = [now timeIntervalSinceDate:[post.takenAt date]] > 86400.0f;
+  BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
     [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
@@ -419,9 +428,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGFeedVideoCellManager
 - (BOOL)startVideoForCellIfApplicable:(id)arg1 {
   if (enabled && (videoMode == 2 || (videoMode == 1 && !ringerMuted))) {
-    return NO;
-  } else {
     return %orig;
+  } else {
+    return NO;
   }
 }
 %end
@@ -993,6 +1002,18 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+%hook IGAuthHelper
+// - (BOOL)hasMultipleAccounts {
+//   return YES;
+// }
+// - (BOOL)passesMultipleAccountsQE {
+//   return YES;
+// }
+- (BOOL)hasMaximumNumberOfAccounts {
+  return NO;
+}
+%end
+
 %hook IGProfilePictureImageView
 - (void)didMoveToSuperview {
   if (enabled) {
@@ -1132,6 +1153,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
   
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
+    NSLog(@"RESPONDS %d", responds);
     if (isProfileView && !cachedItem && !self.titleLabel.text) {
         IGUser *current = [InstaHelper currentUser];
         if ([current.username isEqualToString:userView.user.username]) return %orig;
@@ -1179,13 +1201,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
-
     NSMutableArray *finalArray = [arr mutableCopy];
     NSUInteger index = 0;
     for (NSDictionary* dict in arr) {
       NSArray *links = [dict valueForKeyPath:@"args.links"];
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
+        if ([words count] <= 0) continue;
         BOOL contains = [muted containsObject:[words objectAtIndex:0]];
         if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
           if ([muted count] >= (index - 1)) {

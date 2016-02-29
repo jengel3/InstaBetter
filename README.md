@@ -167,6 +167,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Potentially fix double tap like confirmations
 - Fix disabling auto playing videos didn't work
 
+### Release 1.5.2
+- Fix auto play settings doing the opposite that they should 
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
