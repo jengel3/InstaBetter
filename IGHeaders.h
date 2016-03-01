@@ -151,6 +151,7 @@
 @property (readonly) IGDate *takenAt; 
 @property (readonly) NSString * mediaId; 
 @property (readonly) IGSponsoredPostInfo * sponsoredPostInfo; 
+- (IGDate*)albumAwareTakenAtDate;
 + (int)fullSizeImageVersionForDevice;
 - (id)imageURLForImageVersion:(int)arg1;
 - (id)description;
@@ -467,6 +468,7 @@
 
 @interface IGFeedItemPhotoCell
 @property (nonatomic, retain) IGPost *post;
+-(void)feedPhotoDidDoubleTapToLike:(id)arg1 ;
 @end
 
 @interface IGSimpleButton : UIButton

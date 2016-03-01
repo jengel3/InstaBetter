@@ -23,12 +23,13 @@
   return [%c(IGAuthHelper) currentUser];
 }
 
-+ (NSDate *)takenAt:(IGFeedItem*)feedItem {
++ (NSDate *)takenAt:(IGPost*)post {
+  IGFeedItem *feedItem = (IGFeedItem*)post;
   BOOL responds = [feedItem respondsToSelector:@selector(takenAt)];
   if (responds) {
-    return [feedItem takenAt];
+    return [feedItem takenAt].date;
   } else {
-    return [feedItem albumAwareTakenAtDate];
+    return [feedItem albumAwareTakenAtDate].date;
   }
 
 }

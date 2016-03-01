@@ -379,31 +379,30 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 // double-tap like confirmation
 %hook IGFeedItemVideoView
 - (void)onDoubleTap:(UITapGestureRecognizer *)tap {
-  if (enabled) {
-    IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
-    NSDate *now = [NSDate date];
-    BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
-    if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-      [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
-        message:localizedString(@"DID_WANT_LIKE_VIDEO")
-        cancelButtonTitle:nil
-        otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-        tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-          if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-            %orig;
-          } 
-        }];
-    } else {
-      %orig;
-    }
+  if (!enabled) return %orig;
+  IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
+  NSDate *now = [NSDate date];
+  BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
+  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+      message:localizedString(@"DID_WANT_LIKE_VIDEO")
+      cancelButtonTitle:nil
+      otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+          %orig;
+        } 
+      }];
   } else {
     %orig;
   }
 }
 %end
 
+// this stopped working at some point, not sure when 
 %hook IGFeedPhotoView
 - (void)onDoubleTap:(id)tap {
+  if (!enabled) return %orig;
   IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
   NSDate *now = [NSDate date];
   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
@@ -423,6 +422,32 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 %end
+// end deprecated
+
+%hook IGFeedItemPhotoCell 
+- (void)feedPhotoDidDoubleTapToLike:(id)tap {
+  if (!enabled) return %orig;
+  IGPost *post = [self post];
+  NSDate *now = [NSDate date];
+
+  BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
+
+  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+    [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
+    message:localizedString(@"DID_WANT_LIKE_PHOTO")
+    cancelButtonTitle:nil
+    otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+    tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+        %orig;
+      }
+    }];
+  } else {
+    %orig;
+  }
+}
+%end
+
 
 // replacement for auto starting videos in ig >= 7.14
 %hook IGFeedVideoCellManager
@@ -1018,7 +1043,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (void)didMoveToSuperview {
   if (enabled) {
     UIView *superView = (UIView*)[self nextResponder];
-    // NSLog(@"%@ CURRENT", superView);
     BOOL isProfileView = [superView isKindOfClass:[%c(IGUserDetailHeaderView) class]];
     if (!isProfileView) return %orig;
     [self setDidTap:NO];

@@ -170,6 +170,13 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.5.2
 - Fix auto play settings doing the opposite that they should 
 
+### Release 1.5.3
+- Remove maximum account limit
+- Add support for Instagram 7.17
+- Fix crash when liking videos
+- Fix crash when clicking timestamps
+- Fix like confirmations on photos, not sure when they stopped working.
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
