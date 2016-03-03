@@ -177,6 +177,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix crash when clicking timestamps
 - Fix like confirmations on photos, not sure when they stopped working.
 
+### Release 1.5.4
+- Fix crash when opening unsupported links
+- Fix muting related crash
+- Add option for using Safari Web View vs Instagram web view
+- Rewrite media saving - Hopefully fixes video saving, and more efficient
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

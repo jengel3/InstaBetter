@@ -26,3 +26,5 @@
 "FOLLOW_EACH_OTHER" = "Following Each Other";
 "FOLLOWS_YOU" = "Follows You";
 "DOES_NOT_FOLLOW" = "Not Following You";
+"FAILED_OPEN" = "Failed to open URL";
+"FAILED_OPEN_MSG" = "This URL could not be opened by any application.";

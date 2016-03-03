@@ -43,6 +43,7 @@ static BOOL fakeVerified = NO;
 static BOOL enableTimestamps = YES;
 static int timestampFormat = 0;
 static BOOL alwaysTimestamp = NO;
+static BOOL useSafariController = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 
@@ -84,6 +85,7 @@ static NSDictionary* loadPrefs() {
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : NO;
       openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
+      useSafariController = [prefs objectForKey:@"safari_controller"] ? [[prefs objectForKey:@"safari_controller"] boolValue] : YES;
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
 
@@ -155,7 +157,7 @@ static void saveMedia(NSURL *url) {
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = localizedString(@"SAVING");
     UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-    NSLog(@"URL %@", url);
+    // NSLog(@"URL %@", url);
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
       if ([InstaHelper isRemoteImage:url]) {
@@ -480,13 +482,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-if (!isMainFeed) return %orig;
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
 
-NSArray *final = [self getMutedList:items];
+  NSArray *final = [self getMutedList:items];
 
-return %orig(final, arg2, arg3, arg4, arg5);
+  return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -568,13 +570,13 @@ return %orig(final, arg2, arg3, arg4, arg5);
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-if (!isMainFeed) return %orig;
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
 
-NSArray *final = [self getMutedList:items];
+  NSArray *final = [self getMutedList:items];
 
-return %orig(final, arg2, arg3, arg4, arg5);
+  return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -798,11 +800,24 @@ return %orig(final, arg2, arg3, arg4, arg5);
 // open links in app
 
 %hook IGUserDetailHeaderView 
-- (void)coreTextView:(id)view didTapOnString:(id)str URL:(id)url {
+- (void)coreTextView:(id)view didTapOnString:(id)str URL:(NSURL*)url {
   if (enabled && openInApp) {
-    if ([%c(SFSafariViewController) class] != nil) {
-      SFSafariViewController *sfvc = [[%c(SFSafariViewController) alloc] initWithURL:url];
-      [[InstaHelper rootViewController] presentViewController:(UIViewController*)sfvc animated:YES completion:nil];
+    if ([%c(SFSafariViewController) class] != nil && useSafariController) {
+      NSString *scheme = [[url scheme] lowercaseString];
+
+      if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) {
+        SFSafariViewController *sfvc = [[%c(SFSafariViewController) alloc] initWithURL:url];
+        [[InstaHelper rootViewController] presentViewController:(UIViewController*)sfvc animated:YES completion:nil];
+      } else {
+        if ([[UIApplication sharedApplication] canOpenURL:url]) {
+          [[UIApplication sharedApplication] openURL:url];
+        } else {
+          UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"FAILED_OPEN") 
+            message:localizedString(@"FAILED_OPEN_MSG") delegate:nil cancelButtonTitle:@"Okay" 
+            otherButtonTitles:nil];
+          [alert show];
+        }
+      }
     } else {
       UIViewController *rootViewController = [InstaHelper rootViewController];
       [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];

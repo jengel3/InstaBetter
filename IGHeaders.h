@@ -265,7 +265,7 @@
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
 @property (nonatomic, retain) UIView *infoLabelContainerView;
 @property (assign,nonatomic) id delegate;
-- (void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
+- (void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(NSURL*)arg3;
 - (void)onFeedViewModeChanged:(int)arg1;
 - (void)onEditProfileTapped;
 - (void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2;
