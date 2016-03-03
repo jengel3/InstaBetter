@@ -133,7 +133,7 @@ static NSDictionary* loadPrefs() {
   return nil;
 }
 
-static NSString * highestResImage(NSDictionary *versions) {
+static NSString* highestResImage(NSDictionary *versions) {
   CGFloat highestCount = 0;
   NSString *highestURL = nil;
   for (NSDictionary *ver in versions) {
@@ -1225,23 +1225,26 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
-    NSMutableArray *finalArray = [arr mutableCopy];
+    NSMutableArray *copied = [arr mutableCopy];
+    NSMutableArray *toRemove = [[NSMutableArray alloc] init];
     NSUInteger index = 0;
     for (NSDictionary* dict in arr) {
       NSArray *links = [dict valueForKeyPath:@"args.links"];
       if ([links count] == 1) {
         NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
-        if ([words count] <= 0) continue;
+        if ([words count] == 0) continue;
         BOOL contains = [muted containsObject:[words objectAtIndex:0]];
         if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
-          if ([muted count] >= (index - 1)) {
-            [finalArray removeObjectAtIndex:index];
-          }
+          [toRemove addObject:dict];
         }
       }
       index++;
     }
-    arr = [finalArray copy];
+    for (id removable in toRemove) {
+      if (![toRemove containsObject:removable]) continue;
+      [copied removeObject:removable];
+    }
+    arr = [copied copy];
   }
   return %orig;
 }
