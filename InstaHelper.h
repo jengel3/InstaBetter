@@ -13,4 +13,6 @@
 
 + (void)saveRemoteVideo:(NSURL*)url completion:(void (^)(NSError *error))completion;
 + (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion;
+
++ (BOOL)isRemoteImage:(NSURL*)url;
 @end

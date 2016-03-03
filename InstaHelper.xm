@@ -65,8 +65,8 @@
   [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
     if (viderr) return completion(viderr);
     NSFileManager *fsmanager = [NSFileManager defaultManager];
-    NSURL *videoDocuments = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-    NSURL *saveUrl = [videoDocumentsURL URLByAppendingPathComponent:[url lastPathComponent]];
+    NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+    NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
     
     [vidData writeToURL:saveUrl atomically:YES];
 
@@ -90,5 +90,13 @@
           completion(nil);
         }
     }];
+}
+
++ (BOOL)isRemoteImage:(NSURL*)url {
+  NSArray *extensions = @[@"jpg", @"jpeg", @"png"];
+
+  NSString *ext = [url pathExtension];
+
+  return [extensions containsObject:[ext lowercaseString]];
 }
 @end

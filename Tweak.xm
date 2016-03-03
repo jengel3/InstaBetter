@@ -149,43 +149,17 @@ static NSString* highestResImage(NSDictionary *versions) {
   return highestURL;
 }
 
-static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
-  if (!status) {
-    UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
-    status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-    status.labelText = @"Saving";
-  }
-  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-  dispatch_async(queue, ^{
-    [InstaHelper saveRemoteVideo:vidURL completion:^(NSError *err) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-        status.mode = MBProgressHUDModeCustomView;
-        status.labelText = localizedString(@"SAVED");
-
-        [status hide:YES afterDelay:1.0];
-      });
-    }];
-
-  });
-}
-
-static void saveMedia(IGPost *post) {
+static void saveMedia(NSURL *url) {
   if (enabled && saveActions) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = localizedString(@"SAVING");
     UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-    
+    NSLog(@"URL %@", url);
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
-
-      if (post.mediaType == 1) {
-        NSString *versionURL = highestResImage(post.photo.imageVersions);
-
-        NSURL *imgURL = [NSURL URLWithString:versionURL];
-
-        [InstaHelper saveRemoteImage:imgURL completion:^(NSError *err) {
+      if ([InstaHelper isRemoteImage:url]) {
+        [InstaHelper saveRemoteImage:url completion:^(NSError *err) {
           dispatch_async(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
@@ -194,13 +168,8 @@ static void saveMedia(IGPost *post) {
             [status hide:YES afterDelay:1.0];
           });
         }];
-
-      } else if (post.mediaType == 2) {
-        NSString *versionURL = highestResImage(post.video.videoVersions);
-
-        NSURL *vidURL = [NSURL URLWithString:versionURL];
-
-        [InstaHelper saveRemoteVideo:vidURL completion:^(NSError *err) {
+      } else {
+        [InstaHelper saveRemoteVideo:url completion:^(NSError *err) {
           dispatch_async(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
@@ -213,6 +182,27 @@ static void saveMedia(IGPost *post) {
     });
   }
 }
+
+static void savePhoto(IGPhoto *photo) {
+  NSString *versionURL = highestResImage(photo.imageVersions);
+  NSURL *imgURL = [NSURL URLWithString:versionURL];
+  saveMedia(imgURL);
+}
+
+static void saveVideo(IGVideo *video) {
+  NSString *versionURL = highestResImage(video.videoVersions);
+  NSURL *vidURL = [NSURL URLWithString:versionURL];
+  saveMedia(vidURL);
+}
+
+static void saveFeedItem(IGPost *post) {
+  if (post.mediaType == 1) {
+    savePhoto(post.photo);
+  } else if (post.mediaType == 2) {
+    saveVideo(post.video);
+  }
+}
+
 
 // show timestamps on IGFeedItems
 // header - IGFeedItemheader for relevant IGFeedItem
@@ -475,7 +465,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   if (enabled) {
     IGFeedItem *item = cachedItem;
     if ([title isEqualToString:instaSave]) {
-      return saveMedia(item);
+      return saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
@@ -550,7 +540,7 @@ return %orig(final, arg2, arg3, arg4, arg5);
   if (enabled) {
     IGFeedItem *item = cachedItem;
     if ([title isEqualToString:instaSave]) {
-      return saveMedia(item);
+      return saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       NSURL *link = [NSURL URLWithString:[item permalink]];
@@ -640,9 +630,9 @@ return %orig(final, arg2, arg3, arg4, arg5);
 - (void)showRatingAlert {
   if (enabled && hideSponsored) {
     return;
-  } else {
-    return %orig;
   }
+  return %orig;
+  
 }
 %end
 
@@ -896,19 +886,11 @@ return %orig(final, arg2, arg3, arg4, arg5);
   if (popup.tag == 181) {
     if (buttonIndex != 0) return;
     IGVideo *media = ((IGDirectVideo *)self.content).video;
-    NSString *versionURL = highestResImage(media.videoVersions);
-
-    NSURL *vidURL = [NSURL URLWithString:versionURL];
-
-    saveVideo(vidURL, nil);
+    saveVideo(media);
   } else if (popup.tag == 182) {
     if (buttonIndex == 0) {
       IGPhoto *media = ((IGDirectPhoto *)self.content).photo;
-      
-      NSString *versionURL = highestResImage(media.imageVersions);
-      NSURL *imgUrl = [NSURL URLWithString:versionURL];
-
-      saveImage(imgUrl, nil);
+      savePhoto(media);
     } else if (buttonIndex == 1) {
       NSMutableArray *photos = [[NSMutableArray alloc] init];
       InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
@@ -1097,7 +1079,6 @@ return %orig(final, arg2, arg3, arg4, arg5);
   %orig;
   [self setDidTap:![self didTap]];
 }
-
 
 %new
 -(void)displayProfilePic {
@@ -1448,7 +1429,7 @@ return %orig(final, arg2, arg3, arg4, arg5);
 %new
 - (void)saveNow {
   IGFeedItem *item = self.feedItem;
-  saveMedia(item);
+  saveFeedItem(item);
 }
 
 %new
@@ -1476,7 +1457,7 @@ return %orig(final, arg2, arg3, arg4, arg5);
   if (enabled) {
     if ([title isEqualToString:instaSave]) {
       IGFeedItem *item = self.feedItem;
-      saveMedia(item);
+      saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       IGFeedItem *item = self.feedItem;
       if (item.user == [InstaHelper currentUser]) return %orig;
