@@ -157,13 +157,7 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
   }
   dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   dispatch_async(queue, ^{
-    NSURLRequest *request = [NSURLRequest requestWithURL:vidURL];
-
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-      NSURL *documentsURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-      NSURL *tempURL = [documentsURL URLByAppendingPathComponent:[vidURL lastPathComponent]];
-      [data writeToURL:tempURL atomically:NO];
-      [%c(IGAssetWriter) writeVideoToInstagramAlbum:tempURL completionBlock:nil];
+    [InstaHelper saveRemoteVideo:vidURL completion:^(NSError *err) {
       dispatch_async(dispatch_get_main_queue(), ^{
         status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
         status.mode = MBProgressHUDModeCustomView;
@@ -172,28 +166,7 @@ static void saveVideo(NSURL *vidURL, MBProgressHUD *status) {
         [status hide:YES afterDelay:1.0];
       });
     }];
-  });
-}
 
-static void saveImage(NSURL *imgUrl, MBProgressHUD *status) {
-  if (!status) {
-    UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
-    status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-    status.labelText = localizedString(@"SAVING");
-  }
-  dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-  dispatch_async(queue, ^{
-    NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-    UIImage *img = [UIImage imageWithData:imgData];
-    IGAssetWriter *postImageAssetWriter = [[%c(IGAssetWriter) alloc] initWithImage:img metadata:nil];
-    [postImageAssetWriter writeToInstagramAlbum];
-    dispatch_async(dispatch_get_main_queue(), ^{
-      status.customView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-      status.mode = MBProgressHUDModeCustomView;
-      status.labelText = localizedString(@"SAVED");
-
-      [status hide:YES afterDelay:1.0];
-    });
   });
 }
 
@@ -202,18 +175,42 @@ static void saveMedia(IGPost *post) {
     UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = localizedString(@"SAVING");
-    if (post.mediaType == 1) {
-      NSString *versionURL = highestResImage(post.photo.imageVersions);
+    UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
     
-      NSURL *imgURL = [NSURL URLWithString:versionURL];
-      saveImage(imgURL, status);
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
 
-    } else if (post.mediaType == 2) {
-      NSString *versionURL = highestResImage(post.video.videoVersions);
-    
-      NSURL *vidURL = [NSURL URLWithString:versionURL];
-      saveVideo(vidURL, status);
-    }
+      if (post.mediaType == 1) {
+        NSString *versionURL = highestResImage(post.photo.imageVersions);
+
+        NSURL *imgURL = [NSURL URLWithString:versionURL];
+
+        [InstaHelper saveRemoteImage:imgURL completion:^(NSError *err) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.customView = img;
+            status.mode = MBProgressHUDModeCustomView;
+            status.labelText = localizedString(@"SAVED");
+
+            [status hide:YES afterDelay:1.0];
+          });
+        }];
+
+      } else if (post.mediaType == 2) {
+        NSString *versionURL = highestResImage(post.video.videoVersions);
+
+        NSURL *vidURL = [NSURL URLWithString:versionURL];
+
+        [InstaHelper saveRemoteVideo:vidURL completion:^(NSError *err) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.customView = img;
+            status.mode = MBProgressHUDModeCustomView;
+            status.labelText = localizedString(@"SAVED");
+
+            [status hide:YES afterDelay:1.0];
+          });
+        }];
+      }
+    });
   }
 }
 
@@ -409,14 +406,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
     [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
-    message:localizedString(@"DID_WANT_LIKE_PHOTO")
-    cancelButtonTitle:nil
-    otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-    tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-        %orig;
-      }
-    }];
+      message:localizedString(@"DID_WANT_LIKE_PHOTO")
+      cancelButtonTitle:nil
+      otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+          %orig;
+        }
+      }];
   } else {
     %orig;
   }
@@ -434,14 +431,14 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
     [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
-    message:localizedString(@"DID_WANT_LIKE_PHOTO")
-    cancelButtonTitle:nil
-    otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-    tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-      if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-        %orig;
-      }
-    }];
+      message:localizedString(@"DID_WANT_LIKE_PHOTO")
+      cancelButtonTitle:nil
+      otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+          %orig;
+        }
+      }];
   } else {
     %orig;
   }
@@ -493,13 +490,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  if (!isMainFeed) return %orig;
+if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+if (!isMainFeed) return %orig;
 
-  NSArray *final = [self getMutedList:items];
+NSArray *final = [self getMutedList:items];
 
-  return %orig(final, arg2, arg3, arg4, arg5);
+return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -581,13 +578,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  if (!isMainFeed) return %orig;
+if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+if (!isMainFeed) return %orig;
 
-  NSArray *final = [self getMutedList:items];
+NSArray *final = [self getMutedList:items];
 
-  return %orig(final, arg2, arg3, arg4, arg5);
+return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -881,7 +878,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [actions showInView:[UIApplication sharedApplication].keyWindow];
   } else if ([self.content isKindOfClass:[%c(IGDirectVideo) class]]) {
     // confirm that we want to save the video
-    
+
     UIActionSheet *actions = [[UIActionSheet alloc]
       initWithTitle:localizedString(@"ACTIONS")
       delegate:self
@@ -957,8 +954,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (void)callShare:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[[self.styledString.attributedString string]]
-        applicationActivities:nil];
+    initWithActivityItems:@[[self.styledString.attributedString string]]
+    applicationActivities:nil];
   [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
 }
 %end
@@ -1023,17 +1020,11 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %new
 - (CGFloat)photosViewController:(NYTPhotosViewController *)photosViewController maximumZoomScaleForPhoto:(id <NYTPhoto>)photo {
-    return 5.0f;
+  return 5.0f;
 }
 %end
 
 %hook IGAuthHelper
-// - (BOOL)hasMultipleAccounts {
-//   return YES;
-// }
-// - (BOOL)passesMultipleAccountsQE {
-//   return YES;
-// }
 - (BOOL)hasMaximumNumberOfAccounts {
   return NO;
 }
@@ -1054,7 +1045,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
     doubleTap.numberOfTapsRequired = 2;
     [self addGestureRecognizer:doubleTap];
-  
+
 
     // single tap -- original
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapped:)];
@@ -1175,25 +1166,25 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
-  
+
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
-    NSLog(@"RESPONDS %d", responds);
+    // NSLog(@"RESPONDS %d", responds);
     if (isProfileView && !cachedItem && !self.titleLabel.text) {
-        IGUser *current = [InstaHelper currentUser];
-        if ([current.username isEqualToString:userView.user.username]) return %orig;
-        if ([muted containsObject:userView.user.username]) {
-          if (responds) {
-            [self addButtonWithTitle:instaUnmute style:0 image:nil accessibilityIdentifier:nil];
-          } else {
-            [self addButtonWithTitle:instaUnmute style:0];
-          }
+      IGUser *current = [InstaHelper currentUser];
+      if ([current.username isEqualToString:userView.user.username]) return %orig;
+      if ([muted containsObject:userView.user.username]) {
+        if (responds) {
+          [self addButtonWithTitle:instaUnmute style:0 image:nil accessibilityIdentifier:nil];
         } else {
-          if (responds) {
-            [self addButtonWithTitle:instaMute style:0 image:nil accessibilityIdentifier:nil];
-          } else {
-            [self addButtonWithTitle:instaMute style:0];
-          }
+          [self addButtonWithTitle:instaUnmute style:0];
         }
+      } else {
+        if (responds) {
+          [self addButtonWithTitle:instaMute style:0 image:nil accessibilityIdentifier:nil];
+        } else {
+          [self addButtonWithTitle:instaMute style:0];
+        }
+      }
     } else if (!self.titleLabel.text && !isWebView) {
       if (saveActions && saveMode == 1) { 
         if (responds) {
@@ -1416,7 +1407,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   float distance = (compareFrame.origin.x - firstFrame.origin.x);
 
   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
-     
+
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];

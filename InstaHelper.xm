@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <AssetsLibrary/AssetsLibrary.h>
 #import <UIKit/UIKit.h>
 #import "InstaHelper.h"
 #import "IGHeaders.h"
@@ -32,5 +33,62 @@
     return [feedItem albumAwareTakenAtDate].date;
   }
 
+}
+
++ (void)saveVideoToAlbum:(NSURL*)localUrl album:(NSString*)album completion:(void (^)(NSError *error))completion {
+  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+
+  [library writeVideoAtPathToSavedPhotosAlbum:localUrl
+    completionBlock:^(NSURL *assetURL, NSError *error){
+      if (error) {
+        completion(error);
+      } else {
+        completion(nil);
+      }
+    }];
+
+}
+
++ (void)downloadRemoteFile:(NSURL*)url completion:(void (^)(NSData *data, NSError *complErr))completion {
+  NSURLRequest *req = [NSURLRequest requestWithURL:url cachePolicy:NSURLCacheStorageNotAllowed timeoutInterval:7.5];
+  [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue mainQueue] 
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *error){
+      if (error) {
+        completion(nil, error);
+      } else {
+        completion(data, nil);
+      }
+    }];
+}
+
++ (void)saveRemoteVideo:(NSURL*)url completion:(void (^)(NSError *error))completion {
+  [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
+    if (viderr) return completion(viderr);
+    NSFileManager *fsmanager = [NSFileManager defaultManager];
+    NSURL *videoDocuments = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+    NSURL *saveUrl = [videoDocumentsURL URLByAppendingPathComponent:[url lastPathComponent]];
+    
+    [vidData writeToURL:saveUrl atomically:YES];
+
+    [InstaHelper saveVideoToAlbum:saveUrl album:@"InstaBetter" completion: ^(NSError *saveErr) {
+      if (saveErr) {
+        completion(saveErr);
+      } else {
+        completion(nil);
+      }
+    }];
+  }];
+}
+
++ (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion {
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    NSData *imgData = [NSData dataWithContentsOfURL:url];
+    [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+        if (error) {
+          completion(error);
+        } else {
+          completion(nil);
+        }
+    }];
 }
 @end
