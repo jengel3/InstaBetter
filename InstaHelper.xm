@@ -68,28 +68,31 @@
     NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
     NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
     
-    [vidData writeToURL:saveUrl atomically:YES];
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [vidData writeToURL:saveUrl atomically:YES];
+      [InstaHelper saveVideoToAlbum:saveUrl album:@"InstaBetter" completion: ^(NSError *saveErr) {
+        if (saveErr) {
+          completion(saveErr);
+        } else {
+          completion(nil);
+        }
+      }];
+    });
 
-    [InstaHelper saveVideoToAlbum:saveUrl album:@"InstaBetter" completion: ^(NSError *saveErr) {
-      if (saveErr) {
-        completion(saveErr);
-      } else {
-        completion(nil);
-      }
-    }];
+    
   }];
 }
 
 + (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion {
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    NSData *imgData = [NSData dataWithContentsOfURL:url];
-    [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-        if (error) {
-          completion(error);
-        } else {
-          completion(nil);
-        }
-    }];
+  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+  NSData *imgData = [NSData dataWithContentsOfURL:url];
+  [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+    if (error) {
+      completion(error);
+    } else {
+      completion(nil);
+    }
+  }];
 }
 
 + (BOOL)isRemoteImage:(NSURL*)url {
