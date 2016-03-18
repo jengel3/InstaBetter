@@ -365,35 +365,61 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// double-tap like confirmation
-%hook IGFeedItemVideoView
-- (void)onDoubleTap:(UITapGestureRecognizer *)tap {
-  if (!enabled) return %orig;
-  IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
-  NSDate *now = [NSDate date];
-  BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
-  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
-      message:localizedString(@"DID_WANT_LIKE_VIDEO")
-      cancelButtonTitle:nil
-      otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-          %orig;
-        } 
-      }];
-  } else {
-    %orig;
-  }
-}
-%end
+// deprecated instagram 7.18.1
+// // double-tap like confirmation
+// %hook IGFeedItemVideoView
+// - (void)onDoubleTap:(UITapGestureRecognizer *)tap {
+//   if (!enabled) return %orig;
+//   IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
+//   NSDate *now = [NSDate date];
+//   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
+//   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+//     [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+//       message:localizedString(@"DID_WANT_LIKE_VIDEO")
+//       cancelButtonTitle:nil
+//       otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+//       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+//         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+//           %orig;
+//         } 
+//       }];
+//   } else {
+//     %orig;
+//   }
+// }
+// %end
 
 // this stopped working at some point, not sure when 
-%hook IGFeedPhotoView
-- (void)onDoubleTap:(id)tap {
+// %hook IGFeedPhotoView
+// - (void)onDoubleTap:(id)tap {
+//   if (!enabled) return %orig;
+//   IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
+//   NSDate *now = [NSDate date];
+//   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
+
+//   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+//     [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
+//       message:localizedString(@"DID_WANT_LIKE_PHOTO")
+//       cancelButtonTitle:nil
+//       otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+//       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+//         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+//           %orig;
+//         }
+//       }];
+//   } else {
+//     %orig;
+//   }
+// }
+// %end
+// end deprecated
+
+%hook IGFeedItemPhotoCell 
+- (void)feedPhotoDidDoubleTapToLike:(id)tap {
   if (!enabled) return %orig;
-  IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
+  IGPost *post = [self post];
   NSDate *now = [NSDate date];
+
   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
@@ -411,10 +437,9 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 %end
-// end deprecated
 
-%hook IGFeedItemPhotoCell 
-- (void)feedPhotoDidDoubleTapToLike:(id)tap {
+%hook IGFeedItemVideoCell 
+- (void)feedItemVideoViewDidDoubleTap:(id)tap {
   if (!enabled) return %orig;
   IGPost *post = [self post];
   NSDate *now = [NSDate date];
@@ -422,8 +447,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
 
   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-    [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
-      message:localizedString(@"DID_WANT_LIKE_PHOTO")
+    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+      message:localizedString(@"DID_WANT_LIKE_VIDEO")
       cancelButtonTitle:nil
       otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
@@ -939,6 +964,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %hook IGCoreTextView
 - (void)layoutSubviews {
   if (enabled) {
+    // set property to know if gestures have been set yet
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
     [longPress setMinimumPressDuration:1];
@@ -1568,6 +1594,26 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 %hook IGFeedItemHeader
+// Instagram 7.17.1.. OTA 
+-(void)onChevronTapped:(id)arg1 {
+  if (enabled) {
+    IGFeedItem *feedItem = nil;
+    BOOL responds = [self respondsToSelector:@selector(viewModel)];
+    if (responds) {
+      IGFeedItemHeaderViewModel *model = [self viewModel];
+      feedItem = [model feedItem];
+    } else {
+      feedItem = [self feedItem];
+    }
+
+    if (feedItem) {
+      cachedItem = feedItem;
+    }
+
+  }
+  %orig;
+}
+
 - (void)layoutSubviews {
   %orig;
   if (enabled && enableTimestamps) {
