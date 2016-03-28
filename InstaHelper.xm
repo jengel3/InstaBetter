@@ -29,6 +29,9 @@
   BOOL responds = [feedItem respondsToSelector:@selector(takenAt)];
   if (responds) {
     return [feedItem takenAt].date;
+  } else if ([feedItem respondsToSelector:@selector(takenAtDate)]) {
+    // instagram 7.19
+    return [feedItem takenAtDate].date;
   } else {
     return [feedItem albumAwareTakenAtDate].date;
   }

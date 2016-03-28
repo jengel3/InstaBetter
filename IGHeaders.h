@@ -134,6 +134,7 @@
 @property (readonly) IGCommentModel *caption;
 @property (readonly) BOOL hasLiked;
 @property (readonly) IGDate *takenAt;
+@property (readonly) IGDate * takenAtDate;
 - (id)init;
 - (id)initWithCoder:(id)fp8;
 - (int)likeCount;
@@ -214,10 +215,11 @@
 - (void)reloadWithNewObjects:(NSArray*)arg1 ;
 - (void)actionSheetDismissedWithButtonTitled:(NSString*)arg1 ;
 - (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)arg1;
--(void)feedItemActionCellDidTapChervonButton:(id)arg1 ;
+- (void)feedItemActionCellDidTapChervonButton:(id)arg1 ;
 - (void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
 - (void)reloadWithCurrentObjectsAnimated:(char)arg1 ;
 - (NSArray*)getMutedList:(NSArray*)items;
+- (void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
 @end
 
 @interface IGFeedViewController : UIViewController

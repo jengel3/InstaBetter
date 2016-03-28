@@ -500,6 +500,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   %orig;
 }
 
+
+// instagram 7.19
+- (void)feedItemHeaderDidTapOnMoreButton:(IGFeedItemHeader*)header {
+  cachedItem = header.viewModel.feedItem;
+  %orig;
+}
+
 - (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
   if (enabled) {
     IGFeedItem *item = cachedItem;
