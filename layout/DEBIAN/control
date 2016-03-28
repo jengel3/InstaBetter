@@ -2,7 +2,7 @@ Package: com.jake0oo0.instabetter
 Name: InstaBetter
 Depends: firmware (>= 7.0)
 Conflicts: com.jake0oo0.instamute
-Version: 1.5.4
+Version: 1.5.5
 Architecture: iphoneos-arm
 Description: The most comprehensive Instagram tweak yet
 Maintainer: Jake0oo0 <jake0oo0dev@gmail.com>

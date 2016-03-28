@@ -689,3 +689,36 @@
 - (void)growingTextViewDidChange:(id)arg1;
 - (void)growingTextView:(id)arg1 willChangeHeight:(float)arg2;
 @end
+
+@interface IGShareViewController
+-(id)initWithMediaMetadata:(id)arg1 ;
+@end
+
+@interface IGEditorViewController
+@property (nonatomic,readonly) UIImage * image;
+@property (assign,getter=isReadyToProceed,nonatomic) BOOL readyToProceed;
+-(id)initWithPhotoOrigin:(int)arg1 sourceType:(int)arg2 mediaMetadata:(id)arg3 ;
+-(id)initForImageFromCameraWithMediaMetadata:(id)arg1 ;
+-(void)setImage:(id)arg1 cropRect:(CGRect)arg2 ;
+@end
+
+@interface IGCameraNavigationController : NSObject
+-(void)setCurrentEditor:(IGEditorViewController *)arg1 ;
+-(id)initWithMetadata:(id)arg1 mode:(int)arg2 ;
+-(void)pushViewController:(id)arg1 animated:(BOOL)arg2 ;
+
+@end
+
+@interface IGMainAppViewController
+-(void)presentCameraWithMetadata:(id)arg1 mode:(int)arg2 ;
+-(IGCameraNavigationController *)cameraController;
+@end
+
+@interface IGRootView : UIView
+@end
+
+@interface IGMediaMetadata : NSObject
+@property (nonatomic,copy) NSString * caption; 
+@property (nonatomic,retain) UIImage * snapshot;  
+@property (nonatomic,readonly) int mediaType;  
+@end

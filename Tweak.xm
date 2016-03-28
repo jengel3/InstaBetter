@@ -35,6 +35,7 @@ static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
+static BOOL showRepost;
 static int saveMode = 1;
 static int saveConfirm = YES;
 static int fakeFollowers = nil;
@@ -57,6 +58,7 @@ static NSString* notificationsUsertag = nil;
 static NSString* notificationsDirect = nil;
 
 IGFeedItem *cachedItem = nil;
+// IGCameraNavigationController *cameraController = nil
 
 float origPosition = nil;
 int ringerState;
@@ -102,6 +104,7 @@ static NSDictionary* loadPrefs() {
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
       saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
+      showRepost = [prefs objectForKey:@"show_repost"] ? [[prefs objectForKey:@"show_repost"] boolValue] : YES;
 
       // video and audio
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
@@ -463,6 +466,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 %end
 
 
+// %hook IGShareViewController
+// -(id)initWithMediaMetadata:(id)arg1 {
+//   %log;
+//   id ori = %orig;
+//   NSLog(@"%@", ori);
+//   return ori;
+// }
+// %end
+
 // replacement for auto starting videos in ig >= 7.14
 %hook IGFeedVideoCellManager
 - (BOOL)startVideoForCellIfApplicable:(id)arg1 {
@@ -500,6 +512,51 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         initWithActivityItems:@[link]
         applicationActivities:nil];
       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+    } else if (item && item.mediaType == 1 && [title isEqualToString:localizedString(@"REPOST")]) {
+      if (item.user == [InstaHelper currentUser]) return %orig;
+      IGRootViewController *root = [InstaHelper rootViewController];
+      NSArray *controllers = [root childViewControllers];
+      // NSArray *views = [root.view subviews];
+      // IGRootView *view = views[0];
+      IGMainAppViewController *main = controllers[0];
+      IGMediaMetadata *meta = [[%c(IGMediaMetadata) alloc] init];
+      meta.caption = item.caption ? item.caption.text : nil;
+      // NSLog(@"TYPE %d", meta.mediaType);
+      UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+      MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+      status.labelText = localizedString(@"PREPARING");
+
+      NSString *versionURL = highestResImage(item.photo.imageVersions);
+      NSURL *imgUrl = [NSURL URLWithString:versionURL];
+      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+      status.labelText = localizedString(@"LOADING_IMAGE");
+      dispatch_async(queue, ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+        UIImage *img = [UIImage imageWithData:imgData];
+        meta.snapshot = img;
+        // NSLog(@"TYPE %d", meta.mediaType);
+        dispatch_async(dispatch_get_main_queue(), ^{
+          status.labelText = localizedString(@"LOADING_VIEWS");
+          [main presentCameraWithMetadata:meta mode:1];
+
+          IGCameraNavigationController *camera = [main cameraController];
+
+          IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta];
+
+          // MSHookIvar<UIImage*>(editor, "_image") = img;
+
+          [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
+          editor.readyToProceed = YES;
+          
+          [camera pushViewController:editor animated:YES];
+
+          [status hide:YES afterDelay:1.0];
+        });
+
+      });
+    
+
+      // NSLog(@"VIEW %@", controllers);
     }
   }
   %orig;
@@ -547,6 +604,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
+// %hook IGCameraNavigationController
+// -(id)initWithMetadata:(id)arg1 mode:(int)arg2 {
+//   cameraController = %orig;
+//   return cameraController
+// }
+// %end
+
 
 // replaced with IGFeedViewController_DEPRECATED in 7.16
 %hook IGFeedViewController
@@ -582,15 +646,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // auto play video
 // deprecated instagram <= 7.14
-- (void)startVideoForCellMovingOnScreen {
-  if (enabled) {
-    if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
-      return %orig;
-    }
-  } else {
-    %orig;
-  }
-}
+// - (void)startVideoForCellMovingOnScreen {
+//   if (enabled) {
+//     if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
+//       return %orig;
+//     }
+//   } else {
+//     %orig;
+//   }
+// }
 
 
 // muting in instagram 7.14+(?)
@@ -1208,13 +1272,18 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         }
       }
     } else if (!self.titleLabel.text && !isWebView) {
+      IGUser *current = [InstaHelper currentUser];
+      if (showRepost && cachedItem && cachedItem.user != current) {
+        [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
+      }
       if (saveActions && saveMode == 1) { 
         if (responds) {
           [self addButtonWithTitle:instaSave style:0 image:nil accessibilityIdentifier:nil];
+          
         } else {
           [self addButtonWithTitle:instaSave style:0];
         }
-        IGUser *current = [InstaHelper currentUser];
+        
         if (cachedItem && cachedItem.user == current) {
         } else {
           if (responds) {

@@ -28,3 +28,7 @@
 "DOES_NOT_FOLLOW" = "Not Following You";
 "FAILED_OPEN" = "Failed to open URL";
 "FAILED_OPEN_MSG" = "This URL could not be opened by any application.";
+"REPOST" = "Repost";
+"PREPARING" = "Preparing";
+"LOADING_IMAGE" = "Loading Image";
+"LOADING_VIEWS" = "Preparing Views";

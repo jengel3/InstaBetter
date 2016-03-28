@@ -187,6 +187,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Add support for Instagram 7.18.1
 - Fix crash when liking videos
 - Fix double confirmation when liking some photos
+- Add repost button to action menu
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
