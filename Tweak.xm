@@ -597,7 +597,7 @@ static BOOL openExternalURL(NSURL* url) {
       UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
       MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
       status.labelText = localizedString(@"PREPARING");
-        NSLog(@"CAPTION %@", meta.caption);
+        // NSLog(@"CAPTION %@", meta.caption);
 
       if (item.mediaType == 1) {
         NSString *versionURL = highestResImage(item.photo.imageVersions);
