@@ -723,7 +723,20 @@
 - (void)growingTextView:(id)arg1 willChangeHeight:(float)arg2;
 @end
 
-@interface IGShareViewController
+@interface IGCaptionCell : UICollectionViewCell
+@property (nonatomic,retain) NSString *text;
+@end
+
+@interface IGMediaMetadata : NSObject
+@property (nonatomic,copy) NSString * caption; 
+@property (nonatomic,retain) UIImage * snapshot;  
+@property (nonatomic,readonly) int mediaType;  
+@end
+
+
+@interface IGShareViewController : IGViewController
+@property (nonatomic,retain) IGCaptionCell *captionCell;
+@property (nonatomic,retain) IGMediaMetadata * mediaMetadata; 
 -(id)initWithMediaMetadata:(id)arg1 ;
 @end
 
@@ -748,12 +761,6 @@
 @end
 
 @interface IGRootView : UIView
-@end
-
-@interface IGMediaMetadata : NSObject
-@property (nonatomic,copy) NSString * caption; 
-@property (nonatomic,retain) UIImage * snapshot;  
-@property (nonatomic,readonly) int mediaType;  
 @end
 
 @interface IGVideoMetadata

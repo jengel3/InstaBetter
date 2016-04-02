@@ -61,6 +61,8 @@ static NSString* notificationsDirect = nil;
 
 IGFeedItem *cachedItem = nil;
 
+NSString *cachedCaption;
+
 float origPosition = nil;
 int ringerState;
 static BOOL ringerMuted;
@@ -538,21 +540,16 @@ static BOOL openExternalURL(NSURL* url) {
 }
 %end
 
-%hook IGVideoMetadata
--(void)setRawVideoLocationString:(NSString *)arg1 {
+%hook IGShareViewController
+-(void)viewDidLoad {
   %log;
-  %orig;
-}
-%end
+  if (cachedCaption) {
+    self.mediaMetadata.caption = cachedCaption;
+    self.captionCell.text = cachedCaption;
+    cachedCaption = nil;
+  }
 
-%hook IGVideoEditorViewController
--(id)initWithAssetInMediaMetadata:(id)arg1 {
-  %log;
-  return %orig;
-}
--(id)initWithOrigin:(int)arg1 videoInfo:(id)arg2 mediaMetadata:(id)arg3 {
-  %log;
-  return %orig;
+  %orig;
 }
 %end
 
@@ -596,9 +593,11 @@ static BOOL openExternalURL(NSURL* url) {
       IGMainAppViewController *main = controllers[0];
       IGMediaMetadata *meta = [[%c(IGMediaMetadata) alloc] init];
       meta.caption = item.caption ? item.caption.text : nil;
+      cachedCaption = meta.caption;
       UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
       MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
       status.labelText = localizedString(@"PREPARING");
+        NSLog(@"CAPTION %@", meta.caption);
 
       if (item.mediaType == 1) {
         NSString *versionURL = highestResImage(item.photo.imageVersions);
@@ -631,8 +630,19 @@ static BOOL openExternalURL(NSURL* url) {
         NSString *versionURL = highestResImage(item.video.videoVersions);
         NSURL *url = [NSURL URLWithString:versionURL];
         dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-        status.labelText = localizedString(@"LOADING_IMAGE");
+        status.labelText = localizedString(@"LOADING_VIDEO");
+
+
         dispatch_async(queue, ^{
+          CGSize size = CGSizeMake(100, 100);
+          UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+          [[UIColor whiteColor] setFill];
+          UIRectFill(CGRectMake(0, 0, size.width, size.height));
+          UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+          UIGraphicsEndImageContext();
+
+            meta.snapshot = image;
+
           AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
 
           IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
@@ -642,19 +652,13 @@ static BOOL openExternalURL(NSURL* url) {
           IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
           info.video = composition;
           
-          // UIImage *img = [UIImage imageWithData:imgData];
-          // meta.snapshot = img;
           dispatch_async(dispatch_get_main_queue(), ^{
             status.labelText = localizedString(@"LOADING_VIEWS");
             [main presentCameraWithMetadata:meta mode:1];
 
             IGCameraNavigationController *camera = [main cameraController];
 
-            IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:0 videoInfo:info mediaMetadata:meta];
-
-
-            // [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
-            // editor.readyToProceed = YES;
+            IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:2 videoInfo:info mediaMetadata:meta];
 
             [camera pushViewController:editor animated:YES];
 
@@ -662,12 +666,7 @@ static BOOL openExternalURL(NSURL* url) {
           });
 
         });
-
-
       }
-
-
-
     }
   }
   %orig;
