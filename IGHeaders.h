@@ -80,6 +80,10 @@
 @property(retain, nonatomic) NSMutableAttributedString *attributedString;
 - (void)appendString:(id)str;
 - (void)appendAttributedString:(id)styled;
+
+-(void)appendLinkedString:(id)arg1 ;
+-(void)appendLinkedTitleString:(id)arg1 ;
+-(void)appendLinkedString:(id)arg1 withExternalURLs:(char)arg2 ;
 @end
 
 @interface IGViewController : UIViewController
@@ -90,12 +94,25 @@
 - (void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3;
 @end
 
+@interface IGCommentContentView
+-(void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(id)arg3 ;
+- (void)coreTextView:(id)arg1 didLongTapOnString:(id)arg2 URL:(id)arg3;
+@end
+
 @interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UILongPressGestureRecognizerDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
 @property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
 - (void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1;
 - (void)setStyledString:(IGStyledString *)arg1;
 - (long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3;
+
+-(BOOL)handleTapAtPoint:(CGPoint)arg1 forTouchEvent:(unsigned)arg2 ;
+-(BOOL)handlePaddedTapAtPoint:(CGPoint)arg1 forTouchEvent:(unsigned)arg2 fromLongTap:(char)arg3 ;
+-(void)handleLongTap;
+-(BOOL)handleTapAtPoint:(CGPoint)arg1 forTouchEvent:(unsigned)arg2 fromLongTap:(char)arg3 ;
+-(BOOL)handleTapAtIndex:(int)arg1 forTouchEvent:(unsigned)arg2 fromLongTap:(char)arg3 ;
+-(NSURL*)urlAtPoint:(CGPoint)arg1 ;
+-(long)findClosestIndexForURLForAttributedString:(id)arg1 nearPoint:(CGPoint)arg2 constrainedSize:(CGSize)arg3 ;
 @end
 
 @interface IGPhoto
@@ -108,6 +125,10 @@
 
 @interface IGCommentModel : NSObject
 @property (nonatomic,copy) NSString *text;
+-(id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 ;
+-(id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 maximumUntruncatedNumberOfLines:(int)arg3 truncatedToNumberOfLines:(int)arg4;
+-(id)styledStringForWidth:(float)arg1 feedItem:(id)arg2 shouldCollapseCaption:(char)arg3 ;
+-(id)buildStyledStringWithNewline:(char)arg1 ;
 @end
 
 @interface IGDate : NSObject <NSCoding> 
@@ -202,6 +223,14 @@
 - (void)application:(id)arg1 handleActionWithIdentifier:(id)arg2 forRemoteNotification:(id)arg3 completionHandler:(/*^block*/id)arg4;
 @end
 
+@interface IGFeedItemPreviewingHandler : NSObject
+-(id)initWithController:(id)arg1 ;
+@end
+
+@interface IGFeedPreviewingHandler : NSObject
+- (id)initWithFeedViewController:(id)arg1;
+@end
+
 @interface IGFeedViewController_DEPRECATED : UIViewController
 @property (assign,nonatomic) int feedLayout;
 - (void)handleDidDisplayFeedItem:(IGFeedItem*)item;
@@ -220,6 +249,7 @@
 - (void)reloadWithCurrentObjectsAnimated:(char)arg1 ;
 - (NSArray*)getMutedList:(NSArray*)items;
 - (void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
+- (void)setFeedPreviewingDelegate:(IGFeedPreviewingHandler *)arg1 ;
 @end
 
 @interface IGFeedViewController : UIViewController
@@ -238,6 +268,7 @@
 - (void)reloadWithNewObjects:(NSArray*)arg1 context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 ;
 - (void)reloadWithCurrentObjectsAnimated:(char)arg1;
 - (NSArray*)getMutedList:(NSArray*)items;
+- (void)setFeedPreviewingDelegate:(IGFeedPreviewingHandler *)arg1 ;
 @end
 
 @interface IGFeedMainConfiguration : NSObject
@@ -723,4 +754,25 @@
 @property (nonatomic,copy) NSString * caption; 
 @property (nonatomic,retain) UIImage * snapshot;  
 @property (nonatomic,readonly) int mediaType;  
+@end
+
+@interface IGVideoMetadata
+-(void)setRawVideoLocationString:(NSString *)arg1 ;
+@end
+
+@interface IGVideoEditorViewController
+-(id)initWithAssetInMediaMetadata:(id)arg1 ;
+-(id)initWithOrigin:(int)arg1 videoInfo:(id)arg2 mediaMetadata:(id)arg3 ;
+@end
+
+@interface IGVideoComposition
+-(void)addClip:(id)arg1 ;
+@end
+
+@interface IGVideoClip
+-(id)initWithAsset:(id)arg1 position:(int)arg2 sourceType:(int)arg3 ;
+@end
+
+@interface IGVideoInfo : NSObject
+@property (nonatomic,retain) IGVideoComposition * video; 
 @end

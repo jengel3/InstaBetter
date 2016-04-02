@@ -8,21 +8,23 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Save hi-res images and videos
 * Hold down on images to zoom
 * Hold down on profile pictures to zoom
-* Mute Users from main feed
-* Hide Sponsored Ads
-* Custom Locations for Media - /u/stevep88
-* Show follow status on user profile (Similar to Twitter) - /u/evansjailbreak
-* Show like counts as percentages - /u/rnumur
+* Mute users from the home and activity feeds
+* Hide sponsored ads
+* Custom Locations for Media
+* Show follow status on user profile (Similar to Twitter)
 * Share sheet for text and images
-* Open links in Instagram
-* Fake follower and following counts
+* Open links in Instagram or in the new Safari View Controller.
+* Make any comment links clickable and open in Instagram.
+* Fake follower, following, and verified status
 * View DMs without notifying the sender
 * All features can be toggled on or off
-* Enable grid view on main feed
-* Alerts for liking media with a double tap
+* Enable grid view, or toggle between it on the home feed
+* Confirm likes when double tapping photos or videos
 * Show the full time for feed items by clicking on the timestamp button
-* Add setting to enable or disable auto-playing video sound
+* Enable or disable sound and auto-playing of videos
 * Hold down on direct message images and videos for sharing and save options
+* View profile pictures
+* Repost content right from within Instagram
 
 ### Release 1.1.0
 * [FEATURE] Add zooming to feed images
@@ -188,6 +190,15 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix crash when liking videos
 - Fix double confirmation when liking some photos
 - Add repost button to action menu
+
+### Release 1.5.6
+- Add support for Instagram 7.19
+- Fix crash related to timestamps
+- Fix pictures not saving/sharing, sometimes crashing
+
+### Release 1.6.0
+- Add link parsing. Allows you to click any link within a comment or post in Instagram.
+
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

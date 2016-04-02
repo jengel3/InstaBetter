@@ -5,6 +5,7 @@
 //  Created by Brian Capps on 2/17/15.
 //
 //
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #import "NYTPhotoTransitionAnimator.h"
 #import "NYTOperatingSystemCompatibilityUtility.h"

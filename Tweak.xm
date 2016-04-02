@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 #import "substrate.h"
 #import <AssetsLibrary/AssetsLibrary.h>
@@ -27,6 +28,7 @@ static BOOL saveActions = YES;
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
 static BOOL openInApp = YES;
+static BOOL parseURLs = YES;
 static BOOL disableDMRead = NO;
 static BOOL loadHighRes = NO;
 static BOOL mainGrid = NO;
@@ -35,7 +37,7 @@ static BOOL layoutSwitcher = YES;
 static int audioMode = 1;
 static int videoMode = 1;
 static int alertMode = 1;
-static BOOL showRepost;
+static BOOL showRepost = NO;
 static int saveMode = 1;
 static int saveConfirm = YES;
 static int fakeFollowers = nil;
@@ -58,7 +60,6 @@ static NSString* notificationsUsertag = nil;
 static NSString* notificationsDirect = nil;
 
 IGFeedItem *cachedItem = nil;
-// IGCameraNavigationController *cameraController = nil
 
 float origPosition = nil;
 int ringerState;
@@ -86,10 +87,13 @@ static NSDictionary* loadPrefs() {
       // showPercents = [prefs objectForKey:@"show_percents"] ? [[prefs objectForKey:@"show_percents"] boolValue] : YES;
       customLocations = [prefs objectForKey:@"custom_locations"] ? [[prefs objectForKey:@"custom_locations"] boolValue] : YES;
       returnKey = [prefs objectForKey:@"return_key"] ? [[prefs objectForKey:@"return_key"] boolValue] : NO;
-      openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
-      useSafariController = [prefs objectForKey:@"safari_controller"] ? [[prefs objectForKey:@"safari_controller"] boolValue] : YES;
+
       disableDMRead = [prefs objectForKey:@"disable_read_notification"] ? [[prefs objectForKey:@"disable_read_notification"] boolValue] : NO;
       loadHighRes = [prefs objectForKey:@"zoom_hi_res"] ? [[prefs objectForKey:@"zoom_hi_res"] boolValue] : NO;
+
+      openInApp = [prefs objectForKey:@"app_browser"] ? [[prefs objectForKey:@"app_browser"] boolValue] : YES;
+      parseURLs = [prefs objectForKey:@"parse_urls"] ? [[prefs objectForKey:@"parse_urls"] boolValue] : YES;
+      useSafariController = [prefs objectForKey:@"safari_controller"] ? [[prefs objectForKey:@"safari_controller"] boolValue] : YES;
 
       mainGrid = [prefs objectForKey:@"main_grid"] ? [[prefs objectForKey:@"main_grid"] boolValue] : NO;
       layoutSwitcher = [prefs objectForKey:@"layout_switcher"] ? [[prefs objectForKey:@"layout_switcher"] boolValue] : YES;
@@ -104,7 +108,7 @@ static NSDictionary* loadPrefs() {
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
       saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
-      showRepost = [prefs objectForKey:@"show_repost"] ? [[prefs objectForKey:@"show_repost"] boolValue] : YES;
+      showRepost = [prefs objectForKey:@"show_repost"] ? [[prefs objectForKey:@"show_repost"] boolValue] : NO;
 
       // video and audio
       audioMode = [prefs objectForKey:@"audio_mode"] ? [[prefs objectForKey:@"audio_mode"] intValue] : 1;
@@ -269,6 +273,33 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   }
 }
 
+static BOOL openExternalURL(NSURL* url) {
+  if (enabled && openInApp) {
+    if ([%c(SFSafariViewController) class] != nil && useSafariController) {
+      NSString *scheme = [[url scheme] lowercaseString];
+
+      if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) {
+        SFSafariViewController *sfvc = [[%c(SFSafariViewController) alloc] initWithURL:url];
+        [[InstaHelper rootViewController] presentViewController:(UIViewController*)sfvc animated:YES completion:nil];
+      } else {
+        if ([[UIApplication sharedApplication] canOpenURL:url]) {
+          [[UIApplication sharedApplication] openURL:url];
+        } else {
+          UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"FAILED_OPEN") 
+            message:localizedString(@"FAILED_OPEN_MSG") delegate:nil cancelButtonTitle:@"Okay" 
+            otherButtonTitles:nil];
+          [alert show];
+        }
+      }
+    } else {
+      UIViewController *rootViewController = [InstaHelper rootViewController];
+      [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
+    }
+    return true;
+  }
+  return false;
+}
+
 @implementation InstaBetterPhoto
 @end
 
@@ -336,6 +367,37 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   self.label.text = [NSString stringWithFormat:@"%d", arg1];
 }
 %end
+
+
+// parse URLs in styled strings
+%hook IGCommentModel
+- (id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 {
+  if (enabled && parseURLs) {
+    IGStyledString *styled = (IGStyledString*)%orig;
+    NSString *string = styled.attributedString.string;
+    NSError *error = nil;
+    NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+    NSMutableAttributedString *attr = [styled.attributedString mutableCopy];
+    [detector enumerateMatchesInString:string
+     options:0
+     range:NSMakeRange(0, string.length)
+     usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+      NSURL *url = result.URL;
+      if (result.resultType == NSTextCheckingTypeLink && ([url.scheme isEqualToString:@"http"] || [url.scheme isEqualToString:@"https"])) {
+        NSRange range = NSMakeRange(result.range.location, result.range.length);
+        [attr addAttribute:@"URL" value:url range:range];
+        [attr addAttribute:NSLinkAttributeName value:url range:range];
+        [attr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0705882 green:0.337255 blue:0.533333 alpha:1.0] range:range]; 
+
+      }         
+    }];
+    styled.attributedString = attr;
+  }
+  return %orig;
+}
+
+%end
+
 
 // add return key to comments
 
@@ -465,16 +527,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-
-// %hook IGShareViewController
-// -(id)initWithMediaMetadata:(id)arg1 {
-//   %log;
-//   id ori = %orig;
-//   NSLog(@"%@", ori);
-//   return ori;
-// }
-// %end
-
 // replacement for auto starting videos in ig >= 7.14
 %hook IGFeedVideoCellManager
 - (BOOL)startVideoForCellIfApplicable:(id)arg1 {
@@ -483,6 +535,24 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   } else {
     return NO;
   }
+}
+%end
+
+%hook IGVideoMetadata
+-(void)setRawVideoLocationString:(NSString *)arg1 {
+  %log;
+  %orig;
+}
+%end
+
+%hook IGVideoEditorViewController
+-(id)initWithAssetInMediaMetadata:(id)arg1 {
+  %log;
+  return %orig;
+}
+-(id)initWithOrigin:(int)arg1 videoInfo:(id)arg2 mediaMetadata:(id)arg3 {
+  %log;
+  return %orig;
 }
 %end
 
@@ -519,51 +589,85 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
         initWithActivityItems:@[link]
         applicationActivities:nil];
       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
-    } else if (item && item.mediaType == 1 && [title isEqualToString:localizedString(@"REPOST")]) {
+    } else if (item && [title isEqualToString:localizedString(@"REPOST")]) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       IGRootViewController *root = [InstaHelper rootViewController];
       NSArray *controllers = [root childViewControllers];
-      // NSArray *views = [root.view subviews];
-      // IGRootView *view = views[0];
       IGMainAppViewController *main = controllers[0];
       IGMediaMetadata *meta = [[%c(IGMediaMetadata) alloc] init];
       meta.caption = item.caption ? item.caption.text : nil;
-      // NSLog(@"TYPE %d", meta.mediaType);
       UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
       MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
       status.labelText = localizedString(@"PREPARING");
 
-      NSString *versionURL = highestResImage(item.photo.imageVersions);
-      NSURL *imgUrl = [NSURL URLWithString:versionURL];
-      dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-      status.labelText = localizedString(@"LOADING_IMAGE");
-      dispatch_async(queue, ^{
-        NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
-        UIImage *img = [UIImage imageWithData:imgData];
-        meta.snapshot = img;
-        // NSLog(@"TYPE %d", meta.mediaType);
-        dispatch_async(dispatch_get_main_queue(), ^{
-          status.labelText = localizedString(@"LOADING_VIEWS");
-          [main presentCameraWithMetadata:meta mode:1];
+      if (item.mediaType == 1) {
+        NSString *versionURL = highestResImage(item.photo.imageVersions);
+        NSURL *imgUrl = [NSURL URLWithString:versionURL];
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        status.labelText = localizedString(@"LOADING_IMAGE");
+        dispatch_async(queue, ^{
+          NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+          UIImage *img = [UIImage imageWithData:imgData];
+          meta.snapshot = img;
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.labelText = localizedString(@"LOADING_VIEWS");
+            [main presentCameraWithMetadata:meta mode:1];
 
-          IGCameraNavigationController *camera = [main cameraController];
+            IGCameraNavigationController *camera = [main cameraController];
 
-          IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta];
+            IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta];
 
-          // MSHookIvar<UIImage*>(editor, "_image") = img;
 
-          [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
-          editor.readyToProceed = YES;
+            [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
+            editor.readyToProceed = YES;
+
+            [camera pushViewController:editor animated:YES];
+
+            [status hide:YES afterDelay:1.0];
+          });
+
+        });
+      } else if (item.mediaType == 2) {
+        NSString *versionURL = highestResImage(item.video.videoVersions);
+        NSURL *url = [NSURL URLWithString:versionURL];
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        status.labelText = localizedString(@"LOADING_IMAGE");
+        dispatch_async(queue, ^{
+          AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
+
+          IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
+
+          IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
+          [composition addClip:clip];
+          IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
+          info.video = composition;
           
-          [camera pushViewController:editor animated:YES];
+          // UIImage *img = [UIImage imageWithData:imgData];
+          // meta.snapshot = img;
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.labelText = localizedString(@"LOADING_VIEWS");
+            [main presentCameraWithMetadata:meta mode:1];
 
-          [status hide:YES afterDelay:1.0];
+            IGCameraNavigationController *camera = [main cameraController];
+
+            IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:0 videoInfo:info mediaMetadata:meta];
+
+
+            // [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
+            // editor.readyToProceed = YES;
+
+            [camera pushViewController:editor animated:YES];
+
+            [status hide:YES afterDelay:1.0];
+          });
+
         });
 
-      });
-    
 
-      // NSLog(@"VIEW %@", controllers);
+      }
+
+
+
     }
   }
   %orig;
@@ -571,13 +675,13 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  if (!isMainFeed) return %orig;
+if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+if (!isMainFeed) return %orig;
 
-  NSArray *final = [self getMutedList:items];
+NSArray *final = [self getMutedList:items];
 
-  return %orig(final, arg2, arg3, arg4, arg5);
+return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -611,14 +715,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// %hook IGCameraNavigationController
-// -(id)initWithMetadata:(id)arg1 mode:(int)arg2 {
-//   cameraController = %orig;
-//   return cameraController
-// }
-// %end
-
-
 // replaced with IGFeedViewController_DEPRECATED in 7.16
 %hook IGFeedViewController
 - (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
@@ -651,28 +747,15 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   %orig;
 }
 
-// auto play video
-// deprecated instagram <= 7.14
-// - (void)startVideoForCellMovingOnScreen {
-//   if (enabled) {
-//     if (videoMode == 2 || (videoMode == 1 && !ringerMuted)) {
-//       return %orig;
-//     }
-//   } else {
-//     %orig;
-//   }
-// }
-
-
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  if (!isMainFeed) return %orig;
+if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+if (!isMainFeed) return %orig;
 
-  NSArray *final = [self getMutedList:items];
+NSArray *final = [self getMutedList:items];
 
-  return %orig(final, arg2, arg3, arg4, arg5);
+return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -897,28 +980,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 
 %hook IGUserDetailHeaderView 
 - (void)coreTextView:(id)view didTapOnString:(id)str URL:(NSURL*)url {
-  if (enabled && openInApp) {
-    if ([%c(SFSafariViewController) class] != nil && useSafariController) {
-      NSString *scheme = [[url scheme] lowercaseString];
-
-      if ([scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"]) {
-        SFSafariViewController *sfvc = [[%c(SFSafariViewController) alloc] initWithURL:url];
-        [[InstaHelper rootViewController] presentViewController:(UIViewController*)sfvc animated:YES completion:nil];
-      } else {
-        if ([[UIApplication sharedApplication] canOpenURL:url]) {
-          [[UIApplication sharedApplication] openURL:url];
-        } else {
-          UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"FAILED_OPEN") 
-            message:localizedString(@"FAILED_OPEN_MSG") delegate:nil cancelButtonTitle:@"Okay" 
-            otherButtonTitles:nil];
-          [alert show];
-        }
-      }
-    } else {
-      UIViewController *rootViewController = [InstaHelper rootViewController];
-      [%c(IGURLHelper) openExternalURL:url controller:rootViewController modal:YES controls:YES completionHandler:nil];
-    }
-  } else {
+  if (!openExternalURL(url)) {
     %orig;
   }
 }
@@ -1030,8 +1092,6 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 }
 %end
 
-// share sheet text
-
 %hook IGCoreTextView
 - (void)layoutSubviews {
   if (enabled) {
@@ -1051,6 +1111,31 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     initWithActivityItems:@[[self.styledString.attributedString string]]
     applicationActivities:nil];
   [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+}
+
+
+// unpadded views
+-(BOOL)handleTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 {
+  NSURL *url = [self urlAtPoint:point];
+  if (url) {
+   if ((![url.scheme isEqualToString:@"http"] && ![url.scheme isEqualToString:@"https"]) || !openExternalURL(url)) {
+    return %orig;
+  }
+  return true;
+}
+return false;
+}
+
+// comment views seem to be padded, not sure about what else
+-(BOOL)handlePaddedTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 fromLongTap:(char)arg3 {
+  NSURL *url = [self urlAtPoint:point];
+  if (url) {
+    if ((![url.scheme isEqualToString:@"http"] && ![url.scheme isEqualToString:@"https"]) || !openExternalURL(url)) {
+      return %orig;
+    }
+    return true;
+  }
+  return false;
 }
 %end
 
@@ -1382,8 +1467,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   %orig;
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
-    gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
-    listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(changeView)];
+    gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
+    listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
   }
   if (self.feedLayout == 1) {
     self.navigationItem.leftBarButtonItem = gridItem;
@@ -1398,6 +1483,8 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
     [self setFeedLayout:1];
     [self.navigationItem setLeftBarButtonItem:gridItem animated:YES];
   } else if (self.feedLayout == 1) {
+    // IGFeedItemPreviewingHandler *handler = [[%c(IGFeedItemPreviewingHandler) alloc] initWithController:self];
+    // [self setFeedPreviewingDelegate:handler];
     [self setFeedLayout:2];
     [self.navigationItem setLeftBarButtonItem:listItem animated:YES];
   }
@@ -1597,7 +1684,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
 - (void)viewDidLoad {
   %orig;
   if (!(enabled && customLocations)) return;
-  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"location-pin-inactive.png"] style:UIBarButtonItemStyleBordered target:self action:@selector(selectCustom)];
+  UIBarButtonItem *userButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"location-pin-inactive.png"] style:UIBarButtonItemStylePlain target:self action:@selector(selectCustom)];
   [self.navigationItem setLeftBarButtonItems:[NSArray arrayWithObjects:self.navigationItem.leftBarButtonItem, userButton, nil]];
 }
 

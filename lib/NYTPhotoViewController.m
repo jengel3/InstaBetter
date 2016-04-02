@@ -5,6 +5,7 @@
 //  Created by Brian Capps on 2/11/15.
 //
 //
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #import "NYTPhotoViewController.h"
 #import "Protocols/NYTPhoto.h"

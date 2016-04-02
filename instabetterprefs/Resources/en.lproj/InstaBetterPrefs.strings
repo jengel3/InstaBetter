@@ -66,3 +66,5 @@
 "MOST_CHANGES_MADE" = "Most changes can be made without restarting, but some may require a restart.";
 "USE_SAFARI_VIEW" = "Use Safari Web View";
 "REPOST" = "Repost";
+"LINKS" = "Links";
+"PARSE_URLS" = "Parse URLs";

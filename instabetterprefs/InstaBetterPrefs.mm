@@ -1,4 +1,3 @@
-#import <Preferences/Preferences.h>
 #import "InstaBetterPrefs.h"
 
 NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundles/InstaBetterPrefs.bundle"];
@@ -13,8 +12,10 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   return _specifiers;
 }
 
-- (NSArray *)loadSounds:(id)target {
+- (NSArray *)loadSounds {
+  NSLog(@"CALLING");
   if (!self.sounds) {
+    NSLog(@"HEREEE");
     NSMutableArray *rawList = [[NSMutableArray alloc] init];
     NSString *soundsPath = @"/System/Library/Audio/UISounds/";
 
@@ -23,12 +24,13 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
     [rawList addObject:@"Default"];
     [files enumerateObjectsUsingBlock:^(id obj, NSUInteger index, BOOL *stop) {
       NSString *filename = (NSString *)obj;
+      NSLog(@"FILENAME %@", filename);
       NSString *extension = [[filename pathExtension] lowercaseString];
       if ([extension isEqualToString:@"caf"]) {
         [rawList addObject:filename];    
       }
     }];
-    self.sounds = rawList;
+    self.sounds = [rawList copy];
   }
   return self.sounds;
 }
@@ -68,7 +70,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.burbn.instagram"]) {
     return exit(0);
   }
-  system("killall -9 Instagram");
+  // system("killall -9 Instagram");
 }
 @end
  
@@ -86,8 +88,8 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
         detail:Nil
           cell:PSTitleValueCell
           edit:Nil];
-      extern NSString* PSDeletionActionKey;
-      [defSpec setProperty:NSStringFromSelector(@selector(removedUsername:)) forKey:PSDeletionActionKey];
+      // extern NSString* PSDeletionActionKey;
+      [defSpec setProperty:NSStringFromSelector(@selector(removedUsername:)) forKey:@"deletionAction"];
       [specs addObject:defSpec];
     }
     _specifiers = [[NSArray alloc] initWithArray:specs];

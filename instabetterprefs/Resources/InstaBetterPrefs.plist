@@ -174,34 +174,7 @@
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict> -->
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.jake0oo0.instabetter</string>
-			<key>key</key>
-			<string>app_browser</string>
-			<key>label</key>
-			<string>OPEN_IN_INSTAGRAM</string>
-			<key>PostNotification</key>
-			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.jake0oo0.instabetter</string>
-			<key>key</key>
-			<string>safari_controller</string>
-			<key>label</key>
-			<string>USE_SAFARI_VIEW</string>
-			<key>PostNotification</key>
-			<string>com.jake0oo0.instabetter/prefsChange</string>
-		</dict>
+
 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
@@ -349,6 +322,56 @@
 			<string>fake_verified</string>
 			<key>label</key>
 			<string>FAKE_VERIFIED</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>LINKS</string>
+			<key>footerText</key>
+			<string>Enable link parsing to click any link in the comments.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>app_browser</string>
+			<key>label</key>
+			<string>OPEN_IN_INSTAGRAM</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>safari_controller</string>
+			<key>label</key>
+			<string>USE_SAFARI_VIEW</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>parse_urls</string>
+			<key>label</key>
+			<string>PARSE_URLS</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
@@ -604,9 +627,9 @@
 			<key>key</key>
 			<string>notifications_like</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>LIKE</string>
 			<key>PostNotification</key>
@@ -624,9 +647,9 @@
 			<key>key</key>
 			<string>notifications_comment</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>COMMENT</string>
 			<key>PostNotification</key>
@@ -644,9 +667,9 @@
 			<key>key</key>
 			<string>notifications_new_follower</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>NEW_FOLLOWER</string>
 			<key>PostNotification</key>
@@ -664,9 +687,9 @@
 			<key>key</key>
 			<string>notifications_follow_request</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>FOLLOW_REQUEST</string>
 			<key>PostNotification</key>
@@ -684,9 +707,9 @@
 			<key>key</key>
 			<string>notifications_request_approved</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>REQUEST_APPROVED</string>
 			<key>PostNotification</key>
@@ -704,9 +727,9 @@
 			<key>key</key>
 			<string>notifications_usertag</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>TAGGED_IN_PHOTO</string>
 			<key>PostNotification</key>
@@ -724,9 +747,9 @@
 			<key>key</key>
 			<string>notifications_direct</string>
 			<key>valuesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>titlesDataSource</key>
-			<string>loadSounds:</string>
+			<string>loadSounds</string>
 			<key>label</key>
 			<string>DIRECT_MESSAGE</string>
 			<key>PostNotification</key>
