@@ -1967,6 +1967,8 @@ static void setupRingerCheck() {
 
     loadPrefs();
 
+    [InstaHelper setupPhotoAlbumNamed:@"InstaBetter" withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {}];
+
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(), 
       NULL,

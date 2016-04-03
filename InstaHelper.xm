@@ -87,15 +87,22 @@
 }
 
 + (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion {
-  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+  // ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
   NSData *imgData = [NSData dataWithContentsOfURL:url];
-  [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-    if (error) {
-      completion(error);
-    } else {
-      completion(nil);
-    }
+
+  [InstaHelper setupPhotoAlbumNamed:@"InstaBetter" withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
+    [InstaHelper addImage:[UIImage imageWithData:imgData] toAssetsLibrary:assetsLibrary withGroup:group completion: ^(NSError *saveErr) {
+      completion(saveErr);
+    }];       
   }];
+
+  // [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+  //   if (error) {
+  //     completion(error);
+  //   } else {
+  //     completion(nil);
+  //   }
+  // }];
 }
 
 + (BOOL)isRemoteImage:(NSURL*)url {
@@ -105,4 +112,41 @@
 
   return [extensions containsObject:[ext lowercaseString]];
 }
+
++ (void) setupPhotoAlbumNamed: (NSString*) photoAlbumName withCompletionHandler:(void(^)(ALAssetsLibrary*, ALAssetsGroup*))completion {
+  ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
+  __weak ALAssetsLibrary *weakAssetsLibrary = assetsLibrary;
+  [assetsLibrary addAssetsGroupAlbumWithName:photoAlbumName resultBlock:^(ALAssetsGroup *group) {
+    if (!group) {
+      [weakAssetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAlbum usingBlock:^(ALAssetsGroup *g, BOOL *stop) {
+        if ([[g valueForProperty:ALAssetsGroupPropertyName] isEqualToString:photoAlbumName]) {
+          completion(weakAssetsLibrary, g);
+        }
+      } failureBlock:^(NSError *error) {
+        completion(weakAssetsLibrary, nil);
+      }];
+    } else {
+      completion(weakAssetsLibrary, group);
+    }
+  } failureBlock:^(NSError *error) {
+    completion(weakAssetsLibrary, nil);
+  }];
+}
+
++ (void)addImage:(UIImage*)image toAssetsLibrary:(ALAssetsLibrary*)assetsLibrary withGroup:(ALAssetsGroup*)group completion:(void (^)(NSError *error))completion {
+  [assetsLibrary writeImageDataToSavedPhotosAlbum:UIImagePNGRepresentation(image) metadata:nil completionBlock:
+   ^(NSURL *assetURL, NSError *error) {
+     if (error) {
+      completion(error);
+     } else {
+      [assetsLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+        [group addAsset:asset];
+        completion(nil);
+      } failureBlock:^(NSError *error) {
+        completion(error);
+      }];
+     }
+   }];
+}
+
 @end

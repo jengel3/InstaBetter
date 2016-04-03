@@ -14,4 +14,7 @@
 + (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion;
 
 + (BOOL)isRemoteImage:(NSURL*)url;
+
++ (void) setupPhotoAlbumNamed: (NSString*) photoAlbumName withCompletionHandler:(void(^)(ALAssetsLibrary*, ALAssetsGroup*))completion;
++ (void) addImage: (UIImage*) image toAssetsLibrary: (ALAssetsLibrary*) assetsLibrary withGroup: (ALAssetsGroup*) group completion:(void (^)(NSError *error))completion;
 @end
