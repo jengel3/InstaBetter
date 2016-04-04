@@ -25,6 +25,7 @@ static int muteMode = 0;
 static BOOL muteActivity = YES;
 static BOOL muteFeed = YES;
 static BOOL saveActions = YES;
+static NSString *customAlbum = @"Instagram";
 static BOOL followStatus = YES;
 static BOOL customLocations = YES;
 static BOOL openInApp = YES;
@@ -109,6 +110,11 @@ static NSDictionary* loadPrefs() {
 
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
+      customAlbum = [prefs objectForKey:@"custom_album"] ? [prefs objectForKey:@"custom_album"] : @"Instagram";
+      if (customAlbum && [customAlbum isEqualToString:@""]) {
+        // check for blank album
+        customAlbum = @"Instagram";
+      }
       saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
       showRepost = [prefs objectForKey:@"show_repost"] ? [[prefs objectForKey:@"show_repost"] boolValue] : NO;
 
@@ -166,11 +172,10 @@ static void saveMedia(NSURL *url) {
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = localizedString(@"SAVING");
     UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-    // NSLog(@"URL %@", url);
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
       if ([InstaHelper isRemoteImage:url]) {
-        [InstaHelper saveRemoteImage:url completion:^(NSError *err) {
+        [InstaHelper saveRemoteImage:url album:customAlbum completion:^(NSError *err) {
           dispatch_async(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
@@ -180,7 +185,7 @@ static void saveMedia(NSURL *url) {
           });
         }];
       } else {
-        [InstaHelper saveRemoteVideo:url completion:^(NSError *err) {
+        [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
           dispatch_async(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
@@ -431,55 +436,6 @@ static BOOL openExternalURL(NSURL* url) {
   return YES;
 }
 %end
-
-// deprecated instagram 7.18.1
-// // double-tap like confirmation
-// %hook IGFeedItemVideoView
-// - (void)onDoubleTap:(UITapGestureRecognizer *)tap {
-//   if (!enabled) return %orig;
-//   IGPost *post = ((IGFeedItemVideoView *)[tap view]).post;
-//   NSDate *now = [NSDate date];
-//   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
-//   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-//     [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
-//       message:localizedString(@"DID_WANT_LIKE_VIDEO")
-//       cancelButtonTitle:nil
-//       otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-//       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-//         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-//           %orig;
-//         } 
-//       }];
-//   } else {
-//     %orig;
-//   }
-// }
-// %end
-
-// this stopped working at some point, not sure when 
-// %hook IGFeedPhotoView
-// - (void)onDoubleTap:(id)tap {
-//   if (!enabled) return %orig;
-//   IGFeedItem *post = ((IGFeedPhotoView *)[tap view]).usertags.feedItem;
-//   NSDate *now = [NSDate date];
-//   BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
-
-//   if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
-//     [UIAlertView showWithTitle:localizedString(@"LIKE_PHOTO")
-//       message:localizedString(@"DID_WANT_LIKE_PHOTO")
-//       cancelButtonTitle:nil
-//       otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
-//       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
-//         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
-//           %orig;
-//         }
-//       }];
-//   } else {
-//     %orig;
-//   }
-// }
-// %end
-// end deprecated
 
 %hook IGFeedItemPhotoCell 
 - (void)feedPhotoDidDoubleTapToLike:(id)tap {

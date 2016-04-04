@@ -71,6 +71,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>SAVING_AND_SHARING</string>
+			<key>footerText</key>
+			<string>Change the album that photos and videos are saved to.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -137,6 +139,20 @@
 			<string>show_repost</string>
 			<key>label</key>
 			<string>REPOST</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>default</key>
+			<string>Instagram</string>
+			<key>key</key>
+			<string>custom_album</string>
+			<key>label</key>
+			<string>SAVE_TO_ALBUM</string>
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>

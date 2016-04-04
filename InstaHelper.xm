@@ -46,7 +46,18 @@
       if (error) {
         completion(error);
       } else {
-        completion(nil);
+        if (album) {
+          [InstaHelper setupPhotoAlbumNamed:album withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
+            [assetsLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+              [group addAsset:asset];
+              completion(nil);
+            } failureBlock:^(NSError *error) {
+              completion(error);
+            }];
+          }];
+        } else {
+          completion(nil);
+        }
       }
     }];
 
@@ -64,7 +75,7 @@
     }];
 }
 
-+ (void)saveRemoteVideo:(NSURL*)url completion:(void (^)(NSError *error))completion {
++ (void)saveRemoteVideo:(NSURL*)url album:(NSString*)album completion:(void (^)(NSError *error))completion {
   [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
     if (viderr) return completion(viderr);
     NSFileManager *fsmanager = [NSFileManager defaultManager];
@@ -73,36 +84,30 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
       [vidData writeToURL:saveUrl atomically:YES];
-      [InstaHelper saveVideoToAlbum:saveUrl album:@"InstaBetter" completion: ^(NSError *saveErr) {
-        if (saveErr) {
-          completion(saveErr);
-        } else {
-          completion(nil);
-        }
-      }];
+      if (album) {
+        [InstaHelper saveVideoToAlbum:saveUrl album:album completion: ^(NSError *saveErr) {
+          if (saveErr) {
+            completion(saveErr);
+          } else {
+            completion(nil);
+          }
+        }];
+      } else {
+        completion(nil);
+      }
     });
-
-    
   }];
 }
 
-+ (void)saveRemoteImage:(NSURL*)url completion:(void (^)(NSError *error))completion {
-  // ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
++ (void)saveRemoteImage:(NSURL*)url album:(NSString*)album completion:(void (^)(NSError *error))completion {
   NSData *imgData = [NSData dataWithContentsOfURL:url];
 
-  [InstaHelper setupPhotoAlbumNamed:@"InstaBetter" withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
+  [InstaHelper setupPhotoAlbumNamed:album withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
     [InstaHelper addImage:[UIImage imageWithData:imgData] toAssetsLibrary:assetsLibrary withGroup:group completion: ^(NSError *saveErr) {
       completion(saveErr);
     }];       
   }];
 
-  // [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-  //   if (error) {
-  //     completion(error);
-  //   } else {
-  //     completion(nil);
-  //   }
-  // }];
 }
 
 + (BOOL)isRemoteImage:(NSURL*)url {
@@ -113,7 +118,7 @@
   return [extensions containsObject:[ext lowercaseString]];
 }
 
-+ (void) setupPhotoAlbumNamed: (NSString*) photoAlbumName withCompletionHandler:(void(^)(ALAssetsLibrary*, ALAssetsGroup*))completion {
++ (void)setupPhotoAlbumNamed:(NSString*)photoAlbumName withCompletionHandler:(void(^)(ALAssetsLibrary*, ALAssetsGroup*))completion {
   ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
   __weak ALAssetsLibrary *weakAssetsLibrary = assetsLibrary;
   [assetsLibrary addAssetsGroupAlbumWithName:photoAlbumName resultBlock:^(ALAssetsGroup *group) {
@@ -138,15 +143,15 @@
    ^(NSURL *assetURL, NSError *error) {
      if (error) {
       completion(error);
-     } else {
+    } else {
       [assetsLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
         [group addAsset:asset];
         completion(nil);
       } failureBlock:^(NSError *error) {
         completion(error);
       }];
-     }
-   }];
+    }
+  }];
 }
 
 @end
