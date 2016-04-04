@@ -33,3 +33,8 @@
 "LOADING_IMAGE" = "Loading Image";
 "LOADING_VIEWS" = "Preparing Views";
 "LOADING_VIDEO" = "Loading Video";
+"DOWNLOADING_IMAGE" = "Downloading";
+"DOWNLOADING_VIDEO" = "Downloading";
+"DISPLAYING" = "Displaying";
+"DONE" = "Done";
+"FAILED_TO_LOAD_IMAGE" = "Failed to Load Image";

@@ -40,6 +40,7 @@ static int videoMode = 1;
 static int alertMode = 1;
 static BOOL showRepost = NO;
 static int saveMode = 1;
+static int shareMode = 1;
 static int saveConfirm = YES;
 static int fakeFollowers = nil;
 static int fakeFollowing = nil;
@@ -110,6 +111,7 @@ static NSDictionary* loadPrefs() {
 
       saveActions = [prefs objectForKey:@"save_actions"] ? [[prefs objectForKey:@"save_actions"] boolValue] : YES;
       saveMode = [prefs objectForKey:@"save_mode"] ? [[prefs objectForKey:@"save_mode"] intValue] : 1;
+      shareMode = [prefs objectForKey:@"share_mode"] ? [[prefs objectForKey:@"share_mode"] intValue] : 1;
       customAlbum = [prefs objectForKey:@"custom_album"] ? [prefs objectForKey:@"custom_album"] : @"Instagram";
       if (customAlbum && [customAlbum isEqualToString:@""]) {
         // check for blank album
@@ -537,11 +539,83 @@ static BOOL openExternalURL(NSURL* url) {
       return saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       if (item.user == [InstaHelper currentUser]) return %orig;
-      NSURL *link = [NSURL URLWithString:[item permalink]];
-      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[link]
-        applicationActivities:nil];
-      return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+      UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+      MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+      status.labelText = localizedString(@"PREPARING");
+      // share Instagram link, direct link, actual photo
+      if (shareMode == 0 || shareMode == 1) {
+        NSURL *link = nil;
+        if (shareMode == 0) {
+          link = [NSURL URLWithString:[item permalink]];
+        } else if (shareMode == 1) {
+          if (item.mediaType == 1) {
+            link = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
+          } else if (item.mediaType == 2) {
+            link = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
+          }
+          
+        }
+        status.labelText = localizedString(@"DISPLAYING");
+
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+          initWithActivityItems:@[link]
+          applicationActivities:nil];
+        return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+          status.labelText = localizedString(@"DONE");
+          [status hide:YES afterDelay:0.5];
+        }];
+      } else if (shareMode == 2) {
+         
+        NSURL *perma = [NSURL URLWithString:[item permalink]];
+        if (item.mediaType == 1) {
+          status.labelText = localizedString(@"DOWNLOADING_IMAGE");
+          NSURL *highest = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
+          [InstaHelper downloadRemoteFile:highest completion:^(NSData *data, NSError *err) {
+            if (err || !data) {
+              status.labelText = localizedString(@"FAILED_TO_LOAD_IMAGE");
+              return [status hide:YES afterDelay:1.0];
+            }
+            UIImage *img = [UIImage imageWithData:data];
+            status.labelText = localizedString(@"DISPLAYING");
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+              initWithActivityItems:@[img, perma]
+              applicationActivities:nil];
+            return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+              status.labelText = localizedString(@"DONE");
+              [status hide:YES afterDelay:0.5];
+            }];
+          }];
+          return;
+          // UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+          //   initWithActivityItems:@[link]
+          //   applicationActivities:nil];
+        } else if (item.mediaType == 2) {
+
+          NSURL *highest = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
+
+          NSFileManager *fsmanager = [NSFileManager defaultManager];
+          NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+          NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[highest lastPathComponent]];
+          status.labelText = localizedString(@"DOWNLOADING_VIDEO");
+          [InstaHelper saveRemoteVideo:highest album:customAlbum completion:^(NSError *err) {
+            if (err) {
+              status.labelText = localizedString(@"FAILED_TO_LOAD_IMAGE");
+              return [status hide:YES afterDelay:1.0];
+            }
+
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+              initWithActivityItems:@[[NSURL fileURLWithPath:[saveUrl absoluteString]]]
+              applicationActivities:nil];
+            return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+                status.labelText = localizedString(@"DONE");
+                [status hide:YES afterDelay:0.5];
+              }];
+
+          }];
+        }
+      }
+
+      // return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     } else if (item && [title isEqualToString:localizedString(@"REPOST")]) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       IGRootViewController *root = [InstaHelper rootViewController];
@@ -553,7 +627,6 @@ static BOOL openExternalURL(NSURL* url) {
       UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
       MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
       status.labelText = localizedString(@"PREPARING");
-        // NSLog(@"CAPTION %@", meta.caption);
 
       if (item.mediaType == 1) {
         NSString *versionURL = highestResImage(item.photo.imageVersions);
@@ -597,7 +670,7 @@ static BOOL openExternalURL(NSURL* url) {
           UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
           UIGraphicsEndImageContext();
 
-            meta.snapshot = image;
+          meta.snapshot = image;
 
           AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
 
@@ -629,14 +702,14 @@ static BOOL openExternalURL(NSURL* url) {
 }
 
 // muting in instagram 7.14+(?)
-- (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-if (!isMainFeed) return %orig;
+- (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(id)arg5 {
+  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+  if (!isMainFeed) return %orig;
 
-NSArray *final = [self getMutedList:items];
+  NSArray *final = [self getMutedList:items];
 
-return %orig(final, arg2, arg3, arg4, arg5);
+  return %orig(final, arg2, arg3, arg4, arg5);
 }
 
 // muting in instagram 7.14+(?)
@@ -670,80 +743,80 @@ return %orig(final, arg2, arg3, arg4, arg5);
 }
 %end
 
-// replaced with IGFeedViewController_DEPRECATED in 7.16
-%hook IGFeedViewController
-- (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
-  id thing = %orig;
-  if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
-    [self setFeedLayout:2];
-  }
-  return thing;
-}
+// // replaced with IGFeedViewController_DEPRECATED in 7.16
+// %hook IGFeedViewController
+// - (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
+//   id thing = %orig;
+//   if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+//     [self setFeedLayout:2];
+//   }
+//   return thing;
+// }
 
-- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
-  cachedItem = cell.feedItem;
-  %orig;
-}
+// - (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
+//   cachedItem = cell.feedItem;
+//   %orig;
+// }
 
-- (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
-  if (enabled) {
-    IGFeedItem *item = cachedItem;
-    if ([title isEqualToString:instaSave]) {
-      return saveFeedItem(item);
-    } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
-      if (item.user == [InstaHelper currentUser]) return %orig;
-      NSURL *link = [NSURL URLWithString:[item permalink]];
-      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[link]
-        applicationActivities:nil];
-      return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
-    }
-  }
-  %orig;
-}
+// - (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+//   if (enabled) {
+//     IGFeedItem *item = cachedItem;
+//     if ([title isEqualToString:instaSave]) {
+//       return saveFeedItem(item);
+//     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+//       if (item.user == [InstaHelper currentUser]) return %orig;
+//       NSURL *link = [NSURL URLWithString:[item permalink]];
+//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+//         initWithActivityItems:@[link]
+//         applicationActivities:nil];
+//       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+//     }
+//   }
+//   %orig;
+// }
 
-// muting in instagram 7.14+(?)
-- (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
-if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-if (!isMainFeed) return %orig;
+// // muting in instagram 7.14+(?)
+// - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(/*^block*/id)arg5 {
+// if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+// BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+// if (!isMainFeed) return %orig;
 
-NSArray *final = [self getMutedList:items];
+// NSArray *final = [self getMutedList:items];
 
-return %orig(final, arg2, arg3, arg4, arg5);
-}
+// return %orig(final, arg2, arg3, arg4, arg5);
+// }
 
-// muting in instagram 7.14+(?)
-- (void)reloadWithNewObjects:(NSArray*)items {
-  if (!(enabled && (muteFeed || hideSponsored))) return %orig;
-  BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
-  if (!isMainFeed) return %orig;
+// // muting in instagram 7.14+(?)
+// - (void)reloadWithNewObjects:(NSArray*)items {
+//   if (!(enabled && (muteFeed || hideSponsored))) return %orig;
+//   BOOL isMainFeed = [self isKindOfClass:[%c(IGMainFeedViewController) class]];
+//   if (!isMainFeed) return %orig;
 
-  NSArray *final = [self getMutedList:items];
+//   NSArray *final = [self getMutedList:items];
 
-  return %orig(final);
-}
+//   return %orig(final);
+// }
 
 
-%new
-- (NSArray*)getMutedList:(NSArray*)items {
-  NSMutableArray *origCopy = [items mutableCopy];
+// %new
+// - (NSArray*)getMutedList:(NSArray*)items {
+//   NSMutableArray *origCopy = [items mutableCopy];
 
-  NSMutableArray *toRemove = [[NSMutableArray alloc] init];
-  for (IGFeedItem *item in items) {
-    BOOL contains = [muted containsObject:item.user.username];
-    if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
-      [toRemove addObject:item];
-    }
-  }
+//   NSMutableArray *toRemove = [[NSMutableArray alloc] init];
+//   for (IGFeedItem *item in items) {
+//     BOOL contains = [muted containsObject:item.user.username];
+//     if ((muteFeed && contains && muteMode == 0) || (muteFeed && !contains && muteMode == 1) || (item.sponsoredPostInfo && hideSponsored)) {
+//       [toRemove addObject:item];
+//     }
+//   }
 
-  for (IGFeedItem *removable in toRemove) {
-    [origCopy removeObject:removable];
-  }
+//   for (IGFeedItem *removable in toRemove) {
+//     [origCopy removeObject:removable];
+//   }
 
-  return [origCopy copy];
-}
-%end
+//   return [origCopy copy];
+// }
+// %end
 
 // auto play audio
 
@@ -783,46 +856,47 @@ return %orig(final, arg2, arg3, arg4, arg5);
 }
 %end
 
-%hook IGDirectedPost
-// instagram > 7.14
-- (void)performRead {
-  if (enabled && disableDMRead) {
-    return;
-  }
-  %orig;
-}
-// instagram > 7.14
-- (BOOL)isRead {
-  if (enabled && disableDMRead) {
-    return false;
-  }
-  return %orig;
-}
-// instagram > 7.14
-- (void)setIsRead:(BOOL)read {
-  if (enabled && disableDMRead) {
-    return %orig(NO);
-  }
-  return %orig;
-}
-%end
+// deprecated at some point
+// %hook IGDirectedPost
+// // instagram > 7.14
+// - (void)performRead {
+//   if (enabled && disableDMRead) {
+//     return;
+//   }
+//   %orig;
+// }
+// // instagram > 7.14
+// - (BOOL)isRead {
+//   if (enabled && disableDMRead) {
+//     return false;
+//   }
+//   return %orig;
+// }
+// // instagram > 7.14
+// - (void)setIsRead:(BOOL)read {
+//   if (enabled && disableDMRead) {
+//     return %orig(NO);
+//   }
+//   return %orig;
+// }
+// %end
 
-%hook IGDirectedPostRecipient
-// instagram > 7.14
-- (BOOL)hasRead {
-  if (enabled && disableDMRead) {
-    return false;
-  }
-  return %orig;
-}
-// instagram > 7.14
-- (void)setHasRead:(BOOL)read {
-  if (enabled && disableDMRead) {
-    return %orig(NO);
-  }
-  return %orig;
-}
-%end
+// %hook IGDirectedPostRecipient
+// // instagram > 7.14
+// - (BOOL)hasRead {
+//   if (enabled && disableDMRead) {
+//     return false;
+//   }
+//   return %orig;
+// }
+// // instagram > 7.14
+// - (void)setHasRead:(BOOL)read {
+//   if (enabled && disableDMRead) {
+//     return %orig(NO);
+//   }
+//   return %orig;
+// }
+// %end
 
 // follow status
 
@@ -954,7 +1028,8 @@ return %orig(final, arg2, arg3, arg4, arg5);
 - (void)viewDidLoad {
   %orig;
   if (![self isModal]) return;
-  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(closeController)];
+  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop 
+    target:self action:@selector(closeController)];
   [self.navigationItem setLeftBarButtonItem:doneButton];
 }
 
@@ -969,7 +1044,8 @@ return %orig(final, arg2, arg3, arg4, arg5);
 %hook IGDirectContentExpandableCell
 - (void)layoutSubviews{
   if (enabled) {
-    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self 
+      action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
     [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
     [longPress setMinimumPressDuration:1];
@@ -1062,6 +1138,7 @@ return %orig(final, arg2, arg3, arg4, arg5);
 %new
 - (void)callShare:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
+  // share text only
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
     initWithActivityItems:@[[self.styledString.attributedString string]]
     applicationActivities:nil];
@@ -1405,18 +1482,19 @@ return false;
 
 %hook IGMainFeedViewController
 // instagram > 7.14
-- (BOOL)shouldHideFeedItem:(IGFeedItem *)item {
-  if (enabled) {
-    BOOL contains = [muted containsObject:item.user.username];
-    if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
-      return YES;
-    } else {
-      return %orig;
-    }
-  } else {
-    return %orig;
-  }
-}
+// deprecated
+// - (BOOL)shouldHideFeedItem:(IGFeedItem *)item {
+//   if (enabled) {
+//     BOOL contains = [muted containsObject:item.user.username];
+//     if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
+//       return YES;
+//     } else {
+//       return %orig;
+//     }
+//   } else {
+//     return %orig;
+//   }
+// }
 
 - (void)viewDidLoad {
   %orig;
@@ -1595,6 +1673,7 @@ return false;
 - (void)shareItem:(id)sender {
   IGFeedItem *item = self.feedItem;
   NSURL *link = [NSURL URLWithString:[item permalink]];
+  // share Instagram link, direct link, actual image
   UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
     initWithActivityItems:@[link]
     applicationActivities:nil];
@@ -1612,26 +1691,26 @@ return false;
 }
 
 // deprecated in Instagram >= 7.15
-- (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-  if (enabled) {
-    if ([title isEqualToString:instaSave]) {
-      IGFeedItem *item = self.feedItem;
-      saveFeedItem(item);
-    } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
-      IGFeedItem *item = self.feedItem;
-      if (item.user == [InstaHelper currentUser]) return %orig;
-      NSURL *link = [NSURL URLWithString:[item permalink]];
-      UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-        initWithActivityItems:@[link]
-        applicationActivities:nil];
-      [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
-    } else {
-      %orig;
-    }
-  } else {
-    %orig;
-  }
-}
+// - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+//   if (enabled) {
+//     if ([title isEqualToString:instaSave]) {
+//       IGFeedItem *item = self.feedItem;
+//       saveFeedItem(item);
+//     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+//       IGFeedItem *item = self.feedItem;
+//       if (item.user == [InstaHelper currentUser]) return %orig;
+//       NSURL *link = [NSURL URLWithString:[item permalink]];
+//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+//         initWithActivityItems:@[link]
+//         applicationActivities:nil];
+//       [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+//     } else {
+//       %orig;
+//     }
+//   } else {
+//     %orig;
+//   }
+// }
 %end
 
 // custom locations
@@ -1700,16 +1779,16 @@ return false;
 %end
 
 // hide sponsored posts
-
-%hook IGFeedItemTimelineLayoutAttributes
-- (BOOL)sponsoredContext {
-  if (enabled && hideSponsored) {
-    return false;
-  } else {
-    return %orig;
-  }
-}
-%end
+// deprecated at some point
+// %hook IGFeedItemTimelineLayoutAttributes
+// - (BOOL)sponsoredContext {
+//   if (enabled && hideSponsored) {
+//     return false;
+//   } else {
+//     return %orig;
+//   }
+// }
+// %end
 
 %hook IGFeedItemHeader
 // Instagram 7.17.1.. OTA 

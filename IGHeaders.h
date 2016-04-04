@@ -250,6 +250,7 @@
 - (NSArray*)getMutedList:(NSArray*)items;
 - (void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
 - (void)setFeedPreviewingDelegate:(IGFeedPreviewingHandler *)arg1 ;
+- (NSIndexPath *)currentActionCellIndexPath;
 @end
 
 @interface IGFeedViewController : UIViewController
