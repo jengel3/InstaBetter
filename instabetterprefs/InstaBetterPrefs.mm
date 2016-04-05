@@ -13,9 +13,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 }
 
 - (NSArray *)loadSounds {
-  NSLog(@"CALLING");
   if (!self.sounds) {
-    NSLog(@"HEREEE");
     NSMutableArray *rawList = [[NSMutableArray alloc] init];
     NSString *soundsPath = @"/System/Library/Audio/UISounds/";
 
@@ -24,10 +22,9 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
     [rawList addObject:@"Default"];
     [files enumerateObjectsUsingBlock:^(id obj, NSUInteger index, BOOL *stop) {
       NSString *filename = (NSString *)obj;
-      NSLog(@"FILENAME %@", filename);
       NSString *extension = [[filename pathExtension] lowercaseString];
       if ([extension isEqualToString:@"caf"]) {
-        [rawList addObject:filename];    
+        [rawList addObject:filename];
       }
     }];
     self.sounds = [rawList copy];
@@ -43,7 +40,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   }
   return settings[specifier.properties[@"key"]];
 }
- 
+
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier*)specifier {
   NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
   [defaults addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:valuesPath]];
@@ -73,7 +70,7 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
   // system("killall -9 Instagram");
 }
 @end
- 
+
 @implementation EditableListController
 - (id)specifiers {
   if (!_specifiers) {

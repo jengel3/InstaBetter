@@ -12,27 +12,27 @@
 
 + (UIView *)fromViewForTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *fromView;
-    
+
     if ([transitionContext respondsToSelector:@selector(viewForKey:)]) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     }
     else {
         fromView = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey].view;
     }
-    
+
     return fromView;
 }
 
 + (UIView *)toViewForTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *toView;
-    
+
     if ([transitionContext respondsToSelector:@selector(viewForKey:)]) {
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     }
     else {
         toView = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey].view;
     }
-    
+
     return toView;
 }
 
@@ -41,7 +41,7 @@
         UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
         return [transitionContext finalFrameForViewController:toViewController];
     }
-    
+
     // On iOS 7.x, it is necessary to return the container view bounds as the final frame.
     return transitionContext.containerView.bounds;
 }

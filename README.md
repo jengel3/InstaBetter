@@ -2,7 +2,7 @@
 
 The best Instagram tweak yet, packed with features ranging from media saving to muting annoying users from your feed.
 
-The most comprehensive tweak for Instagram yet. With over 10 new features and tweaks, you'll have more control over your Instagram experience. 
+The most comprehensive tweak for Instagram yet. With over 10 new features and tweaks, you'll have more control over your Instagram experience.
 
 ## Features
 * Save hi-res images and videos
@@ -49,7 +49,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * [BUG FIX] Fix invalid ringer state on load
 * [BUG FIX] Fix crash on Instagram 7.6
 * [CHANGE] Replace "Save Media" and "Share" with new buttons under images and videos
-* [CHANGE] New preferences icons - by @AOkhtenberg 
+* [CHANGE] New preferences icons - by @AOkhtenberg
 
 ### Release 1.1.4
 * [CHANGE] Add minor change to possibly lower memory usage
@@ -170,7 +170,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix disabling auto playing videos didn't work
 
 ### Release 1.5.2
-- Fix auto play settings doing the opposite that they should 
+- Fix auto play settings doing the opposite that they should
 
 ### Release 1.5.3
 - Remove maximum account limit
@@ -198,6 +198,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 ### Release 1.6.0
 - Add link parsing. Allows you to click any link within a comment or post in Instagram.
+- Change what you share. Choose between sharing the Instagram link, a direct link, or the actual photo/video.
+- Save photos and videos to a custom album specified in the settings
+- Add support for reposting videos
 
 
 ## Building
@@ -215,13 +218,13 @@ InstaBetter is not affiliated with Instagram or Facebook.
 
 The most comprehensive tweak for Instagram yet, with over 15 new features.
 
-* Save high resolution media (Images & Videos) 
+* Save high resolution media (Images & Videos)
 * Hold down on images to zoom
 * Double tap on profile pictures to view a high-res version
 * Mute users from home and activity feeds
 * Hide Sponsored Ads
 * Select and name custom locations for media
-* Show follow status on user profile (Similar to Twitter) 
+* Show follow status on user profile (Similar to Twitter)
 * Show like counts as percentages
 * Share actions for text and images
 * Open links in Instagram

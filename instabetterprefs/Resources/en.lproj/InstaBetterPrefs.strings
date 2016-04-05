@@ -69,3 +69,7 @@
 "LINKS" = "Links";
 "PARSE_URLS" = "Parse URLs";
 "SAVE_TO_ALBUM" = "Save to Album";
+"POST_CONTENT" = "Post Content";
+"DIRECT_LINK" = "Direct Link";
+"INSTAGRAM_LINK" = "Instagram Post Link";
+"SHARE_MODE" = "Share Mode";

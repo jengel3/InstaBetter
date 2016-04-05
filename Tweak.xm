@@ -201,6 +201,83 @@ static void saveMedia(NSURL *url) {
   }
 }
 
+static void shareItem(IGFeedItem *item, int localShareMode) {
+  UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+  MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+  status.labelText = localizedString(@"PREPARING");
+  // share Instagram link, direct link, actual photo
+  if (localShareMode == 0 || localShareMode == 1) {
+    NSURL *link = nil;
+    if (shareMode == 0) {
+      link = [NSURL URLWithString:[item permalink]];
+    } else if (shareMode == 1) {
+      if (item.mediaType == 1) {
+        link = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
+      } else if (item.mediaType == 2) {
+        link = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
+      }
+
+    }
+    status.labelText = localizedString(@"DISPLAYING");
+
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
+      initWithActivityItems:@[link]
+      applicationActivities:nil];
+    return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+      status.labelText = localizedString(@"DONE");
+      [status hide:YES afterDelay:0.5];
+    }];
+  } else if (localShareMode == 2) {
+
+    NSURL *perma = [NSURL URLWithString:[item permalink]];
+    if (item.mediaType == 1) {
+      status.labelText = localizedString(@"DOWNLOADING_IMAGE");
+      NSURL *highest = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
+      [InstaHelper downloadRemoteFile:highest completion:^(NSData *data, NSError *err) {
+        if (err || !data) {
+          status.labelText = localizedString(@"FAILED_TO_LOAD_IMAGE");
+          return [status hide:YES afterDelay:1.0];
+        }
+        UIImage *img = [UIImage imageWithData:data];
+        status.labelText = localizedString(@"DISPLAYING");
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
+          initWithActivityItems:@[img, perma]
+          applicationActivities:nil];
+        activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
+        return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+          status.labelText = localizedString(@"DONE");
+          [status hide:YES afterDelay:0.25];
+        }];
+      }];
+      return;
+    } else if (item.mediaType == 2) {
+
+      NSURL *highest = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
+
+      NSFileManager *fsmanager = [NSFileManager defaultManager];
+      NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[highest lastPathComponent]];
+      status.labelText = localizedString(@"DOWNLOADING_VIDEO");
+      [InstaHelper saveRemoteVideo:highest album:customAlbum completion:^(NSError *err) {
+        if (err) {
+          status.labelText = localizedString(@"FAILED_TO_LOAD_VIDEO");
+          return [status hide:YES afterDelay:1.0];
+        }
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
+          initWithActivityItems:@[[NSURL fileURLWithPath:[saveUrl path]], perma]
+          applicationActivities:nil];
+        activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
+        [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+          status.labelText = localizedString(@"DONE");
+          [status hide:YES afterDelay:0.25];
+        }];
+
+      }];
+      return;
+    }
+  }
+}
+
 static void savePhoto(IGPhoto *photo) {
   NSString *versionURL = highestResImage(photo.imageVersions);
   NSURL *imgURL = [NSURL URLWithString:versionURL];
@@ -264,10 +341,10 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
   float newX = header.timestampLabel.frame.origin.x - change;
 
   if (animated) {
-    [UIView animateWithDuration:0.5 
+    [UIView animateWithDuration:0.5
       animations:^{
         header.timestampLabel.text = timestamp;
-        [header.timestampLabel setFrame:CGRectMake(newX, 
+        [header.timestampLabel setFrame:CGRectMake(newX,
           oldY,
           header.timestampLabel.frame.size.width + change,
           oldHeight)];
@@ -275,7 +352,7 @@ static void showTimestamp(IGFeedItemHeader *header, BOOL animated) {
       completion:nil];
   } else {
     header.timestampLabel.text = timestamp;
-    [header.timestampLabel setFrame:CGRectMake(newX, 
+    [header.timestampLabel setFrame:CGRectMake(newX,
       oldY,
       header.timestampLabel.frame.size.width + change,
       oldHeight)];
@@ -294,8 +371,8 @@ static BOOL openExternalURL(NSURL* url) {
         if ([[UIApplication sharedApplication] canOpenURL:url]) {
           [[UIApplication sharedApplication] openURL:url];
         } else {
-          UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"FAILED_OPEN") 
-            message:localizedString(@"FAILED_OPEN_MSG") delegate:nil cancelButtonTitle:@"Okay" 
+          UIAlertView * alert = [[UIAlertView alloc] initWithTitle:localizedString(@"FAILED_OPEN")
+            message:localizedString(@"FAILED_OPEN_MSG") delegate:nil cancelButtonTitle:@"Okay"
             otherButtonTitles:nil];
           [alert show];
         }
@@ -339,7 +416,7 @@ static BOOL openExternalURL(NSURL* url) {
   CGPoint point = [recognizer locationInView:self.mapView];
   CLLocationCoordinate2D tapPoint = [self.mapView convertPoint:point toCoordinateFromView:self.mapView];
 
-  MKPointAnnotation *loc = [[MKPointAnnotation alloc] init]; 
+  MKPointAnnotation *loc = [[MKPointAnnotation alloc] init];
   loc.coordinate = tapPoint;
   loc.title = localizedString(@"SELECTED_LOCATION");
 
@@ -396,9 +473,9 @@ static BOOL openExternalURL(NSURL* url) {
         NSRange range = NSMakeRange(result.range.location, result.range.length);
         [attr addAttribute:@"URL" value:url range:range];
         [attr addAttribute:NSLinkAttributeName value:url range:range];
-        [attr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0705882 green:0.337255 blue:0.533333 alpha:1.0] range:range]; 
+        [attr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0705882 green:0.337255 blue:0.533333 alpha:1.0] range:range];
 
-      }         
+      }
     }];
     styled.attributedString = attr;
   }
@@ -439,7 +516,7 @@ static BOOL openExternalURL(NSURL* url) {
 }
 %end
 
-%hook IGFeedItemPhotoCell 
+%hook IGFeedItemPhotoCell
 - (void)feedPhotoDidDoubleTapToLike:(id)tap {
   if (!enabled) return %orig;
   IGPost *post = [self post];
@@ -463,7 +540,7 @@ static BOOL openExternalURL(NSURL* url) {
 }
 %end
 
-%hook IGFeedItemVideoCell 
+%hook IGFeedItemVideoCell
 - (void)feedItemVideoViewDidDoubleTap:(id)tap {
   if (!enabled) return %orig;
   IGPost *post = [self post];
@@ -539,80 +616,7 @@ static BOOL openExternalURL(NSURL* url) {
       return saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       if (item.user == [InstaHelper currentUser]) return %orig;
-      UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
-      MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
-      status.labelText = localizedString(@"PREPARING");
-      // share Instagram link, direct link, actual photo
-      if (shareMode == 0 || shareMode == 1) {
-        NSURL *link = nil;
-        if (shareMode == 0) {
-          link = [NSURL URLWithString:[item permalink]];
-        } else if (shareMode == 1) {
-          if (item.mediaType == 1) {
-            link = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
-          } else if (item.mediaType == 2) {
-            link = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
-          }
-          
-        }
-        status.labelText = localizedString(@"DISPLAYING");
-
-        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-          initWithActivityItems:@[link]
-          applicationActivities:nil];
-        return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
-          status.labelText = localizedString(@"DONE");
-          [status hide:YES afterDelay:0.5];
-        }];
-      } else if (shareMode == 2) {
-       
-        NSURL *perma = [NSURL URLWithString:[item permalink]];
-        if (item.mediaType == 1) {
-          status.labelText = localizedString(@"DOWNLOADING_IMAGE");
-          NSURL *highest = [NSURL URLWithString:highestResImage(item.photo.imageVersions)];
-          [InstaHelper downloadRemoteFile:highest completion:^(NSData *data, NSError *err) {
-            if (err || !data) {
-              status.labelText = localizedString(@"FAILED_TO_LOAD_IMAGE");
-              return [status hide:YES afterDelay:1.0];
-            }
-            UIImage *img = [UIImage imageWithData:data];
-            status.labelText = localizedString(@"DISPLAYING");
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-              initWithActivityItems:@[img, perma]
-              applicationActivities:nil];
-            activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
-            return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
-              status.labelText = localizedString(@"DONE");
-              [status hide:YES afterDelay:0.25];
-            }];
-          }];
-          return;
-        } else if (item.mediaType == 2) {
-
-          NSURL *highest = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
-
-          NSFileManager *fsmanager = [NSFileManager defaultManager];
-          NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-          NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[highest lastPathComponent]];
-          status.labelText = localizedString(@"DOWNLOADING_VIDEO");
-          [InstaHelper saveRemoteVideo:highest album:customAlbum completion:^(NSError *err) {
-            if (err) {
-              status.labelText = localizedString(@"FAILED_TO_LOAD_VIDEO");
-              return [status hide:YES afterDelay:1.0];
-            }
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-              initWithActivityItems:@[[NSURL fileURLWithPath:[saveUrl path]]]
-              applicationActivities:nil];
-            activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
-            [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
-              status.labelText = localizedString(@"DONE");
-              [status hide:YES afterDelay:0.25];
-            }];
-
-          }];
-          return;
-        }
-      }
+      return shareItem(item, shareMode);
 
       // return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     } else if (item && [title isEqualToString:localizedString(@"REPOST")]) {
@@ -679,7 +683,7 @@ static BOOL openExternalURL(NSURL* url) {
           [composition addClip:clip];
           IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
           info.video = composition;
-          
+
           dispatch_async(dispatch_get_main_queue(), ^{
             status.labelText = localizedString(@"LOADING_VIEWS");
             [main presentCameraWithMetadata:meta mode:1];
@@ -765,7 +769,7 @@ static BOOL openExternalURL(NSURL* url) {
 //     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
 //       if (item.user == [InstaHelper currentUser]) return %orig;
 //       NSURL *link = [NSURL URLWithString:[item permalink]];
-//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
 //         initWithActivityItems:@[link]
 //         applicationActivities:nil];
 //       return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
@@ -840,7 +844,7 @@ static BOOL openExternalURL(NSURL* url) {
     return;
   }
   return %orig;
-  
+
 }
 %end
 
@@ -910,7 +914,7 @@ static BOOL openExternalURL(NSURL* url) {
       IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
       if (userView.headerView.statusLabel != nil) return %orig;
       CGRect containerFrame = userView.headerView.infoLabelContainerView.frame;
-      CGRect addedContainer = CGRectMake(containerFrame.origin.x, containerFrame.origin.y + 5, 
+      CGRect addedContainer = CGRectMake(containerFrame.origin.x, containerFrame.origin.y + 5,
         containerFrame.size.width, containerFrame.size.height);
       [userView.headerView.infoLabelContainerView setFrame:addedContainer];
 
@@ -1006,7 +1010,7 @@ static BOOL openExternalURL(NSURL* url) {
 
 // open links in app
 
-%hook IGUserDetailHeaderView 
+%hook IGUserDetailHeaderView
 - (void)coreTextView:(id)view didTapOnString:(id)str URL:(NSURL*)url {
   if (!openExternalURL(url)) {
     %orig;
@@ -1027,7 +1031,7 @@ static BOOL openExternalURL(NSURL* url) {
 - (void)viewDidLoad {
   %orig;
   if (![self isModal]) return;
-  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop 
+  UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
     target:self action:@selector(closeController)];
   [self.navigationItem setLeftBarButtonItem:doneButton];
 }
@@ -1043,7 +1047,7 @@ static BOOL openExternalURL(NSURL* url) {
 %hook IGDirectContentExpandableCell
 - (void)layoutSubviews{
   if (enabled) {
-    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self 
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
       action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
     [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
@@ -1104,7 +1108,7 @@ static BOOL openExternalURL(NSURL* url) {
       photosViewController.delegate = self;
       [[InstaHelper rootViewController] presentViewController:photosViewController animated:YES completion:nil];
       IGPhoto *media = ((IGDirectPhoto *)self.content).photo;
-      
+
       NSString *versionURL = highestResImage(media.imageVersions);
       NSURL *imgUrl = [NSURL URLWithString:versionURL];
       dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -1138,7 +1142,7 @@ static BOOL openExternalURL(NSURL* url) {
 - (void)callShare:(UIGestureRecognizer *)longPress {
   if (longPress.state != UIGestureRecognizerStateBegan) return;
   // share text only
-  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+  UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
     initWithActivityItems:@[[self.styledString.attributedString string]]
     applicationActivities:nil];
   [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
@@ -1198,7 +1202,7 @@ return false;
     NSMutableString *finalSummary = [[summary componentsJoinedByString:@" "] mutableCopy];
     if ([items count] > 8) {
       [finalSummary appendString:@"..."];
-    }    
+    }
     if (finalSummary) {
       photo.attributedCaptionSummary = [[NSMutableAttributedString alloc] initWithString:finalSummary attributes:@{NSForegroundColorAttributeName: [UIColor grayColor]}];
     }
@@ -1251,7 +1255,7 @@ return false;
     [self setUserInteractionEnabled:YES];
     self.buttonDisabled = NO;
 
-    // double tap 
+    // double tap
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
     doubleTap.numberOfTapsRequired = 2;
     [self addGestureRecognizer:doubleTap];
@@ -1293,7 +1297,7 @@ return false;
 %new
 - (BOOL)didTap {
   NSNumber *number = objc_getAssociatedObject(self, @selector(didTap));
-  return [number boolValue]; 
+  return [number boolValue];
 }
 
 %new
@@ -1399,23 +1403,23 @@ return false;
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
       }
-      if (saveActions && saveMode == 1) { 
+      if (saveActions && saveMode == 1) {
         if (responds) {
           [self addButtonWithTitle:instaSave style:0 image:nil accessibilityIdentifier:nil];
-          
+
         } else {
           [self addButtonWithTitle:instaSave style:0];
         }
-        
+
         if (cachedItem && cachedItem.user == current) {
         } else {
           if (responds) {
-            [self addButtonWithTitle:localizedString(@"SHARE") style:0 image:nil accessibilityIdentifier:nil]; 
+            [self addButtonWithTitle:localizedString(@"SHARE") style:0 image:nil accessibilityIdentifier:nil];
           } else {
-            [self addButtonWithTitle:localizedString(@"SHARE") style:0]; 
+            [self addButtonWithTitle:localizedString(@"SHARE") style:0];
           }
         }
-      }    
+      }
     }
   }
   %orig;
@@ -1427,6 +1431,16 @@ return false;
 %end
 
 // mute users from activity
+
+%hook IGNewsFollowingTableViewController
+-(void)onStoriesReceived:(id)arg1 {
+  %log;
+  %orig;
+}
+
+%end
+
+// deprecated at some point
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
@@ -1454,6 +1468,7 @@ return false;
   return %orig;
 }
 %end
+// end deprecation
 
 
 %hook IGUserDetailViewController
@@ -1610,7 +1625,7 @@ return false;
   CGRect firstFrame;
   CGRect compareFrame;
   UIButton *base;
-  
+
   if (self.sendButton) {
     base = self.sendButton;
     firstFrame = self.commentButton.frame;
@@ -1671,12 +1686,7 @@ return false;
 %new
 - (void)shareItem:(id)sender {
   IGFeedItem *item = self.feedItem;
-  NSURL *link = [NSURL URLWithString:[item permalink]];
-  // share Instagram link, direct link, actual image
-  UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-    initWithActivityItems:@[link]
-    applicationActivities:nil];
-  [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+  shareItem(item, shareMode);
 }
 
 %new
@@ -1699,7 +1709,7 @@ return false;
 //       IGFeedItem *item = self.feedItem;
 //       if (item.user == [InstaHelper currentUser]) return %orig;
 //       NSURL *link = [NSURL URLWithString:[item permalink]];
-//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
+//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
 //         initWithActivityItems:@[link]
 //         applicationActivities:nil];
 //       [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
@@ -1790,7 +1800,7 @@ return false;
 // %end
 
 %hook IGFeedItemHeader
-// Instagram 7.17.1.. OTA 
+// Instagram 7.17.1.. OTA
 -(void)onChevronTapped:(id)arg1 {
   if (enabled) {
     IGFeedItem *feedItem = nil;
@@ -1833,14 +1843,14 @@ return false;
 }
 %end
 
-%hook IGFeedItemActionCell   
-- (BOOL)sponsoredPostAllowed {    
-  if (enabled && hideSponsored) {    
-    return false;    
-  } else {   
-    return %orig;    
-  }    
-}    
+%hook IGFeedItemActionCell
+- (BOOL)sponsoredPostAllowed {
+  if (enabled && hideSponsored) {
+    return false;
+  } else {
+    return %orig;
+  }
+}
 %end
 
 %hook IGSponsoredPostInfo
@@ -2004,11 +2014,11 @@ static void setupRingerCheck() {
     [InstaHelper setupPhotoAlbumNamed:@"InstaBetter" withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {}];
 
     CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDarwinNotifyCenter(), 
+      CFNotificationCenterGetDarwinNotifyCenter(),
       NULL,
       &handlePrefsChange,
       (CFStringRef)@"com.jake0oo0.instabetter/prefsChange",
-      NULL, 
+      NULL,
       CFNotificationSuspensionBehaviorCoalesce);
 
     if ([curBundle isEqualToString:@"com.apple.springboard"]) {

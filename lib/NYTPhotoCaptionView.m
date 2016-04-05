@@ -32,7 +32,7 @@ static const CGFloat NYTPhotoCaptionViewVerticalMargin = 12.0;
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
+
     self.gradientLayer.frame = self.layer.bounds;
 }
 
@@ -40,19 +40,19 @@ static const CGFloat NYTPhotoCaptionViewVerticalMargin = 12.0;
 
 - (instancetype)initWithAttributedTitle:(NSAttributedString *)attributedTitle attributedSummary:(NSAttributedString *)attributedSummary attributedCredit:(NSAttributedString *)attributedCredit {
     self = [super initWithFrame:CGRectZero];
-    
+
     if (self) {
         self.translatesAutoresizingMaskIntoConstraints = NO;
-        
+
         _attributedTitle = attributedTitle;
         _attributedSummary = attributedSummary;
         _attributedCredit = attributedCredit;
-        
+
         [self setupTextLabel];
         [self updateTextLabelAttributedText];
         [self setupGradient];
     }
-    
+
     return self;
 }
 
@@ -61,12 +61,12 @@ static const CGFloat NYTPhotoCaptionViewVerticalMargin = 12.0;
     self.textLabel.numberOfLines = 0;
     self.textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.textLabel];
-    
+
     NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.textLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:NYTPhotoCaptionViewVerticalMargin];
     NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:self.textLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-NYTPhotoCaptionViewVerticalMargin];
     NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.textLabel attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:-NYTPhotoCaptionViewHorizontalMargin * 2.0];
     NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.textLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
-    
+
     [self addConstraints:@[topConstraint, bottomConstraint, widthConstraint, horizontalPositionConstraint]];
 }
 
@@ -79,27 +79,27 @@ static const CGFloat NYTPhotoCaptionViewVerticalMargin = 12.0;
 
 - (void)updateTextLabelAttributedText {
     NSMutableAttributedString *attributedLabelText = [[NSMutableAttributedString alloc] init];
-    
+
     if (self.attributedTitle) {
         [attributedLabelText appendAttributedString:self.attributedTitle];
     }
-    
+
     if (self.attributedSummary) {
         if (self.attributedTitle) {
             [attributedLabelText appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
         }
-        
+
         [attributedLabelText appendAttributedString:self.attributedSummary];
     }
-    
+
     if (self.attributedCredit) {
         if (self.attributedTitle || self.attributedSummary) {
             [attributedLabelText appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
         }
-        
+
         [attributedLabelText appendAttributedString:self.attributedCredit];
     }
-    
+
     self.textLabel.attributedText = attributedLabelText;
 }
 

@@ -7,10 +7,10 @@
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
-@property (retain) NSURL *profilePicURL; 
-@property (assign) int followStatus; 
-@property (assign) int lastFollowStatus; 
-@property (retain) NSArray * HDProfilePicVersions; 
+@property (retain) NSURL *profilePicURL;
+@property (assign) int followStatus;
+@property (assign) int lastFollowStatus;
+@property (retain) NSArray * HDProfilePicVersions;
 - (id)HDProfilePicURL;
 + (void)fetchFollowStatusInBulk:(NSArray*)users;
 - (id)followingCount;
@@ -44,7 +44,7 @@
 @end
 
 @interface IGAuthHelper : NSObject
-@property (nonatomic, retain) IGUser *currentUser; 
+@property (nonatomic, retain) IGUser *currentUser;
 + (id)sharedAuthHelper;
 - (void)logInWithAuthenticatedUser:(id)arg1;
 - (void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2;
@@ -131,9 +131,9 @@
 -(id)buildStyledStringWithNewline:(char)arg1 ;
 @end
 
-@interface IGDate : NSObject <NSCoding> 
+@interface IGDate : NSObject <NSCoding>
 @property (nonatomic,readonly) long long microseconds;
-@property (nonatomic,copy,readonly) NSString *stringValue; 
+@property (nonatomic,copy,readonly) NSString *stringValue;
 - (id)initWithMicroseconds:(long long)arg1;
 - (id)initWithCoder:(id)arg1;
 - (void)encodeWithCoder:(id)arg1;
@@ -170,9 +170,9 @@
 @end
 
 @interface IGFeedItem : IGPost
-@property (readonly) IGDate *takenAt; 
-@property (readonly) NSString * mediaId; 
-@property (readonly) IGSponsoredPostInfo * sponsoredPostInfo; 
+@property (readonly) IGDate *takenAt;
+@property (readonly) NSString * mediaId;
+@property (readonly) IGSponsoredPostInfo * sponsoredPostInfo;
 - (IGDate*)albumAwareTakenAtDate;
 + (int)fullSizeImageVersionForDevice;
 - (id)imageURLForImageVersion:(int)arg1;
@@ -197,7 +197,7 @@
 
 @interface IGFeedItemActionCell : UICollectionViewCell
 @property(retain, nonatomic) IGFeedItem *feedItem;
-@property (nonatomic, retain) UIButton *sendButton; 
+@property (nonatomic, retain) UIButton *sendButton;
 @property (nonatomic, retain) UIButton *commentButton;
 @property (nonatomic, retain) UIButton *likeButton;
 - (BOOL)sponsoredPostAllowed;
@@ -323,7 +323,7 @@
 @end
 
 @interface IGRootViewController : UIViewController
-@property (nonatomic, retain) IGNavigationController *registrationController; 
+@property (nonatomic, retain) IGNavigationController *registrationController;
 - (id)topMostViewController;
 @end
 
@@ -346,8 +346,8 @@
 @end
 
 @interface IGActionSheet : UIActionSheet
-@property (nonatomic, retain) NSMutableArray *buttons; 
-@property (nonatomic, retain) UILabel *titleLabel;  
+@property (nonatomic, retain) NSMutableArray *buttons;
+@property (nonatomic, retain) UILabel *titleLabel;
 + (void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 - (void)buttonWithTitle:(NSString *)title style:(int)style;
@@ -366,10 +366,10 @@
 @end
 
 @protocol IGFeedHeaderItem <NSObject>
-@property (readonly) IGDate *takenAt; 
+@property (readonly) IGDate *takenAt;
 @end
 
-@interface IGFeedItemHeaderViewModel : NSObject 
+@interface IGFeedItemHeaderViewModel : NSObject
 @property (nonatomic,readonly) IGFeedItem *feedItem;
 @end
 
@@ -422,7 +422,7 @@
 @end
 
 @interface IGLocationDataSource : NSObject <UITableViewDataSource>
-@property (nonatomic, retain) NSString *responseQueryText;  
+@property (nonatomic, retain) NSString *responseQueryText;
 - (id)tableView:(id)arg1 errorCellForRowAtIndexPath:(id)arg2;
 - (id)tableView:(id)arg1 statusCellForRowAtIndexPath:(id)arg2;
 - (id)tableView:(id)arg1 attributionCellForRowAtIndexPath:(id)arg2;
@@ -450,7 +450,7 @@
 
 @interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate>
 @property (nonatomic, retain) IGPost *post;
-@property (nonatomic,readonly) IGImageProgressView *photoImageView; 
+@property (nonatomic,readonly) IGImageProgressView *photoImageView;
 @end
 
 @interface IGDirectContent : NSObject
@@ -472,10 +472,10 @@
 
 @interface IGDirectVideo : IGDirectContent
 @property (nonatomic, retain) IGVideo *video;
-@end 
+@end
 
-@interface IGDirectPhotoExpandableCell 
-@property (nonatomic, retain) IGImageProgressView *photoImageView; 
+@interface IGDirectPhotoExpandableCell
+@property (nonatomic, retain) IGImageProgressView *photoImageView;
 - (void)layoutSubviews;
 @end
 
@@ -511,7 +511,7 @@
 @end
 
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
-@property (nonatomic, retain) IGUser *user; 
+@property (nonatomic, retain) IGUser *user;
 @property (assign,nonatomic) BOOL buttonDisabled;
 @property (nonatomic,readonly) IGSimpleButton * profilePicButton;
 - (id)initWithFrame:(CGRect)arg1;
@@ -547,11 +547,11 @@
 @end
 
 @interface IGUsertagGroup
-@property (assign,nonatomic) IGFeedItem *feedItem;  
+@property (assign,nonatomic) IGFeedItem *feedItem;
 @end
 
 @interface IGFeedPhotoView
-@property (nonatomic, retain) IGUsertagGroup *usertags; 
+@property (nonatomic, retain) IGUsertagGroup *usertags;
 @property (assign,nonatomic) IGFeedItemPhotoCell *parentCellView;
 - (void)onDoubleTap:(id)arg1;
 @end
@@ -584,7 +584,7 @@
 @end
 
 @interface IGFeedItemVideoCell
-@property (nonatomic, retain) IGFeedItemVideoView *videoView; 
+@property (nonatomic, retain) IGFeedItemVideoView *videoView;
 - (id)post;
 - (void)feedItemVideoViewDidDoubleTap:(id)arg1 ;
 @end
@@ -600,7 +600,7 @@
 @end
 
 @interface IGPlainTableViewController : IGViewController <UITableViewDelegate>
-@property (nonatomic, retain) IGTableView *tableView; 
+@property (nonatomic, retain) IGTableView *tableView;
 @end
 
 @interface IGPlainTableView : IGTableView
@@ -624,7 +624,7 @@
 @end
 
 @interface IGTabBarController : UIViewController <UIActionSheetDelegate, UIAlertViewDelegate>
-@property (nonatomic,readonly) UIView *tabBar; 
+@property (nonatomic,readonly) UIView *tabBar;
 - (void)profileButtonPressed;
 - (void)profileButtonLongPressed:(id)arg1;
 - (void)animateSwitchUsersTableView;
@@ -658,8 +658,9 @@
 @end
 
 @interface IGNewsStory : NSObject
-@property (nonatomic, retain) IGUser *user; 
-@property (nonatomic,copy) NSString *payload;  
+@property (nonatomic, retain) IGUser *user;
+@property (nonatomic,copy) NSString *payload;
+-(id)initWithDictionary:(id)arg1 ;
 @end
 
 @interface IGNewsBaseTableViewCell : UITableViewCell
@@ -671,10 +672,12 @@
 
 @interface IGNewsTableViewController : IGGroupedTableViewController
 + (id)storiesWithDictionaries:(id)arg1;
+- (void)onDataReceived:(id)arg1 ;
 @end
 
 @interface IGNewsFollowingTableViewController : IGNewsTableViewController
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+-(void)onStoriesReceived:(id)arg1 ;
 @end
 
 @interface IGWebViewController : IGFeedViewController
@@ -701,10 +704,10 @@
 @end
 
 @interface IGGrowingTextView : UIView
-@property (assign,nonatomic) int keyboardType; 
-@property (assign,nonatomic) int keyboardAppearance; 
-@property (assign,nonatomic) int returnKeyType; 
-@property (assign,nonatomic) BOOL enablesReturnKeyAutomatically; 
+@property (assign,nonatomic) int keyboardType;
+@property (assign,nonatomic) int keyboardAppearance;
+@property (assign,nonatomic) int returnKeyType;
+@property (assign,nonatomic) BOOL enablesReturnKeyAutomatically;
 - (void)setMaxNumberOfLines:(int)arg1;
 - (void)setKeyboardType:(int)arg1;
 - (void)textViewDidBeginEditing:(UITextView*)arg1 ;
@@ -716,8 +719,8 @@
 @end
 
 @interface IGCommentThreadViewController : IGViewController
-@property (nonatomic, retain) IGGrowingTextView *growingTextView; 
-@property (nonatomic, retain) UIView *keyboard; 
+@property (nonatomic, retain) IGGrowingTextView *growingTextView;
+@property (nonatomic, retain) UIView *keyboard;
 - (BOOL)growingTextViewShouldReturn:(id)arg1;
 - (BOOL)growingTextView:(id)arg1 shouldChangeTextInRange:(NSRange)arg2 replacementText:(id)arg3;
 - (void)growingTextViewDidChange:(id)arg1;
@@ -729,15 +732,15 @@
 @end
 
 @interface IGMediaMetadata : NSObject
-@property (nonatomic,copy) NSString * caption; 
-@property (nonatomic,retain) UIImage * snapshot;  
-@property (nonatomic,readonly) int mediaType;  
+@property (nonatomic,copy) NSString * caption;
+@property (nonatomic,retain) UIImage * snapshot;
+@property (nonatomic,readonly) int mediaType;
 @end
 
 
 @interface IGShareViewController : IGViewController
 @property (nonatomic,retain) IGCaptionCell *captionCell;
-@property (nonatomic,retain) IGMediaMetadata * mediaMetadata; 
+@property (nonatomic,retain) IGMediaMetadata * mediaMetadata;
 -(id)initWithMediaMetadata:(id)arg1 ;
 @end
 
@@ -782,5 +785,5 @@
 @end
 
 @interface IGVideoInfo : NSObject
-@property (nonatomic,retain) IGVideoComposition * video; 
+@property (nonatomic,retain) IGVideoComposition * video;
 @end

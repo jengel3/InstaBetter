@@ -65,7 +65,7 @@
 
 + (void)downloadRemoteFile:(NSURL*)url completion:(void (^)(NSData *data, NSError *complErr))completion {
   NSURLRequest *req = [NSURLRequest requestWithURL:url cachePolicy:NSURLCacheStorageNotAllowed timeoutInterval:7.5];
-  [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue mainQueue] 
+  [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue mainQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *error){
       if (error) {
         completion(nil, error);
@@ -81,7 +81,7 @@
     NSFileManager *fsmanager = [NSFileManager defaultManager];
     NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
     NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
       [vidData writeToURL:saveUrl atomically:YES];
       if (album) {
@@ -107,7 +107,7 @@
   [InstaHelper setupPhotoAlbumNamed:album withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
     [InstaHelper addImage:[UIImage imageWithData:imgData] toAssetsLibrary:assetsLibrary withGroup:group completion: ^(NSError *saveErr) {
       completion(saveErr);
-    }];       
+    }];
   }];
 
 }
