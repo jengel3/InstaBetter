@@ -565,7 +565,7 @@ static BOOL openExternalURL(NSURL* url) {
           [status hide:YES afterDelay:0.5];
         }];
       } else if (shareMode == 2) {
-         
+       
         NSURL *perma = [NSURL URLWithString:[item permalink]];
         if (item.mediaType == 1) {
           status.labelText = localizedString(@"DOWNLOADING_IMAGE");
@@ -580,15 +580,13 @@ static BOOL openExternalURL(NSURL* url) {
             UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
               initWithActivityItems:@[img, perma]
               applicationActivities:nil];
+            activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
             return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
               status.labelText = localizedString(@"DONE");
-              [status hide:YES afterDelay:0.5];
+              [status hide:YES afterDelay:0.25];
             }];
           }];
           return;
-          // UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-          //   initWithActivityItems:@[link]
-          //   applicationActivities:nil];
         } else if (item.mediaType == 2) {
 
           NSURL *highest = [NSURL URLWithString:highestResImage(item.video.videoVersions)];
@@ -599,19 +597,20 @@ static BOOL openExternalURL(NSURL* url) {
           status.labelText = localizedString(@"DOWNLOADING_VIDEO");
           [InstaHelper saveRemoteVideo:highest album:customAlbum completion:^(NSError *err) {
             if (err) {
-              status.labelText = localizedString(@"FAILED_TO_LOAD_IMAGE");
+              status.labelText = localizedString(@"FAILED_TO_LOAD_VIDEO");
               return [status hide:YES afterDelay:1.0];
             }
-
             UIActivityViewController *activityViewController = [[UIActivityViewController alloc] 
-              initWithActivityItems:@[[NSURL fileURLWithPath:[saveUrl absoluteString]]]
+              initWithActivityItems:@[[NSURL fileURLWithPath:[saveUrl path]]]
               applicationActivities:nil];
-            return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
-                status.labelText = localizedString(@"DONE");
-                [status hide:YES afterDelay:0.5];
-              }];
+            activityViewController.excludedActivityTypes = @[UIActivityTypeSaveToCameraRoll];
+            [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:^{
+              status.labelText = localizedString(@"DONE");
+              [status hide:YES afterDelay:0.25];
+            }];
 
           }];
+          return;
         }
       }
 

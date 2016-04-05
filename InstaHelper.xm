@@ -89,6 +89,8 @@
           if (saveErr) {
             completion(saveErr);
           } else {
+            // we don't want to remove this due to needing it for the share sheet
+            // [fsmanager removeItemAtPath:[saveUrl path] error:NULL];
             completion(nil);
           }
         }];
