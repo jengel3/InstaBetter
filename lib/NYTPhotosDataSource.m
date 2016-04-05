@@ -26,11 +26,11 @@
 
 - (instancetype)initWithPhotos:(NSArray *)photos {
     self = [super init];
-    
+
     if (self) {
         _photos = photos;
     }
-    
+
     return self;
 }
 
@@ -50,7 +50,7 @@
     if (photoIndex < self.photos.count) {
         return self.photos[photoIndex];
     }
-    
+
     return nil;
 }
 

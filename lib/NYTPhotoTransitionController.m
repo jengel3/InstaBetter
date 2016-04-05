@@ -23,12 +23,12 @@
 
 - (instancetype)init {
     self = [super init];
-    
+
     if (self) {
         _animator = [[NYTPhotoTransitionAnimator alloc] init];
         _interactionController = [[NYTPhotoDismissalInteractionController alloc] init];
     }
-    
+
     return self;
 }
 
@@ -58,13 +58,13 @@
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
     self.animator.dismissing = NO;
-    
+
     return self.animator;
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     self.animator.dismissing = YES;
-    
+
     return self.animator;
 }
 
@@ -72,14 +72,14 @@
     if (self.forcesNonInteractiveDismissal) {
         return nil;
     }
-    
+
     // The interaction controller will be hiding the ending view, so we should get and set a visible version now.
     self.animator.endingViewForAnimation = [[self.animator class] newAnimationViewFromView:self.endingView];
-    
+
     self.interactionController.animator = animator;
     self.interactionController.shouldAnimateUsingAnimator = self.endingView != nil;
     self.interactionController.viewToHideWhenBeginningTransition = self.startingView ? self.endingView : nil;
-    
+
     return self.interactionController;
 }
 

@@ -21,22 +21,22 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
-    
+
     if (self) {
         [self setupNavigationBar];
     }
-    
+
     return self;
 }
 
 // Pass the touches down to other views: http://stackoverflow.com/a/8104378
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *hitView = [super hitTest:point withEvent:event];
-    
+
     if (hitView == self) {
         return nil;
     }
-    
+
     return hitView;
 }
 
@@ -47,7 +47,7 @@
         [self.navigationBar invalidateIntrinsicContentSize];
         [self.navigationBar layoutIfNeeded];
     }];
-    
+
     [super layoutSubviews];
 }
 
@@ -56,19 +56,19 @@
 - (void)setupNavigationBar {
     self.navigationBar = [[UINavigationBar alloc] init];
     self.navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
-    
+
     // Make navigation bar background fully transparent.
     self.navigationBar.backgroundColor = [UIColor clearColor];
     self.navigationBar.barTintColor = nil;
     self.navigationBar.translucent = YES;
     self.navigationBar.shadowImage = [[UIImage alloc] init];
     [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
-    
+
     self.navigationItem = [[UINavigationItem alloc] initWithTitle:nil];
     self.navigationBar.items = @[self.navigationItem];
-    
+
     [self addSubview:self.navigationBar];
-    
+
     NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
     NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
     NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
@@ -79,14 +79,14 @@
     if (self.captionView == captionView) {
         return;
     }
-    
+
     [self.captionView removeFromSuperview];
-    
+
     _captionView = captionView;
-    
+
     self.captionView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.captionView];
-    
+
     NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
     NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
     NSLayoutConstraint *horizontalPositionConstraint = [NSLayoutConstraint constraintWithItem:self.captionView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];

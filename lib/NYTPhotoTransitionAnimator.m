@@ -29,7 +29,7 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
 
 - (instancetype)init {
     self = [super init];
-    
+
     if (self) {
         _animationDurationWithZooming = NYTPhotoTransitionAnimatorDurationWithZooming;
         _animationDurationWithoutZooming = NYTPhotoTransitionAnimatorDurationWithoutZooming;
@@ -38,7 +38,7 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
         _animationDurationStartingViewFadeOutRatio = NYTPhotoTransitionAnimatorStartingViewFadeOutDurationRatio;
         _zoomingAnimationSpringDamping = NYTPhotoTransitionAnimatorSpringDamping;
     }
-    
+
     return self;
 }
 
@@ -47,13 +47,13 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
 - (void)setupTransitionContainerHierarchyWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *fromView = [NYTOperatingSystemCompatibilityUtility fromViewForTransitionContext:transitionContext];
     UIView *toView = [NYTOperatingSystemCompatibilityUtility toViewForTransitionContext:transitionContext];
-    
+
     toView.frame = [NYTOperatingSystemCompatibilityUtility finalFrameForToViewControllerWithTransitionContext:transitionContext];
-    
+
     if (![toView isDescendantOfView:transitionContext.containerView]) {
         [transitionContext.containerView addSubview:toView];
     }
-    
+
     if (self.isDismissing) {
         [transitionContext.containerView bringSubviewToFront:fromView];
     }
@@ -76,19 +76,19 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
 - (void)performFadeAnimationWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *fromView = [NYTOperatingSystemCompatibilityUtility fromViewForTransitionContext:transitionContext];
     UIView *toView = [NYTOperatingSystemCompatibilityUtility toViewForTransitionContext:transitionContext];
-    
+
     UIView *viewToFade = toView;
     CGFloat beginningAlpha = 0.0;
     CGFloat endingAlpha = 1.0;
-    
+
     if (self.isDismissing) {
         viewToFade = fromView;
         beginningAlpha = 1.0;
         endingAlpha = 0.0;
     }
-    
+
     viewToFade.alpha = beginningAlpha;
-    
+
     [UIView animateWithDuration:[self fadeDurationForTransitionContext:transitionContext] animations:^{
         viewToFade.alpha = endingAlpha;
     } completion:^(BOOL finished) {
@@ -102,7 +102,7 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
     if (self.shouldPerformZoomingAnimation) {
         return [self transitionDuration:transitionContext] * self.animationDurationFadeRatio;
     }
-    
+
     return [self transitionDuration:transitionContext];
 }
 
@@ -110,58 +110,58 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
 
 - (void)performZoomingAnimationWithTransitionContext:(id <UIViewControllerContextTransitioning>)transitionContext {
     UIView *containerView = transitionContext.containerView;
-    
+
     // Create a brand new view with the same contents for the purposes of animating this new view and leaving the old one alone.
     UIView *startingViewForAnimation = self.startingViewForAnimation;
     if (!startingViewForAnimation) {
         startingViewForAnimation = [[self class] newAnimationViewFromView:self.startingView];
     }
-    
+
     UIView *endingViewForAnimation = self.endingViewForAnimation;
     if (!endingViewForAnimation) {
         endingViewForAnimation = [[self class] newAnimationViewFromView:self.endingView];
     }
-    
+
     CGAffineTransform finalEndingViewTransform;
-    
+
     // The following code is a workaround for iOS7's lack of correct orientation information
     // in the transitionContext's containerView. For non-portrait orientations on iOS 7, we must
     // manually add a rotation transform to account for the containerView thinking it is always in portrait
     UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL isOrientationPortrait = UIInterfaceOrientationIsPortrait(fromViewController.interfaceOrientation);
-    
+
     if (![NYTOperatingSystemCompatibilityUtility isiOS8OrGreater] && !isOrientationPortrait) {
         // Correct the endingView and startingView's initial transforms
         endingViewForAnimation.transform = CGAffineTransformConcat([self transformForOrientation:fromViewController.interfaceOrientation], endingViewForAnimation.transform);
         startingViewForAnimation.transform = CGAffineTransformConcat([self transformForOrientation:fromViewController.interfaceOrientation], startingViewForAnimation.transform);
-        
+
         // Correct the endingView's final transform
         finalEndingViewTransform = CGAffineTransformConcat([self transformForOrientation:fromViewController.interfaceOrientation], self.endingView.transform);
     }
     else {
         finalEndingViewTransform = self.endingView.transform;
     }
-    
+
     CGFloat endingViewInitialTransform = CGRectGetHeight(startingViewForAnimation.frame) / CGRectGetHeight(endingViewForAnimation.frame);
     CGPoint translatedStartingViewCenter = [[self class] centerPointForView:self.startingView
                                                   translatedToContainerView:containerView];
-    
+
     startingViewForAnimation.center = translatedStartingViewCenter;
-    
+
     endingViewForAnimation.transform = CGAffineTransformScale(endingViewForAnimation.transform, endingViewInitialTransform, endingViewInitialTransform);
     endingViewForAnimation.center = translatedStartingViewCenter;
     endingViewForAnimation.alpha = 0.0;
-    
+
     [transitionContext.containerView addSubview:startingViewForAnimation];
     [transitionContext.containerView addSubview:endingViewForAnimation];
-    
+
     // Hide the original ending view and starting view until the completion of the animation.
     self.endingView.hidden = YES;
     self.startingView.hidden = YES;
-    
+
     CGFloat fadeInDuration = [self transitionDuration:transitionContext] * self.animationDurationEndingViewFadeInRatio;
     CGFloat fadeOutDuration = [self transitionDuration:transitionContext] * self.animationDurationStartingViewFadeOutRatio;
-    
+
     // Ending view / starting view replacement animation
     [UIView animateWithDuration:fadeInDuration
                           delay:0
@@ -178,11 +178,11 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
                               [startingViewForAnimation removeFromSuperview];
                           }];
                      }];
-    
+
     CGFloat startingViewFinalTransform = 1.0 / endingViewInitialTransform;
     CGPoint translatedEndingViewFinalCenter = [[self class] centerPointForView:self.endingView
                                                      translatedToContainerView:containerView];
-    
+
     // Zoom animation
     [UIView animateWithDuration:[self transitionDuration:transitionContext]
                           delay:0
@@ -199,7 +199,7 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
                          [endingViewForAnimation removeFromSuperview];
                          self.endingView.hidden = NO;
                          self.startingView.hidden = NO;
-        
+
                          [self completeTransitionWithTransitionContext:transitionContext];
                      }];
 }
@@ -210,13 +210,13 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
     switch (orientation) {
         case UIInterfaceOrientationLandscapeLeft:
             return CGAffineTransformMakeRotation(-M_PI / 2.0);
-        
+
         case UIInterfaceOrientationLandscapeRight:
             return CGAffineTransformMakeRotation(M_PI / 2.0);
-        
+
         case UIInterfaceOrientationPortraitUpsideDown:
             return CGAffineTransformMakeRotation(M_PI);
-        
+
         case UIInterfaceOrientationPortrait:
         default:
             return CGAffineTransformMakeRotation(0);
@@ -236,23 +236,23 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
             [transitionContext finishInteractiveTransition];
         }
     }
-    
+
     [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
 }
 
 + (CGPoint)centerPointForView:(UIView *)view translatedToContainerView:(UIView *)containerView {
     CGPoint centerPoint = view.center;
-    
+
     // Special case for zoomed scroll views.
     if ([view.superview isKindOfClass:[UIScrollView class]]) {
         UIScrollView *scrollView = (UIScrollView *)view.superview;
-        
+
         if (scrollView.zoomScale != 1.0) {
             centerPoint.x += (CGRectGetWidth(scrollView.bounds) - scrollView.contentSize.width) / 2.0 + scrollView.contentOffset.x;
             centerPoint.y += (CGRectGetHeight(scrollView.bounds) - scrollView.contentSize.height) / 2.0 + scrollView.contentOffset.y;
         }
     }
-    
+
     return [view.superview convertPoint:centerPoint toView:containerView];
 }
 
@@ -260,9 +260,9 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
     if (!view) {
         return nil;
     }
-    
+
     UIView *animationView;
-    
+
     if (view.layer.contents) {
         animationView = [[UIView alloc] initWithFrame:view.frame];
         animationView.layer.contents = view.layer.contents;
@@ -275,7 +275,7 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
     else {
         animationView = [view snapshotViewAfterScreenUpdates:YES];
     }
-    
+
     return animationView;
 }
 
@@ -285,15 +285,15 @@ static const CGFloat NYTPhotoTransitionAnimatorSpringDamping = 0.9;
     if (self.shouldPerformZoomingAnimation) {
         return self.animationDurationWithZooming;
     }
-    
+
     return self.animationDurationWithoutZooming;
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     [self setupTransitionContainerHierarchyWithTransitionContext:transitionContext];
-    
+
     [self performFadeAnimationWithTransitionContext:transitionContext];
-    
+
     if (self.shouldPerformZoomingAnimation) {
         [self performZoomingAnimationWithTransitionContext:transitionContext];
     }
