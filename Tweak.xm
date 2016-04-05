@@ -1440,6 +1440,15 @@ return false;
 
 %end
 
+
+%hook IGNewsStory
+-(IGNewsStory*)initWithDictionary:(id)arg1 {
+  %log;
+  IGNewsStory *story = (IGNewsStory*)%orig;
+  NSLog(@"STORY -- %@", story.payload);
+  return story;
+}
+%end
 // deprecated at some point
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {

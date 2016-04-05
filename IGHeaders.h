@@ -660,7 +660,7 @@
 @interface IGNewsStory : NSObject
 @property (nonatomic, retain) IGUser *user;
 @property (nonatomic,copy) NSString *payload;
--(id)initWithDictionary:(id)arg1 ;
+-(IGNewsStory*)initWithDictionary:(id)arg1 ;
 @end
 
 @interface IGNewsBaseTableViewCell : UITableViewCell
