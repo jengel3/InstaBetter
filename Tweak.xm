@@ -1743,7 +1743,7 @@ return false;
   shareItem(item, shareMode);
 }
 
-%property (retain, nonatomic) UIButton *savebutton;
+%property (retain, nonatomic) UIButton *saveButton;
 
 // deprecated in Instagram >= 7.15
 // - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
