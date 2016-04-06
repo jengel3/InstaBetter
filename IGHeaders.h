@@ -660,7 +660,9 @@
 @interface IGNewsStory : NSObject
 @property (nonatomic, retain) IGUser *user;
 @property (nonatomic,copy) NSString *payload;
--(IGNewsStory*)initWithDictionary:(id)arg1 ;
+@property (nonatomic,retain) NSArray * mediaDictionaries;
+-(IGNewsStory*)initWithDictionary:(NSDictionary*)arg1 ;
+@property (assign,nonatomic) BOOL shouldMute;
 @end
 
 @interface IGNewsBaseTableViewCell : UITableViewCell

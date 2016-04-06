@@ -201,6 +201,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Change what you share. Choose between sharing the Instagram link, a direct link, or the actual photo/video.
 - Save photos and videos to a custom album specified in the settings
 - Add support for reposting videos
+- Fix muting in the activity feeds, which was recently broken.
 
 
 ## Building

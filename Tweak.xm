@@ -1016,15 +1016,8 @@ static BOOL openExternalURL(NSURL* url) {
     %orig;
   }
 }
-%new
-- (UILabel *)statusLabel {
-  return objc_getAssociatedObject(self, @selector(statusLabel));
-}
 
-%new
-- (void)setStatusLabel:(UILabel *)value {
-  objc_setAssociatedObject(self, @selector(statusLabel), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+%property (nonatomic, retain) UILabel *statusLabel;
 %end
 
 %hook IGWebViewController
@@ -1148,6 +1141,11 @@ static BOOL openExternalURL(NSURL* url) {
   [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
 }
 
+/**
+ * The following two methods handle link clicking with in IGFeedItem comments. THey check for clicks within
+ * the comment, and then check to see if a URL exists at that point by using the *point* argument. If the URL
+ * exists, the helper method is called to open the URL with InstaBetter.
+ */
 
 // unpadded views
 -(BOOL)handleTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 {
@@ -1239,6 +1237,12 @@ return false;
 %end
 
 %hook IGAuthHelper
+/**
+ * Instagram limits users to a max of 5 accounts added to the multi-account manager. This method prevents Instagram
+ * from checking for the maximum number of accounts.
+ *
+ * @return {BOOL}
+ */
 - (BOOL)hasMaximumNumberOfAccounts {
   return NO;
 }
@@ -1306,14 +1310,14 @@ return false;
   objc_setAssociatedObject(self, @selector(didTap), number, OBJC_ASSOCIATION_RETAIN);
 }
 
--(void)tapped:(id)recognizer {
+- (void)tapped:(id)recognizer {
   if ([self didTap]) return;
   %orig;
   [self setDidTap:![self didTap]];
 }
 
 %new
--(void)displayProfilePic {
+- (void)displayProfilePic {
   NSMutableArray *photos = [[NSMutableArray alloc] init];
   InstaBetterPhoto *photo = [[InstaBetterPhoto alloc] init];
 
@@ -1432,24 +1436,57 @@ return false;
 
 // mute users from activity
 
+/**
+ * The *shouldMute* boolean is set on the IGNewsStory, allowing us to check
+ * if it is true or not, and then remove it from the received list if necessary
+ */
 %hook IGNewsFollowingTableViewController
--(void)onStoriesReceived:(id)arg1 {
+-(void)onStoriesReceived:(NSArray*)stories {
   %log;
-  %orig;
+  NSMutableArray *scrubbed = [stories mutableCopy];
+  for (IGNewsStory *story in stories) {
+    if (story.shouldMute) {
+      if ([scrubbed containsObject:story]) {
+        [scrubbed removeObject:story];
+      }
+    }
+  }
+  stories = [scrubbed copy];
+
+  %orig(stories);
 }
 
 %end
 
 
+/**
+ * We use this method to set the shouldMute boolean on a *IGNewsStory* in order
+ * to know whether or not a story will be muted when it is loaded in *onStoriesReceived*
+ */
 %hook IGNewsStory
--(IGNewsStory*)initWithDictionary:(id)arg1 {
-  %log;
+- (IGNewsStory*)initWithDictionary:(NSDictionary*)dict {
   IGNewsStory *story = (IGNewsStory*)%orig;
-  NSLog(@"STORY -- %@", story.payload);
+  NSArray *links = [dict valueForKeyPath:@"args.links"];
+  if ([links count] == 1) {
+    NSArray* words = [[dict valueForKeyPath:@"args.text"] componentsSeparatedByString:@" "];
+    if ([words count] == 0) return story;
+    BOOL contains = [muted containsObject:[words objectAtIndex:0]];
+    if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
+      story.shouldMute = YES;
+    }
+  }
   return story;
 }
+
+%property (assign, nonatomic) BOOL shouldMute;
 %end
+
+
 // deprecated at some point
+/**
+ * This was both muting classes combined into one. The stories were loaded, conditions
+ * were checked, and then removed from the final list before being returned.
+ */
 %hook IGNewsTableViewController
 + (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
@@ -1476,6 +1513,7 @@ return false;
   }
   return %orig;
 }
+
 %end
 // end deprecation
 
@@ -1671,6 +1709,13 @@ return false;
 }
 
 %new
+/**
+ * This method is called by a UIBUtton press from a IGFeedItem. It will check whether or not the user wants to
+ * display a confirmation before saving the media, in order to prevent accidentlal clicking. It will call *saveNow*
+ * once the user has confirmed their choice, or if that option is disabled.
+ *
+ * @param {id} sender
+ */
 - (void)saveItem:(id)sender {
   if (!saveConfirm) {
     return [self saveNow];
@@ -1698,15 +1743,7 @@ return false;
   shareItem(item, shareMode);
 }
 
-%new
-- (UIButton *)saveButton {
-  return objc_getAssociatedObject(self, @selector(saveButton));
-}
-
-%new
-- (void)setSaveButton:(UIButton *)value {
-  objc_setAssociatedObject(self, @selector(saveButton), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+%property (retain, nonatomic) UIButton *savebutton;
 
 // deprecated in Instagram >= 7.15
 // - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
@@ -1741,6 +1778,10 @@ return false;
 }
 
 %new
+/**
+ * Opens the *LocationSelectorViewController* for the user to select a custom locations. All further actions
+ * take place through the *LocationSelectionDelegate* set as the *delegate* property of the controller
+ */
 - (void)selectCustom {
   LocationSelectorViewController *sel = [[LocationSelectorViewController alloc] init];
   UINavigationController *selNav = [[UINavigationController alloc] initWithRootViewController:sel];
@@ -1751,6 +1792,12 @@ return false;
 }
 
 %new
+/**
+ * Called when the user has selected a point on the location selection map. This is called when
+ * the location selection is finalized, and the map is closed.
+ *
+ * @param {CLLocationCoordinate2D} location
+ */
 - (void)didSelectLocation:(CLLocationCoordinate2D)location {
   double longitude = location.longitude;
   double latitude = location.latitude;
@@ -1785,15 +1832,7 @@ return false;
   }
 }
 
-%new
-- (IGLocation *)tempLocation {
-  return objc_getAssociatedObject(self, @selector(tempLocation));
-}
-
-%new
-- (void)setTempLocation:(IGLocation *)value {
-  objc_setAssociatedObject(self, @selector(tempLocation), value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+%property (retain, nonatomic) IGLocation *tempLocation;
 %end
 
 // hide sponsored posts
@@ -1810,6 +1849,7 @@ return false;
 
 %hook IGFeedItemHeader
 // Instagram 7.17.1.. OTA
+// deprecated
 -(void)onChevronTapped:(id)arg1 {
   if (enabled) {
     IGFeedItem *feedItem = nil;
@@ -1828,7 +1868,9 @@ return false;
   }
   %orig;
 }
+// end deprecation
 
+// timestamps are broken
 - (void)layoutSubviews {
   %orig;
   if (enabled && enableTimestamps) {
@@ -1845,6 +1887,7 @@ return false;
 }
 
 %new
+// broken timestamps
 - (void)showTimestamp {
   if (self.timestampLabel.frame.origin.x == origPosition) {
     showTimestamp(self, true);
@@ -1893,6 +1936,12 @@ return false;
 }
 %end
 
+
+/**
+ * The *IGAccountSettingsViewController* is the controller that manages Instagram's settings when accessed
+ * from the user's own profile. It is modified here to include a cell that opens the InstaBetterPrefsController
+ * from InstaBetter's preferences sub-project.
+ */
 %hook IGAccountSettingsViewController
 - (id)settingSectionRows {
   NSArray *thing = %orig;
@@ -1921,8 +1970,15 @@ return false;
   return cell;
 }
 
+/**
+ * Open the InstaBetterPrefsController when selected in the table
+ *
+ * @param {id} tableView
+ * @param {int} index
+ */
 - (void)tableView:(id)tableView didSelectSettingsRow:(int)index {
   int count = [[self settingSectionRows] count];
+  // must account for several different Instagram setting layouts
   if ((count == 5 && index == 4) || (count == 6 && index == 5)) {
     InstaBetterPrefsController *settings = [[InstaBetterPrefsController alloc] init];
     UIViewController *rootController = (UIViewController *) settings;
@@ -1948,6 +2004,11 @@ return false;
 
 %group sbHooks
 
+/**
+ * Add custom sounds to Instagram's BBBulletin notifications. They can be customized per type in
+ * InstaBetter's settings. The default sound can also be used, or they can be disabled completely,
+ * since some notifications have a setting, while others do not.
+ */
 %hook BBBulletin
 - (BBSound *)sound {
   if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
