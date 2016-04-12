@@ -1,9 +1,12 @@
 #import <Foundation/Foundation.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <UIKit/UIKit.h>
+#import <Photos/Photos.h>
 #import "InstaHelper.h"
 #import "IGHeaders.h"
 #import "substrate.h"
+
+@class PHAssetCollection;
 
 @implementation InstaHelper
 + (IGRootViewController *)rootViewController {
@@ -39,27 +42,52 @@
 }
 
 + (void)saveVideoToAlbum:(NSURL*)localUrl album:(NSString*)album completion:(void (^)(NSError *error))completion {
-  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+  Class PHPhotoLibrary_class = NSClassFromString(@"PHPhotoLibrary");
 
-  [library writeVideoAtPathToSavedPhotosAlbum:localUrl
-    completionBlock:^(NSURL *assetURL, NSError *error){
-      if (error) {
-        completion(error);
-      } else {
-        if (album) {
-          [InstaHelper setupPhotoAlbumNamed:album withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
-            [assetsLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-              [group addAsset:asset];
-              completion(nil);
-            } failureBlock:^(NSError *error) {
-              completion(error);
-            }];
+  if (PHPhotoLibrary_class) {
+    PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc]init];
+    albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
+
+    PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
+    PHAssetCollection *existingCollection = userAlbums.firstObject;
+
+  // Photos framework does not handle existing collections, so we have to do that ourselves
+    if (!existingCollection) {
+      __block PHObjectPlaceholder *albumPlaceholder;
+      [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+        PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
+        albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
+      } completionHandler:^(BOOL success, NSError *error) {
+        if (success) {
+          PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
+          PHAssetCollection *assetCollection = fetchResult.firstObject;
+          [InstaHelper addVideo:localUrl toCollection:assetCollection completion:^(NSError *error) {
+            completion(error);
           }];
+
+        } else {
+          NSLog(@"Error creating album: %@", error);
+          completion(error);
+        }
+      }];
+    } else {
+      [InstaHelper addVideo:localUrl toCollection:existingCollection completion:^(NSError *error) {
+        completion(error);
+      }];
+    }
+  } else {
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+
+    [library writeVideoAtPathToSavedPhotosAlbum:localUrl
+      completionBlock:^(NSURL *assetURL, NSError *error){
+        if (error) {
+          completion(error);
         } else {
           completion(nil);
         }
-      }
-    }];
+      }];
+
+  }
 
 }
 
@@ -76,39 +104,105 @@
 }
 
 + (void)saveRemoteVideo:(NSURL*)url album:(NSString*)album completion:(void (^)(NSError *error))completion {
-  [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
-    if (viderr) return completion(viderr);
-    NSFileManager *fsmanager = [NSFileManager defaultManager];
-    NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
-    NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
+  Class PHPhotoLibrary_class = NSClassFromString(@"PHPhotoLibrary");
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [vidData writeToURL:saveUrl atomically:YES];
-      if (album) {
-        [InstaHelper saveVideoToAlbum:saveUrl album:album completion: ^(NSError *saveErr) {
+  if (PHPhotoLibrary_class) {
+    [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
+      if (viderr) return completion(viderr);
+      NSFileManager *fsmanager = [NSFileManager defaultManager];
+      NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
+
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [vidData writeToURL:saveUrl atomically:YES];
+        if (album) {
+          [InstaHelper saveVideoToAlbum:saveUrl album:album completion: ^(NSError *saveErr) {
+            if (saveErr) {
+              completion(saveErr);
+            } else {
+            // we don't want to remove this due to needing it for the share sheet
+            // [fsmanager removeItemAtPath:[saveUrl path] error:NULL];
+              completion(nil);
+            }
+          }];
+        } else {
+          completion(nil);
+        }
+      });
+    }];
+  } else {
+    [InstaHelper downloadRemoteFile:url completion:^(NSData *vidData, NSError *viderr) {
+      if (viderr) return completion(viderr);
+      NSFileManager *fsmanager = [NSFileManager defaultManager];
+      NSURL *videoDocs = [[fsmanager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+      NSURL *saveUrl = [videoDocs URLByAppendingPathComponent:[url lastPathComponent]];
+
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [vidData writeToURL:saveUrl atomically:YES];
+        [InstaHelper saveVideoToAlbum:saveUrl album:@"InstaBetter" completion: ^(NSError *saveErr) {
           if (saveErr) {
             completion(saveErr);
           } else {
-            // we don't want to remove this due to needing it for the share sheet
-            // [fsmanager removeItemAtPath:[saveUrl path] error:NULL];
             completion(nil);
           }
         }];
-      } else {
-        completion(nil);
-      }
-    });
-  }];
+      });
+
+
+    }];
+  }
 }
 
 + (void)saveRemoteImage:(NSURL*)url album:(NSString*)album completion:(void (^)(NSError *error))completion {
-  NSData *imgData = [NSData dataWithContentsOfURL:url];
+  Class PHPhotoLibrary_class = NSClassFromString(@"PHPhotoLibrary");
 
-  [InstaHelper setupPhotoAlbumNamed:album withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {
-    [InstaHelper addImage:[UIImage imageWithData:imgData] toAssetsLibrary:assetsLibrary withGroup:group completion: ^(NSError *saveErr) {
-      completion(saveErr);
+  if (PHPhotoLibrary_class) {
+    [InstaHelper downloadRemoteFile:url completion:^(NSData *imgData, NSError *imgerr) {
+      UIImage *image = [UIImage imageWithData:imgData];
+
+      PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc]init];
+      albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
+
+      PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
+      PHAssetCollection *existingCollection = userAlbums.firstObject;
+
+  // Photos framework does not handle existing collections, so we have to do that ourselves
+      if (!existingCollection) {
+        __block PHObjectPlaceholder *albumPlaceholder;
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+          PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
+          albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
+        } completionHandler:^(BOOL success, NSError *error) {
+          if (success) {
+            PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
+            PHAssetCollection *assetCollection = fetchResult.firstObject;
+            [InstaHelper addImage:image toCollection:assetCollection completion:^(NSError *error) {
+              completion(error);
+            }];
+            // Add it to the photo library
+
+          } else {
+            NSLog(@"Error creating album: %@", error);
+            completion(error);
+          }
+        }];
+      } else {
+        [InstaHelper addImage:image toCollection:existingCollection completion:^(NSError *error) {
+          completion(error);
+        }];
+      }
     }];
-  }];
+  } else {
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    NSData *imgData = [NSData dataWithContentsOfURL:url];
+    [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+      if (error) {
+        completion(error);
+      } else {
+        completion(nil);
+      }
+    }];
+  }
 
 }
 
@@ -120,39 +214,32 @@
   return [extensions containsObject:[ext lowercaseString]];
 }
 
-+ (void)setupPhotoAlbumNamed:(NSString*)photoAlbumName withCompletionHandler:(void(^)(ALAssetsLibrary*, ALAssetsGroup*))completion {
-  ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
-  __weak ALAssetsLibrary *weakAssetsLibrary = assetsLibrary;
-  [assetsLibrary addAssetsGroupAlbumWithName:photoAlbumName resultBlock:^(ALAssetsGroup *group) {
-    if (!group) {
-      [weakAssetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAlbum usingBlock:^(ALAssetsGroup *g, BOOL *stop) {
-        if ([[g valueForProperty:ALAssetsGroupPropertyName] isEqualToString:photoAlbumName]) {
-          completion(weakAssetsLibrary, g);
-        }
-      } failureBlock:^(NSError *error) {
-        completion(weakAssetsLibrary, nil);
-      }];
-    } else {
-      completion(weakAssetsLibrary, group);
+
++ (void)addImage:(UIImage*)image toCollection:(id)collection completion:(void (^)(NSError *error))completion {
+  [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+
+    PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
+    [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+  } completionHandler:^(BOOL success, NSError *error) {
+    if (!success) {
+      NSLog(@"Error creating asset: %@", error);
     }
-  } failureBlock:^(NSError *error) {
-    completion(weakAssetsLibrary, nil);
+    completion(error);
   }];
 }
 
-+ (void)addImage:(UIImage*)image toAssetsLibrary:(ALAssetsLibrary*)assetsLibrary withGroup:(ALAssetsGroup*)group completion:(void (^)(NSError *error))completion {
-  [assetsLibrary writeImageDataToSavedPhotosAlbum:UIImagePNGRepresentation(image) metadata:nil completionBlock:
-   ^(NSURL *assetURL, NSError *error) {
-     if (error) {
-      completion(error);
-    } else {
-      [assetsLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        [group addAsset:asset];
-        completion(nil);
-      } failureBlock:^(NSError *error) {
-        completion(error);
-      }];
++ (void)addVideo:(NSURL*)videoURL toCollection:(id)collection completion:(void (^)(NSError *error))completion {
+  [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];
+
+    PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
+    [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+  } completionHandler:^(BOOL success, NSError *error) {
+    if (!success) {
+      NSLog(@"Error creating asset: %@", error);
     }
+    completion(error);
   }];
 }
 

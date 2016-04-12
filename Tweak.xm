@@ -116,6 +116,8 @@ static NSDictionary* loadPrefs() {
       if (customAlbum && [customAlbum isEqualToString:@""]) {
         // check for blank album
         customAlbum = @"Instagram";
+      } else {
+        customAlbum = [customAlbum stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
       }
       saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
       showRepost = [prefs objectForKey:@"show_repost"] ? [[prefs objectForKey:@"show_repost"] boolValue] : NO;
@@ -174,11 +176,11 @@ static void saveMedia(NSURL *url) {
     MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
     status.labelText = localizedString(@"SAVING");
     UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_async(queue, ^{
+    // dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    // dispatch_async(queue, ^{
       if ([InstaHelper isRemoteImage:url]) {
         [InstaHelper saveRemoteImage:url album:customAlbum completion:^(NSError *err) {
-          dispatch_async(dispatch_get_main_queue(), ^{
+          dispatch_sync(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
             status.labelText = localizedString(@"SAVED");
@@ -188,7 +190,7 @@ static void saveMedia(NSURL *url) {
         }];
       } else {
         [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
-          dispatch_async(dispatch_get_main_queue(), ^{
+          dispatch_sync(dispatch_get_main_queue(), ^{
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
             status.labelText = localizedString(@"SAVED");
@@ -197,7 +199,7 @@ static void saveMedia(NSURL *url) {
           });
         }];
       }
-    });
+    // });
   }
 }
 
@@ -1385,8 +1387,9 @@ return false;
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
+    BOOL respondLabel = [self respondsToSelector:@selector(titleLabel:)];
     // NSLog(@"RESPONDS %d", responds);
-    if (isProfileView && !cachedItem && !self.titleLabel.text) {
+    if (isProfileView && !cachedItem && (respondLabel ? !self.titleLabel.text : !self.title)) {
       IGUser *current = [InstaHelper currentUser];
       if ([current.username isEqualToString:userView.user.username]) return %orig;
       if ([muted containsObject:userView.user.username]) {
@@ -1402,7 +1405,7 @@ return false;
           [self addButtonWithTitle:instaMute style:0];
         }
       }
-    } else if (!self.titleLabel.text && !isWebView) {
+    } else if ((respondLabel ? !self.titleLabel.text : !self.title) && !isWebView) {
       IGUser *current = [InstaHelper currentUser];
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
@@ -2081,7 +2084,7 @@ static void setupRingerCheck() {
 
     loadPrefs();
 
-    [InstaHelper setupPhotoAlbumNamed:@"InstaBetter" withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {}];
+    // [InstaHelper setupPhotoAlbumNamed:customAlbum withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {}];
 
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(),
