@@ -115,8 +115,8 @@ static NSDictionary* loadPrefs() {
       customAlbum = [prefs objectForKey:@"custom_album"] ? [prefs objectForKey:@"custom_album"] : @"Instagram";
       if (customAlbum && [customAlbum isEqualToString:@""]) {
         // check for blank album
-        customAlbum = @"Instagram";
-      } else {
+        customAlbum = nil;
+      } else if (customAlbum) {
         customAlbum = [customAlbum stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
       }
       saveConfirm = [prefs objectForKey:@"save_confirm"] ? [[prefs objectForKey:@"save_confirm"] boolValue] : YES;
@@ -1445,7 +1445,6 @@ return false;
  */
 %hook IGNewsFollowingTableViewController
 -(void)onStoriesReceived:(NSArray*)stories {
-  %log;
   NSMutableArray *scrubbed = [stories mutableCopy];
   for (IGNewsStory *story in stories) {
     if (story.shouldMute) {
@@ -1461,6 +1460,24 @@ return false;
 
 %end
 
+/// does not return normal array, needs work
+// %hook IGNewsInboxTableViewController
+// -(void)onDataReceived:(id)stories {
+//   %log;
+//   %orig;
+//   // NSMutableArray *scrubbed = [stories mutableCopy];
+//   // for (IGNewsStory *story in stories) {
+//   //   if (story.shouldMute) {
+//   //     if ([scrubbed containsObject:story]) {
+//   //       [scrubbed removeObject:story];
+//   //     }
+//   //   }
+//   // }
+//   // stories = [scrubbed copy];
+
+//   // %orig(stories);
+// }
+// %end
 
 /**
  * We use this method to set the shouldMute boolean on a *IGNewsStory* in order
@@ -1475,6 +1492,7 @@ return false;
     if ([words count] == 0) return story;
     BOOL contains = [muted containsObject:[words objectAtIndex:0]];
     if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
+      // NSLog(@"MUTING!!");
       story.shouldMute = YES;
     }
   }
@@ -1517,6 +1535,21 @@ return false;
   return %orig;
 }
 
+// -(void)onDataReceived:(NSArray*)stories {
+//   %log;
+//   NSMutableArray *scrubbed = [stories mutableCopy];
+//   for (IGNewsStory *story in stories) {
+//     if (story.shouldMute) {
+//       if ([scrubbed containsObject:story]) {
+//         [scrubbed removeObject:story];
+//       }
+//     }
+//   }
+//   stories = [scrubbed copy];
+
+//   %orig(stories);
+// }
+
 %end
 // end deprecation
 
@@ -1545,20 +1578,6 @@ return false;
 %end
 
 %hook IGMainFeedViewController
-// instagram > 7.14
-// deprecated
-// - (BOOL)shouldHideFeedItem:(IGFeedItem *)item {
-//   if (enabled) {
-//     BOOL contains = [muted containsObject:item.user.username];
-//     if ((contains && muteMode == 0) || (!contains && muteMode == 1)) {
-//       return YES;
-//     } else {
-//       return %orig;
-//     }
-//   } else {
-//     return %orig;
-//   }
-// }
 
 - (void)viewDidLoad {
   %orig;
@@ -1580,8 +1599,6 @@ return false;
     [self setFeedLayout:1];
     [self.navigationItem setLeftBarButtonItem:gridItem animated:YES];
   } else if (self.feedLayout == 1) {
-    // IGFeedItemPreviewingHandler *handler = [[%c(IGFeedItemPreviewingHandler) alloc] initWithController:self];
-    // [self setFeedPreviewingDelegate:handler];
     [self setFeedLayout:2];
     [self.navigationItem setLeftBarButtonItem:listItem animated:YES];
   }

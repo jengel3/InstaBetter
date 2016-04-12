@@ -45,49 +45,56 @@
   Class PHPhotoLibrary_class = NSClassFromString(@"PHPhotoLibrary");
 
   if (PHPhotoLibrary_class) {
-    PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc]init];
-    albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
+    PHAssetCollection *existingCollection;
 
-    PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
-    PHAssetCollection *existingCollection = userAlbums.firstObject;
+    if (album) {
+      PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc] init];
+      albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
 
-  // Photos framework does not handle existing collections, so we have to do that ourselves
-    if (!existingCollection) {
-      __block PHObjectPlaceholder *albumPlaceholder;
-      [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-        PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
-        albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
-      } completionHandler:^(BOOL success, NSError *error) {
-        if (success) {
-          PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
-          PHAssetCollection *assetCollection = fetchResult.firstObject;
-          [InstaHelper addVideo:localUrl toCollection:assetCollection completion:^(NSError *error) {
-            completion(error);
-          }];
-
-        } else {
-          NSLog(@"Error creating album: %@", error);
-          completion(error);
-        }
-      }];
-    } else {
-      [InstaHelper addVideo:localUrl toCollection:existingCollection completion:^(NSError *error) {
-        completion(error);
-      }];
+      PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
+      existingCollection = userAlbums.firstObject;
     }
-  } else {
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
 
-    [library writeVideoAtPathToSavedPhotosAlbum:localUrl
-      completionBlock:^(NSURL *assetURL, NSError *error){
-        if (error) {
+    if (!existingCollection && album) {
+     NSLog(@"CALLING zzz!!");
+     __block PHObjectPlaceholder *albumPlaceholder;
+     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+      PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
+      albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
+    } completionHandler:^(BOOL success, NSError *error) {
+      if (success) {
+        PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
+        PHAssetCollection *assetCollection = fetchResult.firstObject;
+        [InstaHelper addVideo:localUrl toCollection:assetCollection completion:^(NSError *error) {
           completion(error);
-        } else {
-          completion(nil);
-        }
-      }];
+        }];
 
+      } else {
+        NSLog(@"Error creating album: %@", error);
+        completion(error);
+      }
+    }];
+   } else {
+
+    NSLog(@"CALLING!!");
+    [InstaHelper addVideo:localUrl toCollection:existingCollection completion:^(NSError *error) {
+     NSLog(@"CALLING!!v dfvdfmk");
+     completion(error);
+   }];
   }
+} else {
+  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+
+  [library writeVideoAtPathToSavedPhotosAlbum:localUrl
+    completionBlock:^(NSURL *assetURL, NSError *error){
+      if (error) {
+        completion(error);
+      } else {
+        completion(nil);
+      }
+    }];
+
+}
 
 }
 
@@ -115,19 +122,15 @@
 
       dispatch_async(dispatch_get_main_queue(), ^{
         [vidData writeToURL:saveUrl atomically:YES];
-        if (album) {
-          [InstaHelper saveVideoToAlbum:saveUrl album:album completion: ^(NSError *saveErr) {
-            if (saveErr) {
-              completion(saveErr);
-            } else {
+        [InstaHelper saveVideoToAlbum:saveUrl album:album completion: ^(NSError *saveErr) {
+          if (saveErr) {
+            completion(saveErr);
+          } else {
             // we don't want to remove this due to needing it for the share sheet
             // [fsmanager removeItemAtPath:[saveUrl path] error:NULL];
-              completion(nil);
-            }
-          }];
-        } else {
-          completion(nil);
-        }
+            completion(nil);
+          }
+        }];
       });
     }];
   } else {
@@ -160,14 +163,18 @@
     [InstaHelper downloadRemoteFile:url completion:^(NSData *imgData, NSError *imgerr) {
       UIImage *image = [UIImage imageWithData:imgData];
 
-      PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc]init];
-      albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
+      PHAssetCollection *existingCollection;
 
-      PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
-      PHAssetCollection *existingCollection = userAlbums.firstObject;
+      if (album) {
+        PHFetchOptions *albumsFetchOption = [[PHFetchOptions alloc] init];
+        albumsFetchOption.predicate = [NSPredicate predicateWithFormat:@"title == %@",album];
+
+        PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:albumsFetchOption];
+        existingCollection = userAlbums.firstObject;
+      }
 
   // Photos framework does not handle existing collections, so we have to do that ourselves
-      if (!existingCollection) {
+      if (!existingCollection && album) {
         __block PHObjectPlaceholder *albumPlaceholder;
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
           PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
@@ -219,8 +226,10 @@
   [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
     PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
 
-    PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
-    [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+    if (collection) {
+      PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
+      [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+    }
   } completionHandler:^(BOOL success, NSError *error) {
     if (!success) {
       NSLog(@"Error creating asset: %@", error);
@@ -232,9 +241,11 @@
 + (void)addVideo:(NSURL*)videoURL toCollection:(id)collection completion:(void (^)(NSError *error))completion {
   [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
     PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];
-
-    PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
-    [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+    NSLog(@"Successfully saved!");
+    if (collection) {
+      PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:collection];
+      [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
+    }
   } completionHandler:^(BOOL success, NSError *error) {
     if (!success) {
       NSLog(@"Error creating asset: %@", error);

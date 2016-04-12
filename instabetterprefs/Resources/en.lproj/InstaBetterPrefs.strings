@@ -65,7 +65,7 @@
 "CHOOSE_NONE_FOR" = "Choose none for no sound, or default for the default iOS notification sound. Not selecting any sound will result in the default sound.";
 "MOST_CHANGES_MADE" = "Most changes can be made without restarting, but some may require a restart.";
 "USE_SAFARI_VIEW" = "Use Safari Web View";
-"REPOST" = "Repost";
+"REPOST" = "Show Repost";
 "LINKS" = "Links";
 "PARSE_URLS" = "Parse URLs";
 "SAVE_TO_ALBUM" = "Save to Album";

@@ -27,6 +27,7 @@
 
 @interface IGNewsInboxTableViewController
 -(void)unreadCountUpdated:(id)arg1 ;
+-(void)onDataReceived:(id)arg1 ;
 @end
 
 @interface IGPassthroughLabel : UILabel
@@ -674,7 +675,7 @@
 
 @interface IGNewsTableViewController : IGGroupedTableViewController
 + (id)storiesWithDictionaries:(id)arg1;
-- (void)onDataReceived:(id)arg1 ;
+- (void)onDataReceived:(NSArray*)stories ;
 @end
 
 @interface IGNewsFollowingTableViewController : IGNewsTableViewController
