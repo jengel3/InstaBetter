@@ -196,13 +196,22 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix crash related to timestamps
 - Fix pictures not saving/sharing, sometimes crashing
 
-### Release 1.6.0
+### Release 1.6.1
 - Add link parsing. Allows you to click any link within a comment or post in Instagram.
 - Change what you share. Choose between sharing the Instagram link, a direct link, or the actual photo/video.
 - Save photos and videos to a custom album specified in the settings
+- Disable saving to an album by removing the album name from the settings
 - Add support for reposting videos
-- Fix muting in the activity feeds, which was recently broken.
+- Fix muting in following feed, which was recently broken.
 
+### Release 1.6.2
+- Support Instagram 7.20
+- Extend time for displaying save/zoom menu in direct messages
+- Fix compatability with iOS 7
+- Make preference pane compatible with iOS 7. Settings can only be accessed from the settings app.
+- Enable some Instagram beta features
+* Enable new volume HUD for all users
+* Enable 60 second videos for all users
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

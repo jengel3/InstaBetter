@@ -7,7 +7,11 @@ NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundle
 - (id)specifiers {
   if(_specifiers == nil) {
     [ibsBundle load];
-    _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];
+    if ([self respondsToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)]) {
+      _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];
+    } else {
+      _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self];
+    }
   }
   return _specifiers;
 }

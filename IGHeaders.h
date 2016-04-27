@@ -790,3 +790,28 @@
 @interface IGVideoInfo : NSObject
 @property (nonatomic,retain) IGVideoComposition * video;
 @end
+
+
+@interface IGExperimentUserGroup : NSObject
+@property (nonatomic,readonly) NSDictionary * parameters;
+@property (nonatomic,readonly) NSString * name;
+-(id)initWithName:(id)arg1 parameters:(id)arg2 ;
+@end
+
+@interface IGExperimentSet
+-(BOOL)updateExperimentsWithPayload:(NSDictionary*)arg1 ;
+@end
+
+@interface IGExperiment
+@property (nonatomic,retain) IGExperimentUserGroup * serverSideUserGroup;
+@property (nonatomic,copy) NSString * key;
+@end
+
+@interface IGExperimentManager
++(IGExperiment*)experimentForKey:(id)arg1 ;
+@end
+
+@interface IGExperimentGroup
+@property (nonatomic,readonly) NSDictionary * parameters;
+-(id)initWithName:(id)arg1 parameters:(NSDictionary*)arg2 ;
+@end

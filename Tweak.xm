@@ -51,6 +51,7 @@ static BOOL alwaysTimestamp = NO;
 static BOOL useSafariController = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
+static BOOL appSettings = [InstaBetterPrefsController instancesRespondToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)];
 
 static BOOL notificationsEnabled = YES;
 static NSString* notificationsLike = nil;
@@ -189,8 +190,11 @@ static void saveMedia(NSURL *url) {
           });
         }];
       } else {
+        NSLog(@"GOT SAVE CALL");
         [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
+          NSLog(@"COMPLETION CALLED");
           dispatch_sync(dispatch_get_main_queue(), ^{
+            NSLog(@"HIDING HUD??");
             status.customView = img;
             status.mode = MBProgressHUDModeCustomView;
             status.labelText = localizedString(@"SAVED");
@@ -1046,7 +1050,7 @@ static BOOL openExternalURL(NSURL* url) {
       action:@selector(callShare:)];
     [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
     [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
-    [longPress setMinimumPressDuration:1];
+    [longPress setMinimumPressDuration:2];
     [self setUserInteractionEnabled:YES];
     [self addGestureRecognizer:longPress];
   }
@@ -1377,6 +1381,40 @@ return false;
 }
 %end
 
+// instagram experiments
+
+%hook IGExperimentSet
+-(BOOL)updateExperimentsWithPayload:(NSDictionary*)payload {
+  NSMutableDictionary *cheated = [payload mutableCopy];
+  [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_ios_volume_control_universe"];
+  [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_direct_x_protocol"];
+  [cheated setValue:@{@"max_duration_sec": @"60"} forKey:@"ig_video_max_duration_qe_preuniverse"];
+  // ig_ios_branding_refresh
+  [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_ios_branding_refresh"];
+  payload = [cheated copy];
+  NSLog(@"DICT %@", payload);
+  return %orig(payload);
+}
+%end
+
+%hook IGExperimentManager
++(IGExperiment*)experimentForKey:(id)arg1 {
+  %log;
+  return %orig;
+}
+
+%end
+
+%hook IGExperimentGroup
+-(id)initWithName:(id)arg1 parameters:(NSDictionary*)arg2 {
+  // if ([arg2 objectForKey:@"is_enabled"]) {
+  //   [arg2 setValue:@"enabled" forKey:@"is_enabled"];
+  // }
+  %log;
+  return %orig;
+}
+%end
+
 %hook IGActionSheet
 - (void)show {
   if (enabled) {
@@ -1580,13 +1618,16 @@ return false;
 %hook IGMainFeedViewController
 
 - (void)viewDidLoad {
+  NSLog(@"CALLED!!");
   %orig;
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
     gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
     listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
   }
+  NSLog(@"LAYOUT %d", (int)self.feedLayout);
   if (self.feedLayout == 1) {
+    NSLog(@"CALLED!!");
     self.navigationItem.leftBarButtonItem = gridItem;
   } else if (self.feedLayout == 2) {
     self.navigationItem.leftBarButtonItem = listItem;
@@ -1964,6 +2005,7 @@ return false;
  */
 %hook IGAccountSettingsViewController
 - (id)settingSectionRows {
+  if (!appSettings) return %orig;
   NSArray *thing = %orig;
   if ([thing count] == 4) {
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, nil];
@@ -1974,6 +2016,7 @@ return false;
 }
 
 - (int)tableView:(id)tableView numberOfRowsInSection:(int)sections {
+  if (!appSettings) return %orig;
   if (sections == 2) {
     return [[self settingSectionRows] count];
   }
@@ -1981,6 +2024,7 @@ return false;
 }
 
 - (id)tableView:(id)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+  if (!appSettings) return %orig;
   IGGroupedTableViewCell* cell = %orig;
   int count = [[self settingSectionRows] count];
   if (indexPath.section == 2 && ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5))) {
@@ -1997,6 +2041,7 @@ return false;
  * @param {int} index
  */
 - (void)tableView:(id)tableView didSelectSettingsRow:(int)index {
+  if (!appSettings) return %orig;
   int count = [[self settingSectionRows] count];
   // must account for several different Instagram setting layouts
   if ((count == 5 && index == 4) || (count == 6 && index == 5)) {
@@ -2101,8 +2146,6 @@ static void setupRingerCheck() {
 
     loadPrefs();
 
-    // [InstaHelper setupPhotoAlbumNamed:customAlbum withCompletionHandler:^(ALAssetsLibrary *assetsLibrary, ALAssetsGroup *group) {}];
-
     CFNotificationCenterAddObserver(
       CFNotificationCenterGetDarwinNotifyCenter(),
       NULL,
@@ -2118,6 +2161,7 @@ static void setupRingerCheck() {
       setupRingerCheck();
 
       %init(instaHooks);
+
     }
   }
 }

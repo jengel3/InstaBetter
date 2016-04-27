@@ -56,45 +56,41 @@
     }
 
     if (!existingCollection && album) {
-     NSLog(@"CALLING zzz!!");
-     __block PHObjectPlaceholder *albumPlaceholder;
-     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-      PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
-      albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
-    } completionHandler:^(BOOL success, NSError *error) {
-      if (success) {
-        PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
-        PHAssetCollection *assetCollection = fetchResult.firstObject;
-        [InstaHelper addVideo:localUrl toCollection:assetCollection completion:^(NSError *error) {
+      __block PHObjectPlaceholder *albumPlaceholder;
+      [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+        PHAssetCollectionChangeRequest *changeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:album];
+        albumPlaceholder = changeRequest.placeholderForCreatedAssetCollection;
+      } completionHandler:^(BOOL success, NSError *error) {
+        if (success) {
+          PHFetchResult *fetchResult = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[albumPlaceholder.localIdentifier] options:nil];
+          PHAssetCollection *assetCollection = fetchResult.firstObject;
+          [InstaHelper addVideo:localUrl toCollection:assetCollection completion:^(NSError *error) {
+            completion(error);
+          }];
+
+        } else {
+        // NSLog(@"Error creating album: %@", error);
           completion(error);
-        }];
+        }
+      }];
+    } else {
+      [InstaHelper addVideo:localUrl toCollection:existingCollection completion:^(NSError *error) {
+       completion(error);
+     }];
+    }
+  } else {
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
 
-      } else {
-        NSLog(@"Error creating album: %@", error);
-        completion(error);
-      }
-    }];
-   } else {
+    [library writeVideoAtPathToSavedPhotosAlbum:localUrl
+      completionBlock:^(NSURL *assetURL, NSError *error){
+        if (error) {
+          completion(error);
+        } else {
+          completion(nil);
+        }
+      }];
 
-    NSLog(@"CALLING!!");
-    [InstaHelper addVideo:localUrl toCollection:existingCollection completion:^(NSError *error) {
-     NSLog(@"CALLING!!v dfvdfmk");
-     completion(error);
-   }];
   }
-} else {
-  ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-
-  [library writeVideoAtPathToSavedPhotosAlbum:localUrl
-    completionBlock:^(NSURL *assetURL, NSError *error){
-      if (error) {
-        completion(error);
-      } else {
-        completion(nil);
-      }
-    }];
-
-}
 
 }
 
@@ -158,7 +154,7 @@
 
 + (void)saveRemoteImage:(NSURL*)url album:(NSString*)album completion:(void (^)(NSError *error))completion {
   Class PHPhotoLibrary_class = NSClassFromString(@"PHPhotoLibrary");
-
+  NSLog(@"SAVING REMOTE IMAGE!!");
   if (PHPhotoLibrary_class) {
     [InstaHelper downloadRemoteFile:url completion:^(NSData *imgData, NSError *imgerr) {
       UIImage *image = [UIImage imageWithData:imgData];
@@ -173,7 +169,7 @@
         existingCollection = userAlbums.firstObject;
       }
 
-  // Photos framework does not handle existing collections, so we have to do that ourselves
+      // Photos framework does not handle existing collections, so we have to do that ourselves
       if (!existingCollection && album) {
         __block PHObjectPlaceholder *albumPlaceholder;
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
@@ -186,10 +182,8 @@
             [InstaHelper addImage:image toCollection:assetCollection completion:^(NSError *error) {
               completion(error);
             }];
-            // Add it to the photo library
 
           } else {
-            NSLog(@"Error creating album: %@", error);
             completion(error);
           }
         }];
@@ -202,10 +196,14 @@
   } else {
     ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
     NSData *imgData = [NSData dataWithContentsOfURL:url];
+    NSLog(@"CALLED SAVING!!");
     [library writeImageDataToSavedPhotosAlbum:imgData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+      NSLog(@"CHECKING %@", error);
       if (error) {
+        NSLog(@"COMPLETED WITH ERROR!!");
         completion(error);
       } else {
+        NSLog(@"COMPLETED WITH NO ERROR!!");
         completion(nil);
       }
     }];
@@ -232,7 +230,7 @@
     }
   } completionHandler:^(BOOL success, NSError *error) {
     if (!success) {
-      NSLog(@"Error creating asset: %@", error);
+      // NSLog(@"Error creating asset: %@", error);
     }
     completion(error);
   }];
@@ -248,7 +246,7 @@
     }
   } completionHandler:^(BOOL success, NSError *error) {
     if (!success) {
-      NSLog(@"Error creating asset: %@", error);
+      // NSLog(@"Error creating asset: %@", error);
     }
     completion(error);
   }];
