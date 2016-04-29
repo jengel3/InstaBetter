@@ -53,6 +53,8 @@ static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 static BOOL appSettings = [InstaBetterPrefsController instancesRespondToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)];
 
+static BOOL enableNewInterface = NO;
+
 static BOOL notificationsEnabled = YES;
 static NSString* notificationsLike = nil;
 static NSString* notificationsComment = nil;
@@ -137,6 +139,9 @@ static NSDictionary* loadPrefs() {
       enableTimestamps = [prefs objectForKey:@"enable_timestamp"] ? [[prefs objectForKey:@"enable_timestamp"] boolValue] : YES;
       timestampFormat = [prefs objectForKey:@"timestamp_format"] ? [[prefs objectForKey:@"timestamp_format"] intValue] : 0;
 
+      // beta features
+      enableNewInterface = [prefs objectForKey:@"enable_new_interface"] ? [[prefs objectForKey:@"enable_new_interface"] boolValue] : NO;
+
       // notifications
       notificationsEnabled = [prefs objectForKey:@"notifications_enabled"] ? [[prefs objectForKey:@"notifications_enabled"] boolValue] : YES;
       notificationsLike = [prefs objectForKey:@"notifications_like"] ? [prefs objectForKey:@"notifications_like"] : nil;
@@ -179,30 +184,30 @@ static void saveMedia(NSURL *url) {
     UIImageView *img = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"37x-Checkmark@2x" ofType:@"png"]]];
     // dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     // dispatch_async(queue, ^{
-      if ([InstaHelper isRemoteImage:url]) {
-        [InstaHelper saveRemoteImage:url album:customAlbum completion:^(NSError *err) {
-          dispatch_sync(dispatch_get_main_queue(), ^{
-            status.customView = img;
-            status.mode = MBProgressHUDModeCustomView;
-            status.labelText = localizedString(@"SAVED");
+    if ([InstaHelper isRemoteImage:url]) {
+      [InstaHelper saveRemoteImage:url album:customAlbum completion:^(NSError *err) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+          status.customView = img;
+          status.mode = MBProgressHUDModeCustomView;
+          status.labelText = localizedString(@"SAVED");
 
-            [status hide:YES afterDelay:1.0];
-          });
-        }];
-      } else {
-        NSLog(@"GOT SAVE CALL");
-        [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
-          NSLog(@"COMPLETION CALLED");
-          dispatch_sync(dispatch_get_main_queue(), ^{
-            NSLog(@"HIDING HUD??");
-            status.customView = img;
-            status.mode = MBProgressHUDModeCustomView;
-            status.labelText = localizedString(@"SAVED");
+          [status hide:YES afterDelay:1.0];
+        });
+      }];
+    } else {
+      NSLog(@"GOT SAVE CALL");
+      [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
+        NSLog(@"COMPLETION CALLED");
+        dispatch_sync(dispatch_get_main_queue(), ^{
+          NSLog(@"HIDING HUD??");
+          status.customView = img;
+          status.mode = MBProgressHUDModeCustomView;
+          status.labelText = localizedString(@"SAVED");
 
-            [status hide:YES afterDelay:1.0];
-          });
-        }];
-      }
+          [status hide:YES afterDelay:1.0];
+        });
+      }];
+    }
     // });
   }
 }
@@ -1154,7 +1159,7 @@ static BOOL openExternalURL(NSURL* url) {
  */
 
 // unpadded views
--(BOOL)handleTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 {
+ -(BOOL)handleTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 {
   NSURL *url = [self urlAtPoint:point];
   if (url) {
    if ((![url.scheme isEqualToString:@"http"] && ![url.scheme isEqualToString:@"https"]) || !openExternalURL(url)) {
@@ -1249,7 +1254,7 @@ return false;
  *
  * @return {BOOL}
  */
-- (BOOL)hasMaximumNumberOfAccounts {
+ - (BOOL)hasMaximumNumberOfAccounts {
   return NO;
 }
 %end
@@ -1387,31 +1392,52 @@ return false;
 -(BOOL)updateExperimentsWithPayload:(NSDictionary*)payload {
   NSMutableDictionary *cheated = [payload mutableCopy];
   [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_ios_volume_control_universe"];
-  [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_direct_x_protocol"];
+  // [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_direct_x_protocol"];
   [cheated setValue:@{@"max_duration_sec": @"60"} forKey:@"ig_video_max_duration_qe_preuniverse"];
   // ig_ios_branding_refresh
-  [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_ios_branding_refresh"];
+  // NSString *disabledString = @"disabled";
+  // NSString *enabledString = @"enabled";
+  // if (enableNewInterface) {
+  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_branding_refresh"];
+  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_whiteout_dogfooding"];
+  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_white_camera_dogfooding_universe"];
+  // } else {
+  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_branding_refresh"];
+  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_whiteout_dogfooding"];
+  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_white_camera_dogfooding_universe"];
+  // }
+
   payload = [cheated copy];
-  NSLog(@"DICT %@", payload);
+  // NSLog(@"DICT %@", payload);
   return %orig(payload);
 }
-%end
-
-%hook IGExperimentManager
-+(IGExperiment*)experimentForKey:(id)arg1 {
+-(void)loadCachedExperiments {
   %log;
-  return %orig;
-}
-
-%end
-
-%hook IGExperimentGroup
--(id)initWithName:(id)arg1 parameters:(NSDictionary*)arg2 {
-  // if ([arg2 objectForKey:@"is_enabled"]) {
-  //   [arg2 setValue:@"enabled" forKey:@"is_enabled"];
-  // }
-  %log;
-  return %orig;
+  %orig;
+  IGExperiment *branding = [self experimentForKey:@"ig_ios_branding_refresh"];
+  if (branding) {
+    if (enableNewInterface) {
+      [branding setOverrideGroup:branding.predefinedGroups[1]];
+    } else {
+      [branding setOverrideGroup:branding.predefinedGroups[0]];
+    }
+  }
+  IGExperiment *whiteout = [self experimentForKey:@"ig_ios_whiteout_dogfooding"];
+  if (whiteout) {
+    if (enableNewInterface) {
+      [whiteout setOverrideGroup:whiteout.predefinedGroups[1]];
+    } else {
+      [whiteout setOverrideGroup:whiteout.predefinedGroups[0]];
+    }
+  }
+  IGExperiment *camera = [self experimentForKey:@"ig_ios_white_camera_dogfooding_universe"];
+  if (camera) {
+    if (enableNewInterface) {
+      [camera setOverrideGroup:camera.predefinedGroups[1]];
+    } else {
+      [camera setOverrideGroup:camera.predefinedGroups[0]];
+    }
+  }
 }
 %end
 
@@ -1425,7 +1451,7 @@ return false;
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
-    BOOL respondLabel = [self respondsToSelector:@selector(titleLabel:)];
+    BOOL respondLabel = [self respondsToSelector:@selector(titleLabel)];
     // NSLog(@"RESPONDS %d", responds);
     if (isProfileView && !cachedItem && (respondLabel ? !self.titleLabel.text : !self.title)) {
       IGUser *current = [InstaHelper currentUser];
@@ -1481,8 +1507,8 @@ return false;
  * The *shouldMute* boolean is set on the IGNewsStory, allowing us to check
  * if it is true or not, and then remove it from the received list if necessary
  */
-%hook IGNewsFollowingTableViewController
--(void)onStoriesReceived:(NSArray*)stories {
+ %hook IGNewsFollowingTableViewController
+ -(void)onStoriesReceived:(NSArray*)stories {
   NSMutableArray *scrubbed = [stories mutableCopy];
   for (IGNewsStory *story in stories) {
     if (story.shouldMute) {
@@ -1521,8 +1547,8 @@ return false;
  * We use this method to set the shouldMute boolean on a *IGNewsStory* in order
  * to know whether or not a story will be muted when it is loaded in *onStoriesReceived*
  */
-%hook IGNewsStory
-- (IGNewsStory*)initWithDictionary:(NSDictionary*)dict {
+ %hook IGNewsStory
+ - (IGNewsStory*)initWithDictionary:(NSDictionary*)dict {
   IGNewsStory *story = (IGNewsStory*)%orig;
   NSArray *links = [dict valueForKeyPath:@"args.links"];
   if ([links count] == 1) {
@@ -1546,8 +1572,8 @@ return false;
  * This was both muting classes combined into one. The stories were loaded, conditions
  * were checked, and then removed from the final list before being returned.
  */
-%hook IGNewsTableViewController
-+ (id)storiesWithDictionaries:(id)arr {
+ %hook IGNewsTableViewController
+ + (id)storiesWithDictionaries:(id)arr {
   if (enabled && muteActivity) {
     NSMutableArray *copied = [arr mutableCopy];
     NSMutableArray *toRemove = [[NSMutableArray alloc] init];
@@ -1777,7 +1803,7 @@ return false;
  *
  * @param {id} sender
  */
-- (void)saveItem:(id)sender {
+ - (void)saveItem:(id)sender {
   if (!saveConfirm) {
     return [self saveNow];
   }
@@ -1843,7 +1869,7 @@ return false;
  * Opens the *LocationSelectorViewController* for the user to select a custom locations. All further actions
  * take place through the *LocationSelectionDelegate* set as the *delegate* property of the controller
  */
-- (void)selectCustom {
+ - (void)selectCustom {
   LocationSelectorViewController *sel = [[LocationSelectorViewController alloc] init];
   UINavigationController *selNav = [[UINavigationController alloc] initWithRootViewController:sel];
   selNav.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -1859,7 +1885,7 @@ return false;
  *
  * @param {CLLocationCoordinate2D} location
  */
-- (void)didSelectLocation:(CLLocationCoordinate2D)location {
+ - (void)didSelectLocation:(CLLocationCoordinate2D)location {
   double longitude = location.longitude;
   double latitude = location.latitude;
   CLLocation *rawLocation = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
@@ -2003,8 +2029,8 @@ return false;
  * from the user's own profile. It is modified here to include a cell that opens the InstaBetterPrefsController
  * from InstaBetter's preferences sub-project.
  */
-%hook IGAccountSettingsViewController
-- (id)settingSectionRows {
+ %hook IGAccountSettingsViewController
+ - (id)settingSectionRows {
   if (!appSettings) return %orig;
   NSArray *thing = %orig;
   if ([thing count] == 4) {
@@ -2040,7 +2066,7 @@ return false;
  * @param {id} tableView
  * @param {int} index
  */
-- (void)tableView:(id)tableView didSelectSettingsRow:(int)index {
+ - (void)tableView:(id)tableView didSelectSettingsRow:(int)index {
   if (!appSettings) return %orig;
   int count = [[self settingSectionRows] count];
   // must account for several different Instagram setting layouts
@@ -2074,8 +2100,8 @@ return false;
  * InstaBetter's settings. The default sound can also be used, or they can be disabled completely,
  * since some notifications have a setting, while others do not.
  */
-%hook BBBulletin
-- (BBSound *)sound {
+ %hook BBBulletin
+ - (BBSound *)sound {
   if (![self.section isEqualToString:@"com.burbn.instagram"]) return %orig;
   if (!(enabled && notificationsEnabled)) return nil;
   NSString *audioFile;

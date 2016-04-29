@@ -637,6 +637,30 @@
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
+		<!-- BETA FEATURES -->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>BETA_FEATURES</string>
+			<key>footerText</key>
+			<string>Enable or disable hidden features that Instagram is currently testing. Some may become broken over time. Warning: These features are experimental.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>enable_new_interface</string>
+			<key>label</key>
+			<string>NEW_INTERFACE</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<!-- CUSTOM NOTIFICATIONS -->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>

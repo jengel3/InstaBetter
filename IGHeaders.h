@@ -800,18 +800,23 @@
 
 @interface IGExperimentSet
 -(BOOL)updateExperimentsWithPayload:(NSDictionary*)arg1 ;
-@end
-
-@interface IGExperiment
-@property (nonatomic,retain) IGExperimentUserGroup * serverSideUserGroup;
-@property (nonatomic,copy) NSString * key;
-@end
-
-@interface IGExperimentManager
-+(IGExperiment*)experimentForKey:(id)arg1 ;
+-(NSArray *)defaultExperiments;
+-(id)experiments;
+-(id)experimentForKey:(id)arg1 ;
 @end
 
 @interface IGExperimentGroup
 @property (nonatomic,readonly) NSDictionary * parameters;
 -(id)initWithName:(id)arg1 parameters:(NSDictionary*)arg2 ;
+@end
+
+@interface IGExperiment
+@property (nonatomic,retain) IGExperimentUserGroup * serverSideUserGroup;
+@property (nonatomic,copy) NSString * key;
+@property (nonatomic,copy,readonly) NSArray * predefinedGroups;
+-(void)setOverrideGroup:(IGExperimentGroup *)arg1 ;
+@end
+
+@interface IGExperimentManager
++(IGExperiment*)experimentForKey:(id)arg1 ;
 @end
