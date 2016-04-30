@@ -126,9 +126,9 @@
 
 @interface IGCommentModel : NSObject
 @property (nonatomic,copy) NSString *text;
--(id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 ;
--(id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 maximumUntruncatedNumberOfLines:(int)arg3 truncatedToNumberOfLines:(int)arg4;
--(id)styledStringForWidth:(float)arg1 feedItem:(id)arg2 shouldCollapseCaption:(char)arg3 ;
+-(id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 ;
+-(id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 maximumUntruncatedNumberOfLines:(int)arg3 truncatedToNumberOfLines:(int)arg4;
+-(id)styledStringForWidth:(CGFloat)arg1 feedItem:(id)arg2 shouldCollapseCaption:(char)arg3 ;
 -(id)buildStyledStringWithNewline:(char)arg1 ;
 @end
 
@@ -515,6 +515,11 @@
 @property (nonatomic, retain) IGUser *user;
 @property (assign,nonatomic) BOOL buttonDisabled;
 @property (nonatomic,readonly) IGSimpleButton * profilePicButton;
+@property (assign,nonatomic) BOOL isInProfile;
+@property (assign,nonatomic) BOOL didDoubleTap;
+@property (assign,nonatomic) BOOL didTap;
+-(void)updateHighlightedBackgroundColor;
+-(void)setHasHighlightedState:(BOOL)arg1 ;
 - (id)initWithFrame:(CGRect)arg1;
 - (id)initWithFrame:(CGRect)arg1 user:(id)arg2;
 - (void)tapped:(id)arg1;
@@ -522,8 +527,6 @@
 - (BOOL)buttonDisabled;
 - (void)longPressed:(id)sender;
 - (void)displayProfilePic;
-- (BOOL)didTap;
-- (void)setDidTap:(BOOL)didTap;
 @end
 
 @interface IGFeedToggleView : UIView

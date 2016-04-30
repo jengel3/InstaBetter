@@ -460,7 +460,7 @@ static BOOL openExternalURL(NSURL* url) {
 
 %hook IGUnreadBubbleView
 -(void)setUnreadCount:(int)arg1 {
-  if (!enabled) return;
+  if (!enabled) return %orig;
   self.label.text = [NSString stringWithFormat:@"%d", arg1];
 }
 %end
@@ -468,12 +468,18 @@ static BOOL openExternalURL(NSURL* url) {
 
 // parse URLs in styled strings
 %hook IGCommentModel
-- (id)buildStyledStringWithNewline:(char)arg1 width:(float)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 {
+- (id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 {
+  // return nil;
   if (enabled && parseURLs) {
     IGStyledString *styled = (IGStyledString*)%orig;
     NSString *string = styled.attributedString.string;
     NSError *error = nil;
     NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+    if (error) {
+      NSLog(@"AN ERROR OCCURRED %@", error);
+      return %orig;
+    }
+    // NOT CHECKING FOR ERROR COULD BE CAUSE.. BUT SHOULDNT BE
     NSMutableAttributedString *attr = [styled.attributedString mutableCopy];
     [detector enumerateMatchesInString:string
      options:0
@@ -588,7 +594,7 @@ static BOOL openExternalURL(NSURL* url) {
 
 %hook IGShareViewController
 -(void)viewDidLoad {
-  %log;
+  if (!enabled) return %orig;
   if (cachedCaption) {
     self.mediaMetadata.caption = cachedCaption;
     self.captionCell.text = cachedCaption;
@@ -1023,6 +1029,7 @@ static BOOL openExternalURL(NSURL* url) {
 
 %hook IGUserDetailHeaderView
 - (void)coreTextView:(id)view didTapOnString:(id)str URL:(NSURL*)url {
+  if (!enabled) return %orig;
   if (!openExternalURL(url)) {
     %orig;
   }
@@ -1034,6 +1041,7 @@ static BOOL openExternalURL(NSURL* url) {
 %hook IGWebViewController
 - (void)viewDidLoad {
   %orig;
+  if (!enabled) return %orig;
   if (![self isModal]) return;
   UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
     target:self action:@selector(closeController)];
@@ -1160,6 +1168,7 @@ static BOOL openExternalURL(NSURL* url) {
 
 // unpadded views
  -(BOOL)handleTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 {
+  if (!enabled) return %orig;
   NSURL *url = [self urlAtPoint:point];
   if (url) {
    if ((![url.scheme isEqualToString:@"http"] && ![url.scheme isEqualToString:@"https"]) || !openExternalURL(url)) {
@@ -1172,6 +1181,7 @@ return false;
 
 // comment views seem to be padded, not sure about what else
 -(BOOL)handlePaddedTapAtPoint:(CGPoint)point forTouchEvent:(unsigned)arg2 fromLongTap:(char)arg3 {
+  if (!enabled) return %orig;
   NSURL *url = [self urlAtPoint:point];
   if (url) {
     if ((![url.scheme isEqualToString:@"http"] && ![url.scheme isEqualToString:@"https"]) || !openExternalURL(url)) {
@@ -1289,13 +1299,13 @@ return false;
 
 }
 
-- (void)setUserInteractionEnabled:(BOOL)opt {
-  if (enabled) {
-    %orig(YES);
-  } else {
-    %orig;
-  }
-}
+// - (void)setUserInteractionEnabled:(BOOL)opt {
+//   if (enabled) {
+//     %orig(YES);
+//   } else {
+//     %orig;
+//   }
+// }
 
 %new
 - (void)singleTapped:(UITapGestureRecognizer *)longPress {
@@ -1309,23 +1319,14 @@ return false;
   [self displayProfilePic];
 }
 
-%new
-- (BOOL)didTap {
-  NSNumber *number = objc_getAssociatedObject(self, @selector(didTap));
-  return [number boolValue];
-}
-
-%new
-- (void)setDidTap:(BOOL)value {
-  NSNumber *number = [NSNumber numberWithBool: value];
-  objc_setAssociatedObject(self, @selector(didTap), number, OBJC_ASSOCIATION_RETAIN);
-}
-
 - (void)tapped:(id)recognizer {
   if ([self didTap]) return;
   %orig;
   [self setDidTap:![self didTap]];
 }
+
+%property (assign, nonatomic) BOOL isInProfile;
+%property (assign, nonatomic) BOOL didTap;
 
 %new
 - (void)displayProfilePic {
@@ -1390,29 +1391,17 @@ return false;
 
 %hook IGExperimentSet
 -(BOOL)updateExperimentsWithPayload:(NSDictionary*)payload {
+  if (!enabled) return %orig;
   NSMutableDictionary *cheated = [payload mutableCopy];
   [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_ios_volume_control_universe"];
-  // [cheated setValue:@{@"is_enabled": @"enabled"} forKey:@"ig_direct_x_protocol"];
   [cheated setValue:@{@"max_duration_sec": @"60"} forKey:@"ig_video_max_duration_qe_preuniverse"];
-  // ig_ios_branding_refresh
-  // NSString *disabledString = @"disabled";
-  // NSString *enabledString = @"enabled";
-  // if (enableNewInterface) {
-  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_branding_refresh"];
-  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_whiteout_dogfooding"];
-  //   [cheated setValue:@{@"is_enabled": enabledString} forKey:@"ig_ios_white_camera_dogfooding_universe"];
-  // } else {
-  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_branding_refresh"];
-  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_whiteout_dogfooding"];
-  //   // [cheated setValue:@{@"is_enabled": disabledString} forKey:@"ig_ios_white_camera_dogfooding_universe"];
-  // }
 
   payload = [cheated copy];
   // NSLog(@"DICT %@", payload);
   return %orig(payload);
 }
 -(void)loadCachedExperiments {
-  %log;
+  if (!enabled) return %orig;
   %orig;
   IGExperiment *branding = [self experimentForKey:@"ig_ios_branding_refresh"];
   if (branding) {
@@ -1509,6 +1498,7 @@ return false;
  */
  %hook IGNewsFollowingTableViewController
  -(void)onStoriesReceived:(NSArray*)stories {
+  if (!enabled) return %orig;
   NSMutableArray *scrubbed = [stories mutableCopy];
   for (IGNewsStory *story in stories) {
     if (story.shouldMute) {
@@ -1549,6 +1539,7 @@ return false;
  */
  %hook IGNewsStory
  - (IGNewsStory*)initWithDictionary:(NSDictionary*)dict {
+  if (!enabled) return %orig;
   IGNewsStory *story = (IGNewsStory*)%orig;
   NSArray *links = [dict valueForKeyPath:@"args.links"];
   if ([links count] == 1) {
@@ -1642,18 +1633,14 @@ return false;
 %end
 
 %hook IGMainFeedViewController
-
 - (void)viewDidLoad {
-  NSLog(@"CALLED!!");
   %orig;
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
     gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
     listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
   }
-  NSLog(@"LAYOUT %d", (int)self.feedLayout);
   if (self.feedLayout == 1) {
-    NSLog(@"CALLED!!");
     self.navigationItem.leftBarButtonItem = gridItem;
   } else if (self.feedLayout == 2) {
     self.navigationItem.leftBarButtonItem = listItem;
