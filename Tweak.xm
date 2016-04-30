@@ -160,6 +160,12 @@ static NSDictionary* loadPrefs() {
   return nil;
 }
 
+/**
+ * Compares the amount of pixels in an image by parsing and
+ * multiplying the pixels in each image to find the image
+ * with the highest amount of pixels, meaning it has the
+ * greatest resolution.
+ */
 static NSString* highestResImage(NSDictionary *versions) {
   CGFloat highestCount = 0;
   NSString *highestURL = nil;
@@ -1274,6 +1280,7 @@ return false;
   if (enabled) {
     UIView *superView = (UIView*)[self nextResponder];
     BOOL isProfileView = [superView isKindOfClass:[%c(IGUserDetailHeaderView) class]];
+    // check if picture should have gestures added for efficiency
     if (!isProfileView) return %orig;
     [self setDidTap:NO];
 
@@ -1299,20 +1306,14 @@ return false;
 
 }
 
-// - (void)setUserInteractionEnabled:(BOOL)opt {
-//   if (enabled) {
-//     %orig(YES);
-//   } else {
-//     %orig;
-//   }
-// }
-
+// basically overriding the original Instagram single tap
 %new
 - (void)singleTapped:(UITapGestureRecognizer *)longPress {
   [self setDidTap:NO];
   [self tapped:self.profilePicButton];
 }
 
+// add our own double tap gesture to open the profile picture
 %new
 - (void)doubleTapped:(UITapGestureRecognizer *)longPress {
   [self setDidTap:YES];
@@ -1320,7 +1321,9 @@ return false;
 }
 
 - (void)tapped:(id)recognizer {
+  // will cancel all future actions, aka displaying the menu
   if ([self didTap]) return;
+  // will go through with action and display the menu
   %orig;
   [self setDidTap:![self didTap]];
 }
