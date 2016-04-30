@@ -209,6 +209,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Extend time for displaying save/zoom menu in direct messages
 - Fix compatability with iOS 7
 - Make preference pane compatible with iOS 7. Settings can only be accessed from the settings app.
+- Fix comments displaying as [...] on 64bit devices
+- Fix backwards compatability with Instagram < 7.20 for the action menu
+- Fix clicking the profile picture to access your profile being delayed/not working
 - Enable some Instagram beta features
 * Enable new volume HUD for all users
 * Enable 60 second videos for all users
