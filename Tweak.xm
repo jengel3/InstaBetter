@@ -475,27 +475,30 @@ static BOOL openExternalURL(NSURL* url) {
 // parse URLs in styled strings
 %hook IGCommentModel
 - (id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 {
-  // return nil;
   if (enabled && parseURLs) {
     IGStyledString *styled = (IGStyledString*)%orig;
     NSString *string = styled.attributedString.string;
     NSError *error = nil;
     NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
     if (error) {
-      NSLog(@"AN ERROR OCCURRED %@", error);
+      // check for error, and return the original so that we don't have to loop
       return %orig;
     }
-    // NOT CHECKING FOR ERROR COULD BE CAUSE.. BUT SHOULDNT BE
     NSMutableAttributedString *attr = [styled.attributedString mutableCopy];
+    // loop over all potential links in the string
     [detector enumerateMatchesInString:string
      options:0
      range:NSMakeRange(0, string.length)
      usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
       NSURL *url = result.URL;
+      // make sure link is an actual http protocol link
       if (result.resultType == NSTextCheckingTypeLink && ([url.scheme isEqualToString:@"http"] || [url.scheme isEqualToString:@"https"])) {
         NSRange range = NSMakeRange(result.range.location, result.range.length);
+        // the URL attribute is Instagram's custom attribute for checking links in text view
         [attr addAttribute:@"URL" value:url range:range];
+        // add the actual link attribute, even though it's not used by Instagram
         [attr addAttribute:NSLinkAttributeName value:url range:range];
+        // set Instagram's link color
         [attr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0705882 green:0.337255 blue:0.533333 alpha:1.0] range:range];
 
       }
