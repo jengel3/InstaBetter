@@ -20,4 +20,5 @@ after-install::
 	install.exec "killall -9 Instagram"
 	install.exec "killall -9 Preferences"
 SUBPROJECTS += instabetterprefs
+SUBPROJECTS += instabetterflipswitch
 include $(THEOS_MAKE_PATH)/aggregate.mk
