@@ -7,7 +7,6 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ## Features
 * Save hi-res images and videos
 * Hold down on images to zoom
-* Hold down on profile pictures to zoom
 * Mute users from the home and activity feeds
 * Hide sponsored ads
 * Custom Locations for Media
@@ -18,13 +17,14 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Fake follower, following, and verified status
 * View DMs without notifying the sender
 * All features can be toggled on or off
+* Enable and disable InstaBetter with the flipswitch integration
 * Enable grid view, or toggle between it on the home feed
 * Confirm likes when double tapping photos or videos
 * Show the full time for feed items by clicking on the timestamp button
 * Enable or disable sound and auto-playing of videos
 * Hold down on direct message images and videos for sharing and save options
-* View profile pictures
-* Repost content right from within Instagram
+* Double tap to view profile pictures
+* Repost content right from the Instagram app
 
 ### Release 1.1.0
 * [FEATURE] Add zooming to feed images
