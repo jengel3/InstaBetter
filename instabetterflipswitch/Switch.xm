@@ -7,8 +7,7 @@
 @end
 
 static NSString *prefsLoc = @"/var/mobile/Library/Preferences/com.jake0oo0.instabetter.plist";
-// static NSString *nsDomainString = @"com.jake0oo0.instabetterflipswitch";
-static NSString *nsNotificationString = @"com.jake0oo0.instabetterflipswitch/preferences.changed";
+static NSString *nsNotificationString = @"com.jake0oo0.instabetter/prefsChange";
 
 @interface InstaBetterFlipSwitch : NSObject <FSSwitchDataSource>
 @end
@@ -56,6 +55,7 @@ static NSString *nsNotificationString = @"com.jake0oo0.instabetterflipswitch/pre
 		if (prefs) {
 			[prefs setObject:[NSNumber numberWithBool:NO] forKey:@"enabled"];
 			[prefs writeToFile:prefsLoc atomically:NO];
+			CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (CFStringRef)nsNotificationString, NULL, NULL, YES);
 		}
 		break;
 	}

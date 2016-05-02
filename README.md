@@ -215,6 +215,8 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Enable some Instagram beta features
 * Enable new volume HUD for all users
 * Enable 60 second videos for all users
+* Add setting to enable the new white interface
+- Add a flipswitch for enabling and disabling InstaBetter with activator or other tweaks
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
