@@ -1,7 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
-#import "substrate.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <instabetterprefs/InstaBetterPrefs.h>
 #import <lib/NYTPhotosViewController.h>
