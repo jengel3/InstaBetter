@@ -17,8 +17,11 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 include theos/makefiles/bundle.mk
 
 after-install::
-	install.exec "killall -9 Instagram"
+	install.exec "killall -9 Instagram && activator send com.bd452.bypass && activator send com.burbn.instagram"
 	install.exec "killall -9 Preferences"
+	install.exec "activator send com.bd452.bypass"
+	install.exec "activator send com.burbn.instagram"
+
 SUBPROJECTS += instabetterprefs
 SUBPROJECTS += instabetterflipswitch
 include $(THEOS_MAKE_PATH)/aggregate.mk

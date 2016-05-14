@@ -196,11 +196,25 @@
 - (id)init;
 @end
 
+@interface IGUFIButtonBarView : UIView
+@property (nonatomic,readonly) UIButton * likeButton;
+@property (nonatomic,readonly) UIButton * commentButton;
+@property (nonatomic,readonly) UIButton * sendButton;
+- (UIButton *)saveButton;
+- (void)setSaveButton:(UIButton *)value;
+- (void)shareItem:(id)sender;
+- (void)saveItem:(id)sender;
+- (void)saveNow;
+
+@property (nonatomic, retain) IGFeedItem *feedItem;
+@end
+
 @interface IGFeedItemActionCell : UICollectionViewCell
 @property(retain, nonatomic) IGFeedItem *feedItem;
 @property (nonatomic, retain) UIButton *sendButton;
 @property (nonatomic, retain) UIButton *commentButton;
 @property (nonatomic, retain) UIButton *likeButton;
+@property (nonatomic,retain) IGUFIButtonBarView * ufiButtonBarView; 
 - (BOOL)sponsoredPostAllowed;
 - (id)initWithFrame:(CGRect)frame;
 - (void)actionSheetDismissedWithButtonTitled:(NSString *)title;
@@ -210,6 +224,7 @@
 - (void)shareItem:(id)sender;
 - (void)saveItem:(id)sender;
 - (void)saveNow;
+- (void)setUfiButtonBarView:(IGUFIButtonBarView *)arg1 ;
 @end
 
 @interface AppDelegate : NSObject

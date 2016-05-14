@@ -1737,6 +1737,218 @@ return false;
 
 // save media
 %hook IGFeedItemActionCell
+// - (void)onMoreButtonPressed:(id)sender {
+//   cachedItem = self.feedItem;
+//   %orig;
+// }
+
+// - (void)setUfiButtonBarView:(IGUFIButtonBarView *)bar {
+//   %orig;
+//   bar.feedItem = self.feedItem;
+// }
+
+// - (void)setUfiButtonBarView:(IGUFIButtonBarView *)bar {
+
+//   NSLog(@"CALLED!!!");
+//   %orig;
+
+//   if (!(enabled && saveActions && saveMode == 0)) return;
+//   if (bar.saveButton) return;
+
+//   CGRect firstFrame;
+//   CGRect compareFrame;
+//   UIButton *base;
+
+//   if (bar.sendButton) {
+//     base = bar.sendButton;
+//     firstFrame = bar.commentButton.frame;
+//     compareFrame = bar.sendButton.frame;
+//   } else {
+//     base = bar.likeButton;
+//     firstFrame = bar.likeButton.frame;
+//     compareFrame = bar.commentButton.frame;
+//   }
+
+//   float distance = (compareFrame.origin.x - firstFrame.origin.x);
+
+//   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
+
+//   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
+//   [saveButton addTarget:bar action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [saveButton setImage:saveImage forState:UIControlStateNormal];
+//   [bar addSubview:saveButton];
+//   [bar setSaveButton:saveButton];
+
+
+//   // don't add share button to own posts
+//   IGUser *current = [InstaHelper currentUser];
+//   if ([current.username isEqualToString:self.feedItem.user.username]) return;
+
+//   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
+//   [shareButton addTarget:bar action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [shareButton setImage:shareImage forState:UIControlStateNormal];
+//   [bar addSubview:shareButton];
+// }
+
+// - (void) layoutSubviews {
+//   %orig;
+
+//   if (!(enabled && saveActions && saveMode == 0)) return;
+//   IGUFIButtonBarView *bar = self.ufiButtonBarView;
+//   if (bar.saveButton) return;
+//   CGRect firstFrame;
+//   CGRect compareFrame;
+//   UIButton *base;
+
+//   if (bar.sendButton) {
+//     NSLog(@"SEND BUTTON!!");
+//     base = bar.sendButton;
+//     firstFrame = bar.commentButton.frame;
+//     compareFrame = bar.sendButton.frame;
+//   } else {
+//     NSLog(@"NOT SEND!");
+//     base = bar.likeButton;
+//     firstFrame = bar.likeButton.frame;
+//     compareFrame = bar.commentButton.frame;
+//   }
+
+//   float distance = (compareFrame.origin.x - firstFrame.origin.x);
+
+//   NSLog(@"DISTANCE %@ -- %@ -- %@ -- %f", NSStringFromCGRect(firstFrame), NSStringFromCGRect(compareFrame), base, distance);
+
+//   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
+
+//   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
+//   [saveButton addTarget:bar action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [saveButton setImage:saveImage forState:UIControlStateNormal];
+//   [bar addSubview:saveButton];
+//   [bar setSaveButton:saveButton];
+
+
+//   // don't add share button to own posts
+//   IGUser *current = [InstaHelper currentUser];
+//   if ([current.username isEqualToString:self.feedItem.user.username]) return;
+
+//   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
+//   [shareButton addTarget:bar action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [shareButton setImage:shareImage forState:UIControlStateNormal];
+//   [bar addSubview:shareButton];
+// }
+
+// - (void)layoutSubviews {
+//   %orig;
+
+//   if (!(enabled && saveActions && saveMode == 0)) return;
+//   if (self.saveButton) return;
+
+//   CGRect firstFrame;
+//   CGRect compareFrame;
+//   UIButton *base;
+
+//   if (self.sendButton) {
+//     base = self.sendButton;
+//     firstFrame = self.commentButton.frame;
+//     compareFrame = self.sendButton.frame;
+//   } else {
+//     base = self.likeButton;
+//     firstFrame = self.likeButton.frame;
+//     compareFrame = self.commentButton.frame;
+//   }
+
+//   float distance = (compareFrame.origin.x - firstFrame.origin.x);
+
+//   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
+
+//   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
+//   [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [saveButton setImage:saveImage forState:UIControlStateNormal];
+//   [self addSubview:saveButton];
+//   [self setSaveButton:saveButton];
+
+
+//   // don't add share button to own posts
+//   IGUser *current = [InstaHelper currentUser];
+//   if ([current.username isEqualToString:self.feedItem.user.username]) return;
+
+//   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
+//   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
+//   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
+//   [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
+//   [shareButton setImage:shareImage forState:UIControlStateNormal];
+//   [self addSubview:shareButton];
+// }
+
+// %new
+// /**
+//  * This method is called by a UIBUtton press from a IGFeedItem. It will check whether or not the user wants to
+//  * display a confirmation before saving the media, in order to prevent accidentlal clicking. It will call *saveNow*
+//  * once the user has confirmed their choice, or if that option is disabled.
+//  *
+//  * @param {id} sender
+//  */
+//  - (void)saveItem:(id)sender {
+//   if (!saveConfirm) {
+//     return [self saveNow];
+//   }
+//   [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
+//     message:localizedString(@"DID_WANT_SAVE_CONTENT")
+//     cancelButtonTitle:nil
+//     otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+//     tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+//       if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+//         [self saveNow];
+//       }
+//     }];
+// }
+
+// %new
+// - (void)saveNow {
+//   IGFeedItem *item = self.feedItem;
+//   saveFeedItem(item);
+// }
+
+// %new
+// - (void)shareItem:(id)sender {
+//   IGFeedItem *item = self.feedItem;
+//   shareItem(item, shareMode);
+// }
+
+// %property (retain, nonatomic) UIButton *saveButton;
+
+// deprecated in Instagram >= 7.15
+// - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
+//   if (enabled) {
+//     if ([title isEqualToString:instaSave]) {
+//       IGFeedItem *item = self.feedItem;
+//       saveFeedItem(item);
+//     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+//       IGFeedItem *item = self.feedItem;
+//       if (item.user == [InstaHelper currentUser]) return %orig;
+//       NSURL *link = [NSURL URLWithString:[item permalink]];
+//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
+//         initWithActivityItems:@[link]
+//         applicationActivities:nil];
+//       [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+//     } else {
+//       %orig;
+//     }
+//   } else {
+//     %orig;
+//   }
+// }
+%end
+
+%hook IGUFIButtonBarView
 - (void)onMoreButtonPressed:(id)sender {
   cachedItem = self.feedItem;
   %orig;
@@ -1769,20 +1981,21 @@ return false;
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
+  NSLog(@"ADDING TARGETS!!!");
+  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
   [self setSaveButton:saveButton];
 
 
   // don't add share button to own posts
-  IGUser *current = [InstaHelper currentUser];
-  if ([current.username isEqualToString:self.feedItem.user.username]) return;
+  // IGUser *current = [InstaHelper currentUser];
+  // if ([current.username isEqualToString:self.feedItem.user.username]) return;
 
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
+  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
   [shareButton setImage:shareImage forState:UIControlStateNormal];
   [self addSubview:shareButton];
 }
@@ -1796,9 +2009,11 @@ return false;
  * @param {id} sender
  */
  - (void)saveItem:(id)sender {
+  %log;
   if (!saveConfirm) {
     return [self saveNow];
   }
+  NSLog(@"GOT HERE!!");
   [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
     message:localizedString(@"DID_WANT_SAVE_CONTENT")
     cancelButtonTitle:nil
@@ -1812,39 +2027,29 @@ return false;
 
 %new
 - (void)saveNow {
+  %log;
+  // [self feedItem];
   IGFeedItem *item = self.feedItem;
-  saveFeedItem(item);
+  // saveFeedItem(item);
+  NSLog(@"ITEM %@", item);
 }
 
 %new
 - (void)shareItem:(id)sender {
+  // [self feedItem
   IGFeedItem *item = self.feedItem;
-  shareItem(item, shareMode);
+  NSLog(@"ITEM %@", item);
+  // shareItem(item, shareMode);
+}
+
+%new
+- (IGFeedItem*)feedItem {
+  NSLog(@"SUPER %@ -- %@ -- %@", self.superview, self.superview.superview, self.superview.superview.superview);
+  return nil;
 }
 
 %property (retain, nonatomic) UIButton *saveButton;
-
-// deprecated in Instagram >= 7.15
-// - (void)actionSheetDismissedWithButtonTitled:(NSString *)title {
-//   if (enabled) {
-//     if ([title isEqualToString:instaSave]) {
-//       IGFeedItem *item = self.feedItem;
-//       saveFeedItem(item);
-//     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
-//       IGFeedItem *item = self.feedItem;
-//       if (item.user == [InstaHelper currentUser]) return %orig;
-//       NSURL *link = [NSURL URLWithString:[item permalink]];
-//       UIActivityViewController *activityViewController = [[UIActivityViewController alloc]
-//         initWithActivityItems:@[link]
-//         applicationActivities:nil];
-//       [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
-//     } else {
-//       %orig;
-//     }
-//   } else {
-//     %orig;
-//   }
-// }
+// %property (retain, nonatomic) IGFeedItem *feedItem;
 %end
 
 // custom locations
