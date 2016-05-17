@@ -205,8 +205,10 @@
 - (void)shareItem:(id)sender;
 - (void)saveItem:(id)sender;
 - (void)saveNow;
+- (void)setupSubviews;
 
 @property (nonatomic, retain) IGFeedItem *feedItem;
+
 @end
 
 @interface IGFeedItemActionCell : UICollectionViewCell

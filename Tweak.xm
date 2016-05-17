@@ -165,7 +165,7 @@ static NSDictionary* loadPrefs() {
  * with the highest amount of pixels, meaning it has the
  * greatest resolution.
  */
-static NSString* highestResImage(NSDictionary *versions) {
+ static NSString* highestResImage(NSDictionary *versions) {
   CGFloat highestCount = 0;
   NSString *highestURL = nil;
   for (NSDictionary *ver in versions) {
@@ -1980,11 +1980,18 @@ return false;
 
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-  NSLog(@"ADDING TARGETS!!!");
-  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchDown];
+  UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download-new@3x" ofType:@"png"]];
+  // NSLog(@"ADDING TARGETS!!!");
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
+  [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
+//     for (id target in self.commentButton.allTargets) {
+//      NSArray *actions = [self.commentButton actionsForTarget:target forControlEvent:UIControlEventTouchUpInside];
+//      NSLog(@"ACTIONS %@", actions);
+//      for (NSString *action in actions) {
+//           [saveButton addTarget:target action:NSSelectorFromString(action) forControlEvents:UIControlEventTouchUpInside];
+//      }
+// }
   [self setSaveButton:saveButton];
 
 
@@ -1994,11 +2001,31 @@ return false;
 
   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchDown];
+  UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share-new@3x" ofType:@"png"]];
   [shareButton setImage:shareImage forState:UIControlStateNormal];
   [self addSubview:shareButton];
+  [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
+
+  // NSLog(@"SUBVIEWS %@", [self subviews]);
+
+  CGRect thisFrame = self.frame;
+  thisFrame.size.width = (thisFrame.size.width + (2 * distance));
+  self.translatesAutoresizingMaskIntoConstraints = NO;
+  // NSLog(@"WIDTH %d", (int)thisFrame.size.width);
+  [self setFrame:thisFrame];
+  // [self setNeedsDisplay];
 }
+
+-(void)setFrame:(CGRect)frame {
+  frame.size.width = 210;
+  self.translatesAutoresizingMaskIntoConstraints = NO;
+  %orig(frame);
+}
+
+// -(void)viewWillAppear {
+//   %log;
+//   %orig;
+// }
 
 %new
 /**
@@ -2030,7 +2057,7 @@ return false;
   %log;
   // [self feedItem];
   IGFeedItem *item = self.feedItem;
-  // saveFeedItem(item);
+  saveFeedItem(item);
   NSLog(@"ITEM %@", item);
 }
 
@@ -2039,13 +2066,13 @@ return false;
   // [self feedItem
   IGFeedItem *item = self.feedItem;
   NSLog(@"ITEM %@", item);
-  // shareItem(item, shareMode);
+  shareItem(item, shareMode);
 }
 
 %new
 - (IGFeedItem*)feedItem {
   NSLog(@"SUPER %@ -- %@ -- %@", self.superview, self.superview.superview, self.superview.superview.superview);
-  return nil;
+  return ((IGFeedItemActionCell*)self.superview.superview).feedItem;
 }
 
 %property (retain, nonatomic) UIButton *saveButton;

@@ -218,6 +218,10 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 * Add setting to enable the new white interface
 - Add a flipswitch for enabling and disabling InstaBetter with activator or other tweaks
 
+### Release 1.6.4
+- Support Instagram 7.8
+- Update screenshots
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
