@@ -1640,16 +1640,20 @@ return false;
 %hook IGMainFeedViewController
 - (void)viewDidLoad {
   %orig;
+  %log;
+  NSLog(@"LAYOUT %d", (int)self.feedLayout);
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
-    gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-grid-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
-    listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"feedtoggle-list-icon.png"] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
+    gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"feedtoggle-grid-icon@2x" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
+    listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"feedtoggle-list-icon@2x" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
   }
   if (self.feedLayout == 1) {
     self.navigationItem.leftBarButtonItem = gridItem;
   } else if (self.feedLayout == 2) {
     self.navigationItem.leftBarButtonItem = listItem;
   }
+
+  NSLog(@"ITEM %@", self.navigationItem.leftBarButtonItem);
 }
 
 %new
@@ -1736,111 +1740,10 @@ return false;
 // %end
 
 // save media
-%hook IGFeedItemActionCell
+// %hook IGFeedItemActionCell
 // - (void)onMoreButtonPressed:(id)sender {
 //   cachedItem = self.feedItem;
 //   %orig;
-// }
-
-// - (void)setUfiButtonBarView:(IGUFIButtonBarView *)bar {
-//   %orig;
-//   bar.feedItem = self.feedItem;
-// }
-
-// - (void)setUfiButtonBarView:(IGUFIButtonBarView *)bar {
-
-//   NSLog(@"CALLED!!!");
-//   %orig;
-
-//   if (!(enabled && saveActions && saveMode == 0)) return;
-//   if (bar.saveButton) return;
-
-//   CGRect firstFrame;
-//   CGRect compareFrame;
-//   UIButton *base;
-
-//   if (bar.sendButton) {
-//     base = bar.sendButton;
-//     firstFrame = bar.commentButton.frame;
-//     compareFrame = bar.sendButton.frame;
-//   } else {
-//     base = bar.likeButton;
-//     firstFrame = bar.likeButton.frame;
-//     compareFrame = bar.commentButton.frame;
-//   }
-
-//   float distance = (compareFrame.origin.x - firstFrame.origin.x);
-
-//   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
-
-//   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-//   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-//   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-//   [saveButton addTarget:bar action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
-//   [saveButton setImage:saveImage forState:UIControlStateNormal];
-//   [bar addSubview:saveButton];
-//   [bar setSaveButton:saveButton];
-
-
-//   // don't add share button to own posts
-//   IGUser *current = [InstaHelper currentUser];
-//   if ([current.username isEqualToString:self.feedItem.user.username]) return;
-
-//   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-//   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-//   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-//   [shareButton addTarget:bar action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
-//   [shareButton setImage:shareImage forState:UIControlStateNormal];
-//   [bar addSubview:shareButton];
-// }
-
-// - (void) layoutSubviews {
-//   %orig;
-
-//   if (!(enabled && saveActions && saveMode == 0)) return;
-//   IGUFIButtonBarView *bar = self.ufiButtonBarView;
-//   if (bar.saveButton) return;
-//   CGRect firstFrame;
-//   CGRect compareFrame;
-//   UIButton *base;
-
-//   if (bar.sendButton) {
-//     NSLog(@"SEND BUTTON!!");
-//     base = bar.sendButton;
-//     firstFrame = bar.commentButton.frame;
-//     compareFrame = bar.sendButton.frame;
-//   } else {
-//     NSLog(@"NOT SEND!");
-//     base = bar.likeButton;
-//     firstFrame = bar.likeButton.frame;
-//     compareFrame = bar.commentButton.frame;
-//   }
-
-//   float distance = (compareFrame.origin.x - firstFrame.origin.x);
-
-//   NSLog(@"DISTANCE %@ -- %@ -- %@ -- %f", NSStringFromCGRect(firstFrame), NSStringFromCGRect(compareFrame), base, distance);
-
-//   NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:base];
-
-//   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-//   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-//   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download@3x" ofType:@"png"]];
-//   [saveButton addTarget:bar action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
-//   [saveButton setImage:saveImage forState:UIControlStateNormal];
-//   [bar addSubview:saveButton];
-//   [bar setSaveButton:saveButton];
-
-
-//   // don't add share button to own posts
-//   IGUser *current = [InstaHelper currentUser];
-//   if ([current.username isEqualToString:self.feedItem.user.username]) return;
-
-//   UIButton *shareButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-//   shareButton.frame = CGRectMake(saveButton.frame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
-//   UIImage *shareImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share@3x" ofType:@"png"]];
-//   [shareButton addTarget:bar action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
-//   [shareButton setImage:shareImage forState:UIControlStateNormal];
-//   [bar addSubview:shareButton];
 // }
 
 // - (void)layoutSubviews {
@@ -1946,7 +1849,7 @@ return false;
 //     %orig;
 //   }
 // }
-%end
+// %end
 
 %hook IGUFIButtonBarView
 - (void)onMoreButtonPressed:(id)sender {
@@ -1981,17 +1884,10 @@ return false;
   UIButton *saveButton = [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
   saveButton.frame = CGRectMake(compareFrame.origin.x + distance, compareFrame.origin.y, compareFrame.size.width, compareFrame.size.height);
   UIImage *saveImage = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download-new@3x" ofType:@"png"]];
-  // NSLog(@"ADDING TARGETS!!!");
   [saveButton setImage:saveImage forState:UIControlStateNormal];
   [self addSubview:saveButton];
   [saveButton addTarget:self action:@selector(saveItem:) forControlEvents:UIControlEventTouchUpInside];
-//     for (id target in self.commentButton.allTargets) {
-//      NSArray *actions = [self.commentButton actionsForTarget:target forControlEvent:UIControlEventTouchUpInside];
-//      NSLog(@"ACTIONS %@", actions);
-//      for (NSString *action in actions) {
-//           [saveButton addTarget:target action:NSSelectorFromString(action) forControlEvents:UIControlEventTouchUpInside];
-//      }
-// }
+
   [self setSaveButton:saveButton];
 
 
@@ -2006,14 +1902,11 @@ return false;
   [self addSubview:shareButton];
   [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
 
-  // NSLog(@"SUBVIEWS %@", [self subviews]);
 
   CGRect thisFrame = self.frame;
   thisFrame.size.width = (thisFrame.size.width + (2 * distance));
   self.translatesAutoresizingMaskIntoConstraints = NO;
-  // NSLog(@"WIDTH %d", (int)thisFrame.size.width);
   [self setFrame:thisFrame];
-  // [self setNeedsDisplay];
 }
 
 -(void)setFrame:(CGRect)frame {
@@ -2021,11 +1914,6 @@ return false;
   self.translatesAutoresizingMaskIntoConstraints = NO;
   %orig(frame);
 }
-
-// -(void)viewWillAppear {
-//   %log;
-//   %orig;
-// }
 
 %new
 /**
