@@ -1,11 +1,20 @@
 #import "InstaBetterPrefs.h"
+// #import "../InstaHelper.h"
 
-NSBundle *ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundles/InstaBetterPrefs.bundle"];
+NSBundle *ibsBundle;
 #define valuesPath @"/User/Library/Preferences/com.jake0oo0.instabetter.plist"
 
 @implementation InstaBetterPrefsController
 - (id)specifiers {
   if(_specifiers == nil) {
+    if (ibsBundle == nil) {
+      // BOOL jb = [InstaHelper isJailbroken];
+      // if (jb) {
+        ibsBundle = [[NSBundle alloc] initWithPath:@"/Library/PreferenceBundles/InstaBetterPrefs.bundle"];
+      // } else {
+        // ibsBundle = [[NSBundle alloc] initWithURL:[InstaHelper documentsDirectory]];
+      // }
+    }
     [ibsBundle load];
     if ([self respondsToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)]) {
       _specifiers = [self loadSpecifiersFromPlistName:@"InstaBetterPrefs" target:self bundle:ibsBundle];

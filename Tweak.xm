@@ -51,6 +51,8 @@ static BOOL useSafariController = YES;
 static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 static BOOL appSettings = [InstaBetterPrefsController instancesRespondToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)];
+static BOOL jailbroken = YES;
+
 
 static BOOL enableNewInterface = NO;
 
@@ -587,18 +589,72 @@ static BOOL openExternalURL(NSURL* url) {
     %orig;
   }
 }
-%end
+- (void)didDoubleTapFeedItemVideoView:(id)tap {
+  if (!enabled) return %orig;
+  IGPost *post = [self post];
+  NSDate *now = [NSDate date];
 
-// replacement for auto starting videos in ig >= 7.14
-%hook IGFeedVideoCellManager
-- (BOOL)startVideoForCellIfApplicable:(id)arg1 {
-  if (enabled && (videoMode == 2 || (videoMode == 1 && !ringerMuted))) {
-    return %orig;
+  BOOL needsAlert = [now timeIntervalSinceDate:[InstaHelper takenAt:post]] > 86400.0f;
+
+  if (!post.hasLiked && (alertMode == 2 || (alertMode == 1 && needsAlert))) {
+    [UIAlertView showWithTitle:localizedString(@"LIKE_VIDEO")
+      message:localizedString(@"DID_WANT_LIKE_VIDEO")
+      cancelButtonTitle:nil
+      otherButtonTitles:@[localizedString(@"CONFIRM"), localizedString(@"CANCEL")]
+      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:localizedString(@"CONFIRM")]) {
+          %orig;
+        }
+      }];
   } else {
-    return NO;
+    %orig;
   }
 }
 %end
+
+// // replacement for auto starting videos in ig >= 7.14
+// %hook IGFeedVideoCellManager
+// // - (BOOL)startVideoForCellIfApplicable:(id)arg1 {
+// //   // %log;
+// //   // if (enabled && (videoMode == 2 || (videoMode == 1 && !ringerMuted))) {
+// //   //   return %orig;
+// //   // } else {
+// //   //   return NO;
+// //   // }
+// //   // BOOL ori = %orig;
+// //   // NSLog(@"START! %d", ori);
+
+// //   // return YES;
+// //   // return %orig;
+// //   // return %orig;
+// //   // return NO;
+// //   return %orig;
+// // }
+// // -(BOOL)autoPlayAllowedForVideoCell:(id)arg1  {
+// //   %log;
+// //   return NO;
+// // }
+
+
+// // -(void)startVideoIfAutoplayCellExists {
+// // }
+// // -(BOOL)autoPlayAllowedForVideoCell:(id)arg1 {
+// //   return NO;
+// // }
+
+// // -(BOOL)feedIsScrolling {
+// //   return YES;
+// // }
+// //
+
+// -(id)videoCellForAutoPlay {
+//   %log;
+//   return nil;
+// }
+// %end
+
+
+
 
 %hook IGShareViewController
 -(void)viewDidLoad {
@@ -847,7 +903,7 @@ static BOOL openExternalURL(NSURL* url) {
 // %end
 
 // auto play audio
-
+// todo renable
 %hook IGFeedVideoPlayer
 - (void)setReadyToPlay:(BOOL)ready {
   if (enabled) {
@@ -859,6 +915,14 @@ static BOOL openExternalURL(NSURL* url) {
   }
   %orig;
 }
+
+// -(BOOL)supportsAutoplay {
+//   return NO;
+// }
+
+// -(BOOL)disallowVideoStart {
+//   return YES;
+// }
 %end
 
 // disable app rating
@@ -1640,20 +1704,19 @@ return false;
 %hook IGMainFeedViewController
 - (void)viewDidLoad {
   %orig;
-  %log;
-  NSLog(@"LAYOUT %d", (int)self.feedLayout);
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
     gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"feedtoggle-grid-icon@2x" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
     listItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"feedtoggle-list-icon@2x" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
   }
+  UIBarButtonItem *item;
   if (self.feedLayout == 1) {
-    self.navigationItem.leftBarButtonItem = gridItem;
+    item = gridItem;
   } else if (self.feedLayout == 2) {
-    self.navigationItem.leftBarButtonItem = listItem;
+    item = listItem;
   }
-
-  NSLog(@"ITEM %@", self.navigationItem.leftBarButtonItem);
+  // self.navigationItem.leftBarButtonItem = item;
+  self.navigationItem.leftBarButtonItems = @[item];
 }
 
 %new
@@ -1924,11 +1987,11 @@ return false;
  * @param {id} sender
  */
  - (void)saveItem:(id)sender {
-  %log;
+  // %log;
   if (!saveConfirm) {
     return [self saveNow];
   }
-  NSLog(@"GOT HERE!!");
+  // NSLog(@"GOT HERE!!");
   [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
     message:localizedString(@"DID_WANT_SAVE_CONTENT")
     cancelButtonTitle:nil
@@ -1946,20 +2009,20 @@ return false;
   // [self feedItem];
   IGFeedItem *item = self.feedItem;
   saveFeedItem(item);
-  NSLog(@"ITEM %@", item);
+  // NSLog(@"ITEM %@", item);
 }
 
 %new
 - (void)shareItem:(id)sender {
   // [self feedItem
   IGFeedItem *item = self.feedItem;
-  NSLog(@"ITEM %@", item);
+  // NSLog(@"ITEM %@", item);
   shareItem(item, shareMode);
 }
 
 %new
 - (IGFeedItem*)feedItem {
-  NSLog(@"SUPER %@ -- %@ -- %@", self.superview, self.superview.superview, self.superview.superview.superview);
+  // NSLog(@"SUPER %@ -- %@ -- %@", self.superview, self.superview.superview, self.superview.superview.superview);
   return ((IGFeedItemActionCell*)self.superview.superview).feedItem;
 }
 
@@ -2281,6 +2344,8 @@ static void setupRingerCheck() {
 
   @autoreleasepool {
     NSString *curBundle = [NSBundle mainBundle].bundleIdentifier;
+
+    jailbroken = [InstaHelper isJailbroken];
 
     loadPrefs();
 

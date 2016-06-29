@@ -27,6 +27,23 @@
   return [%c(IGAuthHelper) currentUser];
 }
 
++ (BOOL)isJailbroken {
+  NSString *aptitudeFolder = @"/etc/apt";
+  BOOL dir = NO;
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:aptitudeFolder isDirectory:&dir];
+
+  if (exists) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
++ (NSURL*)documentsDirectory {
+  return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+
 + (NSDate *)takenAt:(IGPost*)post {
   IGFeedItem *feedItem = (IGFeedItem*)post;
   BOOL responds = [feedItem respondsToSelector:@selector(takenAt)];

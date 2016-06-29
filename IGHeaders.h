@@ -216,7 +216,7 @@
 @property (nonatomic, retain) UIButton *sendButton;
 @property (nonatomic, retain) UIButton *commentButton;
 @property (nonatomic, retain) UIButton *likeButton;
-@property (nonatomic,retain) IGUFIButtonBarView * ufiButtonBarView; 
+@property (nonatomic,retain) IGUFIButtonBarView * ufiButtonBarView;
 - (BOOL)sponsoredPostAllowed;
 - (id)initWithFrame:(CGRect)frame;
 - (void)actionSheetDismissedWithButtonTitled:(NSString *)title;
@@ -269,6 +269,9 @@
 - (void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
 - (void)setFeedPreviewingDelegate:(IGFeedPreviewingHandler *)arg1 ;
 - (NSIndexPath *)currentActionCellIndexPath;
+
+-(BOOL)shouldAutoplayVideos;
+-(BOOL)allowAutoPlay;
 @end
 
 @interface IGFeedViewController : UIViewController
@@ -597,6 +600,10 @@
 
 @interface IGFeedVideoPlayer : NSObject
 @property (assign,nonatomic) BOOL audioEnabled;
+@property (nonatomic,readonly) BOOL supportsAutoplay;
+@property (assign,nonatomic) BOOL disallowVideoStart;
+- (BOOL)supportsAutoplay;
+- (BOOL)disallowVideoStart;
 - (BOOL)isAudioEnabled;
 - (void)setAudioEnabled:(BOOL)arg1;
 - (void)setReadyToPlay:(BOOL)arg1;
@@ -612,6 +619,10 @@
 
 @interface IGFeedVideoCellManager
 - (BOOL)startVideoForCellIfApplicable:(id)arg1 ;
+-(void)startVideoIfAutoplayCellExists;
+-(BOOL)autoPlayAllowedForVideoCell:(id)arg1 ;
+-(BOOL)feedIsScrolling;
+-(id)videoCellForAutoPlay;
 @end
 
 @interface IGTableView : UITableView

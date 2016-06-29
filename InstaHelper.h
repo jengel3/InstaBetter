@@ -6,6 +6,11 @@
 + (IGRootViewController *)rootViewController;
 + (UIViewController *)currentController;
 + (IGUser *)currentUser;
+
++ (BOOL)isJailbroken;
+
++ (NSURL*)documentsDirectory;
+
 + (NSDate *)takenAt:(IGPost*)feedItem;
 + (void)saveVideoToAlbum:(NSURL*)localUrl album:(NSString*)album completion:(void (^)(NSError *error))completion;
 + (void)downloadRemoteFile:(NSURL*)url completion:(void (^)(NSData *data, NSError *complErr))completion;

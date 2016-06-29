@@ -222,6 +222,12 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Support Instagram 7.8
 - Update screenshots
 
+### Release 1.6.5
+- Compatability
+
+### Release 1.6.6
+- Fix video liking alerts
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
