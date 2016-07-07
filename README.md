@@ -228,6 +228,15 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.6.6
 - Fix video liking alerts
 
+### Release 1.6.7
+- Fix crash when old interface settings are enabled
+- Disable autoplay features for videos due to issues causing videos not to play at all
+- Force enable the old Instagram feed for all users
+- Also should force the grid mode to work again
+- Fix crash when trying to press the ... button
+
+- Instagram broke a LOT of things with the latest update, which is why I'm trying to hold onto the old feed as long as possible. Many of these things are not easily fixable, especially the grid feature on the main feed. The broken autoplay features may also be related to these changes. Please contact me on Twitter @itsjake88 if you have any questions :)
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.
