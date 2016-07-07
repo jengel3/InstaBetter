@@ -1466,36 +1466,20 @@ return false;
   [cheated setValue:@{@"max_duration_sec": @"60"} forKey:@"ig_video_max_duration_qe_preuniverse"];
 
   payload = [cheated copy];
-  // NSLog(@"DICT %@", payload);
   return %orig(payload);
 }
--(void)loadCachedExperiments {
-  if (!enabled) return %orig;
+
+-(void)loadDiskCache {
   %orig;
-  IGExperiment *branding = [self experimentForKey:@"ig_ios_branding_refresh"];
-  if (branding) {
-    if (enableNewInterface) {
-      [branding setOverrideGroup:branding.predefinedGroups[1]];
-    } else {
-      [branding setOverrideGroup:branding.predefinedGroups[0]];
-    }
+  NSDictionary* specs = MSHookIvar<NSDictionary*>(self, "_experimentSpecs");
+  // NSLog(@"SPEC %@", specs);
+  IGExperimentSpec *spec = [specs objectForKey:@"ig_ios_main_feed_refactor_universe_2"];
+  // NSLog(@"SPEC %@ -- %@", [spec class], spec);
+
+  if (spec) {
+    [self setOverrideGroup:spec.predefinedGroups[0] forExperimentSpec:spec];
   }
-  IGExperiment *whiteout = [self experimentForKey:@"ig_ios_whiteout_dogfooding"];
-  if (whiteout) {
-    if (enableNewInterface) {
-      [whiteout setOverrideGroup:whiteout.predefinedGroups[1]];
-    } else {
-      [whiteout setOverrideGroup:whiteout.predefinedGroups[0]];
-    }
-  }
-  IGExperiment *camera = [self experimentForKey:@"ig_ios_white_camera_dogfooding_universe"];
-  if (camera) {
-    if (enableNewInterface) {
-      [camera setOverrideGroup:camera.predefinedGroups[1]];
-    } else {
-      [camera setOverrideGroup:camera.predefinedGroups[0]];
-    }
-  }
+
 }
 %end
 
@@ -1509,9 +1493,8 @@ return false;
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
-    BOOL respondLabel = [self respondsToSelector:@selector(titleLabel)];
     // NSLog(@"RESPONDS %d", responds);
-    if (isProfileView && !cachedItem && (respondLabel ? !self.titleLabel.text : !self.title)) {
+    if (isProfileView && !cachedItem && !self.actionSheetTitle) {
       IGUser *current = [InstaHelper currentUser];
       if ([current.username isEqualToString:userView.user.username]) return %orig;
       if ([muted containsObject:userView.user.username]) {
@@ -1527,7 +1510,7 @@ return false;
           [self addButtonWithTitle:instaMute style:0];
         }
       }
-    } else if ((respondLabel ? !self.titleLabel.text : !self.title) && !isWebView) {
+    } else if (!self.actionSheetTitle && !isWebView) {
       IGUser *current = [InstaHelper currentUser];
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];

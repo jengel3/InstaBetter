@@ -369,6 +369,7 @@
 @interface IGActionSheet : UIActionSheet
 @property (nonatomic, retain) NSMutableArray *buttons;
 @property (nonatomic, retain) UILabel *titleLabel;
+@property (nonatomic,copy) NSString * actionSheetTitle;
 + (void)hideImmediately;
 - (void)addButtonWithTitle:(NSString *)title style:(int)style;
 - (void)buttonWithTitle:(NSString *)title style:(int)style;
@@ -829,16 +830,26 @@
 -(id)initWithName:(id)arg1 parameters:(id)arg2 ;
 @end
 
-@interface IGExperimentSet
+@interface IGExperimentSet {
+  NSMutableDictionary* _cachedExperiments;
+}
 -(BOOL)updateExperimentsWithPayload:(NSDictionary*)arg1 ;
 -(NSArray *)defaultExperiments;
 -(id)experiments;
 -(id)experimentForKey:(id)arg1 ;
+-(void)loadDiskCache;
+-(id)diskCacheFilePath;
+-(void)setOverrideGroup:(id)arg1 forExperimentSpec:(id)arg2 ;
 @end
 
 @interface IGExperimentGroup
 @property (nonatomic,readonly) NSDictionary * parameters;
 -(id)initWithName:(id)arg1 parameters:(NSDictionary*)arg2 ;
+@end
+
+@interface IGExperimentSpec : NSObject
+@property (nonatomic,copy) NSString * key;
+@property (nonatomic,copy,readonly) NSArray * predefinedGroups;
 @end
 
 @interface IGExperiment

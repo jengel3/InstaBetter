@@ -424,6 +424,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>AUDIO_AND_VIDEO</string>
+			<key>footerText</key>
+			<string>THIS IS BROKEN AND DISABLED!</string>
 		</dict>
 		<dict>
 			<key>cell</key>
