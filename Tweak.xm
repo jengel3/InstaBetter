@@ -1493,8 +1493,16 @@ return false;
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
+    BOOL respondsLabel = [self respondsToSelector:@selector(titleLabel)];
+    BOOL respondsSheetTitle = [self respondsToSelector:@selector(actionSheetTitle)];
+    // titleLabel
+    // title
+    // actionSheetTitle
+    // ordered oldest to newest, compatabiltiy for each because Instagram is stupid
     // NSLog(@"RESPONDS %d", responds);
-    if (isProfileView && !cachedItem && !self.actionSheetTitle) {
+    // if (isProfileView && !cachedItem && !self.actionSheetTitle) {
+    // if (isProfileView && !cachedItem && (respondLabel ? !self.titleLabel.text : !self.title)) {
+    if (isProfileView && !cachedItem && (respondsLabel ? !self.titleLabel.text : (respondsSheetTitle ? !self.actionSheetTitle : !self.title))) {
       IGUser *current = [InstaHelper currentUser];
       if ([current.username isEqualToString:userView.user.username]) return %orig;
       if ([muted containsObject:userView.user.username]) {
@@ -1510,7 +1518,9 @@ return false;
           [self addButtonWithTitle:instaMute style:0];
         }
       }
-    } else if (!self.actionSheetTitle && !isWebView) {
+    // } else if (!self.actionSheetTitle && !isWebView) {
+    // } else if ((respondLabel ? !self.titleLabel.text : !self.title) && !isWebView) {
+    } else if ((respondsLabel ? !self.titleLabel.text : (respondsSheetTitle ? !self.actionSheetTitle : !self.title)) && !isWebView) {
       IGUser *current = [InstaHelper currentUser];
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
