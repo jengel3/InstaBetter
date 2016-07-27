@@ -27,6 +27,11 @@
   return [%c(IGAuthHelper) currentUser];
 }
 
++ (IGUserSession *)currentSession {
+  IGAuthHelper *authHelper = [%c(IGAuthHelper) sharedAuthHelper];
+  return [authHelper currentUserSession];
+}
+
 + (BOOL)isJailbroken {
   NSString *aptitudeFolder = @"/etc/apt";
   BOOL dir = NO;

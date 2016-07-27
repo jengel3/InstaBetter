@@ -237,6 +237,13 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 
 - Instagram broke a LOT of things with the latest update, which is why I'm trying to hold onto the old feed as long as possible. Many of these things are not easily fixable, especially the grid feature on the main feed. The broken autoplay features may also be related to these changes. Please contact me on Twitter @itsjake88 if you have any questions :)
 
+### Release 1.6.8
+- Fix crash on older versions of Instagram
+- Fix link parsing
+- Fix reposting videos
+
+- Support Instagram 8.5.1 and older.
+
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
 * Adjust the ```theos``` symlink to match the path to your installation.

@@ -6,6 +6,7 @@
 + (IGRootViewController *)rootViewController;
 + (UIViewController *)currentController;
 + (IGUser *)currentUser;
++ (IGUserSession *)currentSession;
 
 + (BOOL)isJailbroken;
 

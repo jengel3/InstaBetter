@@ -25,6 +25,10 @@
 - (id)toDict;
 @end
 
+@interface IGUserSession : NSObject
+@property (nonatomic,retain) IGUser * user;
+@end
+
 @interface IGNewsInboxTableViewController
 -(void)unreadCountUpdated:(id)arg1 ;
 -(void)onDataReceived:(id)arg1 ;
@@ -46,6 +50,7 @@
 
 @interface IGAuthHelper : NSObject
 @property (nonatomic, retain) IGUser *currentUser;
+@property (nonatomic,retain) IGUserSession *currentUserSession;
 + (id)sharedAuthHelper;
 - (void)logInWithAuthenticatedUser:(id)arg1;
 - (void)switchToAuthenticatedUser:(id)arg1 failureBlock:(id)arg2;
@@ -126,7 +131,10 @@
 
 @interface IGCommentModel : NSObject
 @property (nonatomic,copy) NSString *text;
+// DEPRECATED 8.5.1
 -(id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 ;
+// REPLACED BY 8.5.1
+-(id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 configuration:(id)arg5 ;
 -(id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 maximumUntruncatedNumberOfLines:(int)arg3 truncatedToNumberOfLines:(int)arg4;
 -(id)styledStringForWidth:(CGFloat)arg1 feedItem:(id)arg2 shouldCollapseCaption:(char)arg3 ;
 -(id)buildStyledStringWithNewline:(char)arg1 ;
@@ -251,6 +259,7 @@
 
 @interface IGFeedViewController_DEPRECATED : UIViewController
 @property (assign,nonatomic) int feedLayout;
+// @property (nonatomic,readonly) IGFeedDataSource * feedDataSource;
 - (void)handleDidDisplayFeedItem:(IGFeedItem*)item;
 - (id)arrayOfCellsWithClass:(Class)clazz inSection:(int)sec;
 - (void)setFeedLayout:(int)arg1;
@@ -783,7 +792,10 @@
 @property (nonatomic,readonly) UIImage * image;
 @property (assign,getter=isReadyToProceed,nonatomic) BOOL readyToProceed;
 -(id)initWithPhotoOrigin:(int)arg1 sourceType:(int)arg2 mediaMetadata:(id)arg3 ;
+// DEPRECATED 8.5.1
 -(id)initForImageFromCameraWithMediaMetadata:(id)arg1 ;
+// REPLACED 8.5.1
+-(id)initForImageFromCameraWithMediaMetadata:(id)arg1 userSession:(id)arg2 ;
 -(void)setImage:(id)arg1 cropRect:(CGRect)arg2 ;
 @end
 

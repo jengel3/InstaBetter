@@ -475,7 +475,43 @@ static BOOL openExternalURL(NSURL* url) {
 
 // parse URLs in styled strings
 %hook IGCommentModel
+// DEPRECATED 8.5.1
 - (id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 {
+  if (enabled && parseURLs) {
+    IGStyledString *styled = (IGStyledString*)%orig;
+    NSString *string = styled.attributedString.string;
+    NSError *error = nil;
+    NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+    if (error) {
+      // check for error, and return the original so that we don't have to loop
+      return %orig;
+    }
+    NSMutableAttributedString *attr = [styled.attributedString mutableCopy];
+    // loop over all potential links in the string
+    [detector enumerateMatchesInString:string
+     options:0
+     range:NSMakeRange(0, string.length)
+     usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+      NSURL *url = result.URL;
+      // make sure link is an actual http protocol link
+      if (result.resultType == NSTextCheckingTypeLink && ([url.scheme isEqualToString:@"http"] || [url.scheme isEqualToString:@"https"])) {
+        NSRange range = NSMakeRange(result.range.location, result.range.length);
+        // the URL attribute is Instagram's custom attribute for checking links in text view
+        [attr addAttribute:@"URL" value:url range:range];
+        // add the actual link attribute, even though it's not used by Instagram
+        [attr addAttribute:NSLinkAttributeName value:url range:range];
+        // set Instagram's link color
+        [attr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:0.0705882 green:0.337255 blue:0.533333 alpha:1.0] range:range];
+
+      }
+    }];
+    styled.attributedString = attr;
+  }
+  return %orig;
+}
+// END DEPRECATION
+
+- (id)buildStyledStringWithNewline:(char)arg1 width:(CGFloat)arg2 numberOfLines:(int)arg3 truncationToken:(id)arg4 configuration:(id)arg5 {
   if (enabled && parseURLs) {
     IGStyledString *styled = (IGStyledString*)%orig;
     NSString *string = styled.attributedString.string;
@@ -568,6 +604,7 @@ static BOOL openExternalURL(NSURL* url) {
 %end
 
 %hook IGFeedItemVideoCell
+// DEPRECATED BEFORE 8.5.1
 - (void)feedItemVideoViewDidDoubleTap:(id)tap {
   if (!enabled) return %orig;
   IGPost *post = [self post];
@@ -589,6 +626,7 @@ static BOOL openExternalURL(NSURL* url) {
     %orig;
   }
 }
+// END DEPRECATION
 - (void)didDoubleTapFeedItemVideoView:(id)tap {
   if (!enabled) return %orig;
   IGPost *post = [self post];
@@ -727,7 +765,8 @@ static BOOL openExternalURL(NSURL* url) {
 
             IGCameraNavigationController *camera = [main cameraController];
 
-            IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta];
+            IGUserSession *current = [InstaHelper currentSession];
+            IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta userSession:current];
 
 
             [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
@@ -748,34 +787,45 @@ static BOOL openExternalURL(NSURL* url) {
 
         dispatch_async(queue, ^{
           CGSize size = CGSizeMake(100, 100);
+          // NSLog(@"MADE IT!!!");
           UIGraphicsBeginImageContextWithOptions(size, YES, 0);
           [[UIColor whiteColor] setFill];
           UIRectFill(CGRectMake(0, 0, size.width, size.height));
           UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
           UIGraphicsEndImageContext();
 
+
+          // NSLog(@"MADE ITzzzzzzz!!!");
           meta.snapshot = image;
 
           AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
 
           IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
 
+          // NSLog(@"MADE ITaaaaaaaaaa!!!");
+
           IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
           [composition addClip:clip];
           IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
           info.video = composition;
 
+          // NSLog(@"MADE ITpppppppppppp!!!");
           dispatch_async(dispatch_get_main_queue(), ^{
+            // NSLog(@"MADE Iqqqqqqqqqqqqqqqq!!!");
             status.labelText = localizedString(@"LOADING_VIEWS");
+            // NSLog(@"MADE ITuuuuuuuuuuuuuuuuu!!!");
             [main presentCameraWithMetadata:meta mode:1];
+            // NSLog(@"MADE ITyyyyyyyyyyyyyyyy!!!");
 
             IGCameraNavigationController *camera = [main cameraController];
+            // NSLog(@"MADE IT22222222222222222!!!");
 
             IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:2 videoInfo:info mediaMetadata:meta];
-
+            // NSLog(@"MADE IT4444444444444444444444!!!");
             [camera pushViewController:editor animated:YES];
-
+            // NSLog(@"WHAT TF!!!");
             [status hide:YES afterDelay:1.0];
+            // NSLog(@"THE FUCK?!?!!!!");
           });
 
         });
@@ -1651,6 +1701,7 @@ return false;
   }
   return %orig;
 }
+// end deprecation
 
 // -(void)onDataReceived:(NSArray*)stories {
 //   %log;
@@ -1908,10 +1959,12 @@ return false;
 // %end
 
 %hook IGUFIButtonBarView
+// DEPRECATED BEFORE 8.5.1
 - (void)onMoreButtonPressed:(id)sender {
   cachedItem = self.feedItem;
   %orig;
 }
+// END DEPRECATION
 
 - (void)layoutSubviews {
   %orig;
@@ -2168,6 +2221,7 @@ return false;
     return %orig;
   }
 }
+// DEPRECATED BEFORE 8.5.1
 - (BOOL)hideCommentButton {
   if (enabled && hideSponsored) {
     return true;
@@ -2175,6 +2229,7 @@ return false;
     return %orig;
   }
 }
+// END DEPRECATION
 - (BOOL)isHoldout {
   if (enabled && hideSponsored) {
     return true;
@@ -2182,6 +2237,7 @@ return false;
     return %orig;
   }
 }
+// DEPRECATED BEFORE 8.5.1
 - (BOOL)hideComments {
   if (enabled && hideSponsored) {
     return true;
@@ -2189,6 +2245,7 @@ return false;
     return %orig;
   }
 }
+// END DERPRECATION
 %end
 
 
