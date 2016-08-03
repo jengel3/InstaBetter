@@ -75,3 +75,6 @@
 "SHARE_MODE" = "Share Mode";
 "BETA_FEATURES" = "Beta Features";
 "NEW_INTERFACE" = "Enable White Interface";
+"HIDE_STORIES_BUTTON" = "Hide Stories Button";
+"DISABLE_HOME_SWIPING" = "Disable Left/Right Homescreen Swiping";
+"HIDE_STORIES_LIST" = "Hide Stories List";

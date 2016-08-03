@@ -52,6 +52,9 @@ static UIBarButtonItem* gridItem;
 static UIBarButtonItem* listItem;
 static BOOL appSettings = [InstaBetterPrefsController instancesRespondToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)];
 static BOOL jailbroken = YES;
+static BOOL hideStoriesButton = NO;
+static BOOL disableHomeSwiping = NO;
+static BOOL hideStoriesList = NO;
 
 
 static BOOL enableNewInterface = NO;
@@ -110,6 +113,10 @@ static NSDictionary* loadPrefs() {
       muteActivity = [prefs objectForKey:@"mute_activity"] ? [[prefs objectForKey:@"mute_activity"] boolValue] : YES;
       muteFeed = [prefs objectForKey:@"mute_feed"] ? [[prefs objectForKey:@"mute_feed"] boolValue] : YES;
       muted = [prefs objectForKey:@"muted_users"] ? [prefs objectForKey:@"muted_users"] : [[NSMutableArray alloc] init];
+
+      hideStoriesButton = [prefs objectForKey:@"hide_stories_button"] ? [[prefs objectForKey:@"hide_stories_button"] boolValue] : NO;
+      disableHomeSwiping = [prefs objectForKey:@"disable_home_swiping"] ? [[prefs objectForKey:@"disable_home_swiping"] boolValue] : NO;
+      hideStoriesList = [prefs objectForKey:@"hide_stories_list"] ? [[prefs objectForKey:@"hide_stories_list"] boolValue] : NO;
 
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
 
@@ -420,7 +427,7 @@ static BOOL openExternalURL(NSURL* url) {
   self.mapView = [[MKMapView alloc] initWithFrame:self.view.frame];
 
   UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(selectedLocation:)];
-  [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+  [longPress setDelegate:(id<UIGestureRecognizerDelegate>)self];
   [longPress setMinimumPressDuration:0.75];
   [self.mapView addGestureRecognizer:longPress];
 
@@ -691,9 +698,6 @@ static BOOL openExternalURL(NSURL* url) {
 // }
 // %end
 
-
-
-
 %hook IGShareViewController
 -(void)viewDidLoad {
   if (!enabled) return %orig;
@@ -708,6 +712,7 @@ static BOOL openExternalURL(NSURL* url) {
 %end
 
 %hook IGFeedViewController_DEPRECATED
+// broken Instagram 9.0
 - (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
   id thing = %orig;
   if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
@@ -715,6 +720,7 @@ static BOOL openExternalURL(NSURL* url) {
   }
   return thing;
 }
+// end
 
 - (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
   cachedItem = cell.feedItem;
@@ -1183,7 +1189,7 @@ static BOOL openExternalURL(NSURL* url) {
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
       action:@selector(callShare:)];
-    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setDelegate:(id<UIGestureRecognizerDelegate>)self];
     [self.contentMenuLongPressRecognizer requireGestureRecognizerToFail:longPress];
     [longPress setMinimumPressDuration:2];
     [self setUserInteractionEnabled:YES];
@@ -1265,7 +1271,7 @@ static BOOL openExternalURL(NSURL* url) {
   if (enabled) {
     // set property to know if gestures have been set yet
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(callShare:)];
-    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setDelegate:(id<UIGestureRecognizerDelegate>)self];
     [longPress setMinimumPressDuration:1];
     [self addGestureRecognizer:longPress];
   }
@@ -1319,7 +1325,7 @@ return false;
 - (void)layoutSubviews {
   if (enabled) {
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    [longPress setDelegate:(id<UILongPressGestureRecognizerDelegate>)self];
+    [longPress setDelegate:(id<UIGestureRecognizerDelegate>)self];
     [longPress setMinimumPressDuration:1];
     [self addGestureRecognizer:longPress];
   }
@@ -1745,9 +1751,40 @@ return false;
 }
 %end
 
+%hook IGMainAppCollectionView
+-(BOOL)gestureRecognizerShouldBegin:(id)arg1 {
+  if (enabled && disableHomeSwiping) {
+    return NO;
+  } else {
+    return %orig;
+  }
+}
+%end
+
 %hook IGMainFeedViewController
+-(NSArray*)itemsForListAdapter:(id)arg1 {
+  if (enabled && hideStoriesList) {
+    NSMutableArray *ori = [%orig mutableCopy];
+    id item = [ori objectAtIndex:0];
+
+    if ([item class] == [%c(IGAlbumDataController) class]) {
+      [ori removeObjectAtIndex:0];
+    }
+    return [ori copy];
+  } else {
+    return %orig;
+  }
+}
 - (void)viewDidLoad {
+  BOOL instaBroke = ![self respondsToSelector:@selector(feedLayout)];
   %orig;
+  if (instaBroke) {
+    // instagram broke this in 9.0, completely removed the grid layout
+    if (enabled && hideStoriesButton) {
+      self.navigationItem.leftBarButtonItems = @[];
+    }
+    return;
+  }
   if (!(enabled && layoutSwitcher)) return;
   if (!gridItem || !listItem) {
     gridItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"feedtoggle-grid-icon@2x" ofType:@"png"]] style:UIBarButtonItemStylePlain target:self action:@selector(changeView)];
@@ -1759,7 +1796,7 @@ return false;
   } else if (self.feedLayout == 2) {
     item = listItem;
   }
-  // self.navigationItem.leftBarButtonItem = item;
+  // self.navigationItem.leftBarButtonItem = item; // changed to list to prevent override
   self.navigationItem.leftBarButtonItems = @[item];
 }
 
@@ -2182,6 +2219,8 @@ return false;
 - (void)layoutSubviews {
   %orig;
   if (enabled && enableTimestamps) {
+    BOOL instaBroke = ![self respondsToSelector:@selector(timestampLabel)];
+    if (instaBroke) return; // totally removed 9.0
     if (alwaysTimestamp) {
       showTimestamp(self, false);
       return;
@@ -2258,17 +2297,22 @@ return false;
  - (id)settingSectionRows {
   if (!appSettings) return %orig;
   NSArray *thing = %orig;
+
   if ([thing count] == 4) {
+    // NSLog(@"CLALED!!");
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, nil];
   } else if ([thing count] == 5) {
+    // NSLog(@"CALLEDD 12121212");
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
   }
   return nil;
 }
 
-- (int)tableView:(id)tableView numberOfRowsInSection:(int)sections {
+- (int)tableView:(id)tableView numberOfRowsInSection:(int)sec {
   if (!appSettings) return %orig;
-  if (sections == 2) {
+  // NSLog(@"SECTIONS!!! %d", sections);
+  BOOL hasSection = [self respondsToSelector:@selector(inviteSectionRows)];
+  if (sec == (hasSection ? 3 : 2)) {
     return [[self settingSectionRows] count];
   }
   return %orig;
@@ -2276,9 +2320,12 @@ return false;
 
 - (id)tableView:(id)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   if (!appSettings) return %orig;
+  BOOL hasSection = [self respondsToSelector:@selector(inviteSectionRows)];
+  if (indexPath.section != (hasSection ? 3 : 2)) return %orig;
   IGGroupedTableViewCell* cell = %orig;
   int count = [[self settingSectionRows] count];
-  if (indexPath.section == 2 && ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5))) {
+  if ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5)) {
+    // NSLog(@"CALLED FINAL SETUP");
     cell.textLabel.text = localizedString(@"INSTABETTER_SETTINGS");
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   }

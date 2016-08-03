@@ -639,6 +639,57 @@
 			<key>PostNotification</key>
 			<string>com.jake0oo0.instabetter/prefsChange</string>
 		</dict>
+		<!-- INSTAGRAM STORIES -->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>STORIES</string>
+			<!-- <key>footerText</key>
+			<string></string> -->
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>hide_stories_button</string>
+			<key>label</key>
+			<string>HIDE_STORIES_BUTTON</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>disable_home_swiping</string>
+			<key>label</key>
+			<string>DISABLE_HOME_SWIPING</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.jake0oo0.instabetter</string>
+			<key>key</key>
+			<string>hide_stories_list</string>
+			<key>label</key>
+			<string>HIDE_STORIES_LIST</string>
+			<key>PostNotification</key>
+			<string>com.jake0oo0.instabetter/prefsChange</string>
+		</dict>
 		<!-- BETA FEATURES -->
 		<dict>
 			<key>cell</key>

@@ -105,7 +105,7 @@
 - (void)coreTextView:(id)arg1 didLongTapOnString:(id)arg2 URL:(id)arg3;
 @end
 
-@interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UILongPressGestureRecognizerDelegate>
+@interface IGCoreTextView : UIView <IGCoreTextLinkHandler, UIWebViewDelegate, UIGestureRecognizerDelegate>
 @property(retain, nonatomic) IGStyledString *styledString;
 @property (assign,nonatomic) id<IGCoreTextLinkHandler> linkHandler;
 - (void)setLinkHandler:(id<IGCoreTextLinkHandler>)arg1;
@@ -310,6 +310,7 @@
 - (BOOL)shouldHideFeedItem:(id)fp8;
 - (BOOL)isFirstFeedLoad;
 - (void)setIsFirstFeedLoad:(BOOL)first;
+-(NSArray*)itemsForListAdapter:(id)arg1 ;
 @end
 
 @interface IGCollectionViewController
@@ -479,7 +480,7 @@
 @property (nonatomic,readonly) IGImageView *photoImageView;
 @end
 
-@interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate>
+@interface IGFeedMediaView : UIView <UIGestureRecognizerDelegate, UIGestureRecognizerDelegate, NYTPhotosViewControllerDelegate>
 @property (nonatomic, retain) IGPost *post;
 @property (nonatomic,readonly) IGImageProgressView *photoImageView;
 @end
@@ -487,13 +488,13 @@
 @interface IGDirectContent : NSObject
 @end
 
-@interface IGDirectContentCell : UICollectionViewCell <UILongPressGestureRecognizerDelegate, NYTPhotosViewControllerDelegate, UIActionSheetDelegate>
+@interface IGDirectContentCell : UICollectionViewCell <UIGestureRecognizerDelegate, NYTPhotosViewControllerDelegate, UIActionSheetDelegate>
 @property (nonatomic, retain) IGDirectContent *content;
 @property (nonatomic, retain) UILongPressGestureRecognizer *contentMenuLongPressRecognizer;
 - (void)onContentMenuPress:(id)arg1;
 @end
 
-@interface IGDirectContentExpandableCell : IGDirectContentCell <UILongPressGestureRecognizerDelegate>
+@interface IGDirectContentExpandableCell : IGDirectContentCell <UIGestureRecognizerDelegate>
 - (void)layoutSubviews;
 @end
 
@@ -541,7 +542,7 @@
 @interface IGSimpleButton : UIButton
 @end
 
-@interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UILongPressGestureRecognizerDelegate>
+@interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UIGestureRecognizerDelegate>
 @property (nonatomic, retain) IGUser *user;
 @property (assign,nonatomic) BOOL buttonDisabled;
 @property (nonatomic,readonly) IGSimpleButton * profilePicButton;
@@ -693,7 +694,7 @@
 - (void)setTempLocation:(IGLocation *)value;
 @end
 
-@interface LocationSelectorViewController : UIViewController <UILongPressGestureRecognizerDelegate>
+@interface LocationSelectorViewController : UIViewController <UIGestureRecognizerDelegate>
 @property (nonatomic, strong) MKMapView *mapView;
 @property (nonatomic, nonatomic) id<LocationSelectionDelegate> delegate;
 - (void)hideSelection;
@@ -873,4 +874,18 @@
 
 @interface IGExperimentManager
 +(IGExperiment*)experimentForKey:(id)arg1 ;
+@end
+
+@interface IGMainAppCollectionView : UICollectionView
+-(BOOL)gestureRecognizerShouldBegin:(id)arg1 ;
+@end
+
+@interface IGAlbumTrayCollectionViewCell : UICollectionViewCell
+-(void)layoutSubviews;
+-(void)willMoveToWindow:(id)arg1 ;
+@end
+
+@interface IGVerticalCollectionViewLayout : UICollectionViewLayout
+-(id)layoutAttributesForElementsInRect:(CGRect)arg1 ;
+-(UICollectionViewLayoutAttributes*)layoutAttributesForItemAtIndexPath:(NSIndexPath*)arg1 ;
 @end

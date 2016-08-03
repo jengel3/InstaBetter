@@ -4,7 +4,7 @@ TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
 THEOS_PACKAGE_DIR_NAME = debs
 ADDITIONAL_OBJCFLAGS = -fobjc-arc
 
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = InstaBetter
 InstaBetter_FILES = InstaHelper.xm Tweak.xm instabetterprefs/InstaBetterPrefs.mm $(wildcard lib/*.m)
@@ -14,7 +14,7 @@ InstaBetter_WEAK_FRAMEWORKS = Photos
 InstaBetter_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-include theos/makefiles/bundle.mk
+include $(THEOS)/makefiles/bundle.mk
 
 after-install::
 	install.exec "killall -9 Instagram && activator send com.bd452.bypass && activator send com.burbn.instagram"

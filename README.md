@@ -240,9 +240,20 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.6.8
 - Fix crash on older versions of Instagram
 - Fix link parsing
-- Fix reposting videos
+- Fix reposting photos
 
 - Support Instagram 8.5.1 and older.
+
+### Release 1.7.0
+- Fix settings crash
+- Fix startup grid crash
+- Remove grid feature (this is no longer possible with the current Instagram codebase)
+
+### Release 1.7.1
+- Add toggle to hide navbar stories button
+- Add toggle to disable swiping between story camera/main feed/inbox
+
+- Support Instagram 9.0 and older
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
