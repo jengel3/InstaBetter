@@ -711,39 +711,20 @@ static BOOL openExternalURL(NSURL* url) {
 }
 %end
 
-%hook IGFeedViewController_DEPRECATED
-// broken Instagram 9.0
-- (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
-  id thing = %orig;
-  if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
-    [self setFeedLayout:2];
-  }
-  return thing;
-}
-// end
-
-- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
-  cachedItem = cell.feedItem;
+%hook IGFeedItemController
+-(void)feedItemHeaderDidTapOnMoreButton:(id)arg1 {
+  cachedItem = self.feedItem;
   %orig;
 }
 
-
-// instagram 7.19
-- (void)feedItemHeaderDidTapOnMoreButton:(IGFeedItemHeader*)header {
-  cachedItem = header.viewModel.feedItem;
-  %orig;
-}
-
-- (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
   if (enabled) {
-    IGFeedItem *item = cachedItem;
+    IGFeedItem *item = self.feedItem;
     if ([title isEqualToString:instaSave]) {
       return saveFeedItem(item);
     } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       return shareItem(item, shareMode);
-
-      // return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
     } else if (item && [title isEqualToString:localizedString(@"REPOST")]) {
       if (item.user == [InstaHelper currentUser]) return %orig;
       IGRootViewController *root = [InstaHelper rootViewController];
@@ -800,38 +781,26 @@ static BOOL openExternalURL(NSURL* url) {
           UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
           UIGraphicsEndImageContext();
 
-
-          // NSLog(@"MADE ITzzzzzzz!!!");
           meta.snapshot = image;
 
           AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
 
           IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
 
-          // NSLog(@"MADE ITaaaaaaaaaa!!!");
-
           IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
           [composition addClip:clip];
           IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
           info.video = composition;
 
-          // NSLog(@"MADE ITpppppppppppp!!!");
           dispatch_async(dispatch_get_main_queue(), ^{
-            // NSLog(@"MADE Iqqqqqqqqqqqqqqqq!!!");
             status.labelText = localizedString(@"LOADING_VIEWS");
-            // NSLog(@"MADE ITuuuuuuuuuuuuuuuuu!!!");
             [main presentCameraWithMetadata:meta mode:1];
-            // NSLog(@"MADE ITyyyyyyyyyyyyyyyy!!!");
 
             IGCameraNavigationController *camera = [main cameraController];
-            // NSLog(@"MADE IT22222222222222222!!!");
 
             IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:2 videoInfo:info mediaMetadata:meta];
-            // NSLog(@"MADE IT4444444444444444444444!!!");
             [camera pushViewController:editor animated:YES];
-            // NSLog(@"WHAT TF!!!");
             [status hide:YES afterDelay:1.0];
-            // NSLog(@"THE FUCK?!?!!!!");
           });
 
         });
@@ -840,6 +809,125 @@ static BOOL openExternalURL(NSURL* url) {
   }
   %orig;
 }
+%end
+
+%hook IGFeedViewController_DEPRECATED
+// broken Instagram 9.0
+- (id)initWithFeedNetworkSource:(id)src feedLayout:(int)layout showsPullToRefresh:(BOOL)control {
+  id thing = %orig;
+  if (enabled && mainGrid && [src class] == [%c(IGMainFeedNetworkSource) class]) {
+    [self setFeedLayout:2];
+  }
+  return thing;
+}
+// end
+
+- (void)feedItemActionCellDidTapMoreButton:(IGFeedItemActionCell*)cell {
+  cachedItem = cell.feedItem;
+  %orig;
+}
+
+
+// instagram 7.19
+- (void)feedItemHeaderDidTapOnMoreButton:(IGFeedItemHeader*)header {
+  cachedItem = header.viewModel.feedItem;
+  %orig;
+}
+
+// SLOWLY BEING DEPRECATED 9.0
+- (void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+  if (enabled) {
+    IGFeedItem *item = cachedItem;
+    if ([title isEqualToString:instaSave]) {
+      return saveFeedItem(item);
+    } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+      if (item.user == [InstaHelper currentUser]) return %orig;
+      return shareItem(item, shareMode);
+
+      // return [[InstaHelper rootViewController] presentViewController:activityViewController animated:YES completion:nil];
+    } else if (item && [title isEqualToString:localizedString(@"REPOST")]) {
+      // todo create method to merge new/old actionSheet methods
+      if (item.user == [InstaHelper currentUser]) return %orig;
+      IGRootViewController *root = [InstaHelper rootViewController];
+      NSArray *controllers = [root childViewControllers];
+      IGMainAppViewController *main = controllers[0];
+      IGMediaMetadata *meta = [[%c(IGMediaMetadata) alloc] init];
+      meta.caption = item.caption ? item.caption.text : nil;
+      cachedCaption = meta.caption;
+      UIWindow *appWindow = [[[UIApplication sharedApplication] delegate] window];
+      MBProgressHUD *status = [MBProgressHUD showHUDAddedTo:appWindow animated:YES];
+      status.labelText = localizedString(@"PREPARING");
+
+      if (item.mediaType == 1) {
+        NSString *versionURL = highestResImage(item.photo.imageVersions);
+        NSURL *imgUrl = [NSURL URLWithString:versionURL];
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        status.labelText = localizedString(@"LOADING_IMAGE");
+        dispatch_async(queue, ^{
+          NSData *imgData = [NSData dataWithContentsOfURL:imgUrl];
+          UIImage *img = [UIImage imageWithData:imgData];
+          meta.snapshot = img;
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.labelText = localizedString(@"LOADING_VIEWS");
+            [main presentCameraWithMetadata:meta mode:1];
+
+            IGCameraNavigationController *camera = [main cameraController];
+
+            IGUserSession *current = [InstaHelper currentSession];
+            IGEditorViewController *editor = [[%c(IGEditorViewController) alloc] initForImageFromCameraWithMediaMetadata:meta userSession:current];
+
+
+            [editor setImage:img cropRect:CGRectMake(0, 0, img.size.width, img.size.height)];
+            editor.readyToProceed = YES;
+
+            [camera pushViewController:editor animated:YES];
+
+            [status hide:YES afterDelay:1.0];
+          });
+
+        });
+      } else if (item.mediaType == 2) {
+        NSString *versionURL = highestResImage(item.video.videoVersions);
+        NSURL *url = [NSURL URLWithString:versionURL];
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        status.labelText = localizedString(@"LOADING_VIDEO");
+
+
+        dispatch_async(queue, ^{
+          CGSize size = CGSizeMake(100, 100);
+          UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+          [[UIColor whiteColor] setFill];
+          UIRectFill(CGRectMake(0, 0, size.width, size.height));
+          UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+          UIGraphicsEndImageContext();
+          meta.snapshot = image;
+
+          AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:@{}];
+
+          IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
+          IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
+          [composition addClip:clip];
+          IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
+          info.video = composition;
+
+          dispatch_async(dispatch_get_main_queue(), ^{
+            status.labelText = localizedString(@"LOADING_VIEWS");
+            [main presentCameraWithMetadata:meta mode:1];
+
+            IGCameraNavigationController *camera = [main cameraController];
+
+            IGVideoEditorViewController *editor = [[%c(IGVideoEditorViewController) alloc] initWithOrigin:2 videoInfo:info mediaMetadata:meta];
+            [camera pushViewController:editor animated:YES];
+            [status hide:YES afterDelay:1.0];
+          });
+
+        });
+      }
+    }
+  }
+  %orig;
+}
+// END DEPRECATION
 
 // muting in instagram 7.14+(?)
 - (void)reloadWithNewObjects:(NSArray*)items context:(id)arg2 synchronus:(char)arg3 forceAnimated:(char)arg4 completionBlock:(id)arg5 {
@@ -1488,9 +1576,12 @@ return false;
 // action sheet manager
 %hook IGActionSheetCallbackProxy
 -(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+  NSLog(@"CALLED CALLBACK!!!");
   if (enabled) {
     UIViewController *currentController = [InstaHelper currentController];
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
+    NSLog(@"HERE!!!!");
+    BOOL isAlbumView = [currentController isKindOfClass:[%c(IGAlbumViewerViewController) class]];
     if (isProfileView) {
       IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
       if ([title isEqualToString:instaMute]) {
@@ -1505,6 +1596,15 @@ return false;
         [prefs setValue:muted forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:NO];
         return;
+      }
+    } else if (isAlbumView) {
+      NSLog(@"CALLED!!!!");
+      if ([title isEqualToString:instaSave]) {
+        IGAlbumViewerViewController *albumContrl = (IGAlbumViewerViewController *) currentController;
+        IGAlbumViewerViewModel *current = [albumContrl focusedModelItem];
+        NSLog(@"CURRENT %@", current);
+      } else if ([title isEqualToString:localizedString(@"SHARE")]) {
+
       }
     }
   }
@@ -2299,10 +2399,8 @@ return false;
   NSArray *thing = %orig;
 
   if ([thing count] == 4) {
-    // NSLog(@"CLALED!!");
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, nil];
   } else if ([thing count] == 5) {
-    // NSLog(@"CALLEDD 12121212");
     return [NSArray arrayWithObjects:@0, @1, @2, @3, @4, @5, nil];
   }
   return nil;
@@ -2310,7 +2408,6 @@ return false;
 
 - (int)tableView:(id)tableView numberOfRowsInSection:(int)sec {
   if (!appSettings) return %orig;
-  // NSLog(@"SECTIONS!!! %d", sections);
   BOOL hasSection = [self respondsToSelector:@selector(inviteSectionRows)];
   if (sec == (hasSection ? 3 : 2)) {
     return [[self settingSectionRows] count];
@@ -2325,7 +2422,6 @@ return false;
   IGGroupedTableViewCell* cell = %orig;
   int count = [[self settingSectionRows] count];
   if ((count == 5 && indexPath.row == 4) || (count == 6 && indexPath.row == 5)) {
-    // NSLog(@"CALLED FINAL SETUP");
     cell.textLabel.text = localizedString(@"INSTABETTER_SETTINGS");
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   }

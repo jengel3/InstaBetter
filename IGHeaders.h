@@ -889,3 +889,29 @@
 -(id)layoutAttributesForElementsInRect:(CGRect)arg1 ;
 -(UICollectionViewLayoutAttributes*)layoutAttributesForItemAtIndexPath:(NSIndexPath*)arg1 ;
 @end
+
+@interface IGAlbumViewerViewModel : NSObject
+@property (nonatomic,readonly) IGUser * user;
+@property (nonatomic,readonly) BOOL isCurrentUser;
+@property (nonatomic,readonly) BOOL isNux;
+@property (nonatomic,readonly) BOOL canReply;
+@property (nonatomic,copy,readonly) NSArray * items;
+@end
+
+@interface IGAlbumViewerViewController : IGViewController
+@property (nonatomic,retain) IGAlbumViewerViewModel * focusedModelItem;
+@end
+
+@interface IGListItemController : NSObject
+
+@end
+
+@interface IGFeedItemController : IGListItemController
+@property (nonatomic,readonly) IGFeedItem * feedItem;
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)title;
+-(void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
+@end
+
+@interface IGAlbumItemActionsController : NSObject
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)title;
+@end

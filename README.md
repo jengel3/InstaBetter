@@ -252,6 +252,8 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 ### Release 1.7.1
 - Add toggle to hide navbar stories button
 - Add toggle to disable swiping between story camera/main feed/inbox
+- Fix saving/sharing photos/videos
+- Fix reposting photos (Videos are a WIP)
 
 - Support Instagram 9.0 and older
 
