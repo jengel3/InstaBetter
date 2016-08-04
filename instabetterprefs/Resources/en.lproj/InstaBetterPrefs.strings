@@ -78,3 +78,4 @@
 "HIDE_STORIES_BUTTON" = "Hide Stories Button";
 "DISABLE_HOME_SWIPING" = "Disable Left/Right Homescreen Swiping";
 "HIDE_STORIES_LIST" = "Hide Stories List";
+"DISABLE_READ_STORY" = "Disable Stories Seen Receipt";

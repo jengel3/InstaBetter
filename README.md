@@ -254,6 +254,10 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Add toggle to disable swiping between story camera/main feed/inbox
 - Fix saving/sharing photos/videos
 - Fix reposting photos (Videos are a WIP)
+- Add saving/sharing to stories
+- Fixed muting
+- Hide "Suggested Followers" in main feed when advertisements are hidden
+- Add toggle for marking stories as seen, add button to manually mark story as seen
 
 - Support Instagram 9.0 and older
 

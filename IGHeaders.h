@@ -311,6 +311,10 @@
 - (BOOL)isFirstFeedLoad;
 - (void)setIsFirstFeedLoad:(BOOL)first;
 -(NSArray*)itemsForListAdapter:(id)arg1 ;
+-(void)feedNetworkSource:(id)arg1 willLoadItemsFromResponse:(NSDictionary*)arg2;
+-(void)feedNetworkSource:(id)arg1 didFinishLoadingObjects:(NSArray*)arg2 forFetchAction:(int)arg3 ;
+-(void)feedNetworkSource:(id)arg1 didChangeToObjects:(id)arg2 ;
+- (NSArray*)getMutedList:(NSArray*)items; // new
 @end
 
 @interface IGCollectionViewController
@@ -912,6 +916,61 @@
 -(void)feedItemHeaderDidTapOnMoreButton:(id)arg1 ;
 @end
 
+@protocol IGAlbumItemType <NSObject>
+@required
+-(id)mediaID;
+-(id)takenAtDate;
+-(id)feedItem;
+-(id)pendingUpload;
+-(int)viewerCount;
+-(id)albumChannelPK;
+-(id)viewers;
+-(id)user;
+-(int)mediaType;
+-(id)photo;
+-(char)shouldLoop;
+-(double)totalDuration;
+-(id)video;
+@end
+
+
+@protocol IGAlbumItemActionsControllerDelegate <NSObject>
+@required
+-(void)albumItemActionsControllerWillSavePost:(id)arg1;
+-(void)albumItemActionsControllerWillDeletePost:(id)arg1;
+-(void)albumItemActionsControllerWillSharePost:(id)arg1;
+-(void)albumItemActionsControllerWillReportPost:(id)arg1;
+-(void)albumItemActionsControllerDidFinish:(id)arg1;
+
+@end
+
+@protocol IGAlbumFullScreenItemControllerDelegate <NSObject>
+@required
+-(void)fullscreenItemController:(id)arg1 willUpdateFromAlbumModel:(id)arg2 toAlbumModel:(id)arg3 albumItem:(id)arg4;
+-(void)fullscreenItemController:(id)arg1 didChangeItemWithNavigationAction:(int)arg2;
+-(char)fullscreenItemControllerCanResumePlayback:(id)arg1;
+-(void)fullscreenItemController:(id)arg1 didMarkItemAsSeen:(id)arg2;
+-(void)fullscreenItemController:(id)arg1 didAdvancePastLastItemWithNavigationAction:(int)arg2;
+-(void)fullscreenItemController:(id)arg1 didRewindPastFirstItemWithNavigationAction:(int)arg2;
+-(void)fullscreenItemControllerDidTapDismiss:(id)arg1;
+
+@end
+
+
+
+@interface IGAlbumFullscreenItemController : IGListItemController
+@property (assign,nonatomic) id<IGAlbumFullScreenItemControllerDelegate> delegate;
+-(void)markItemAsSeen;
+-(void)headerViewDidTapDismiss:(id)arg1 ; // no arg needed, no crash
+@end
+
 @interface IGAlbumItemActionsController : NSObject
+@property (nonatomic,retain) IGUserSession * userSession;
+@property (nonatomic,retain) id<IGAlbumItemType> item;
+@property (assign,nonatomic) id<IGAlbumItemActionsControllerDelegate> delegate;
 -(void)actionSheetDismissedWithButtonTitled:(NSString*)title;
+@end
+
+@interface IGHScrollAYMFBannerCell : UICollectionViewCell
+
 @end

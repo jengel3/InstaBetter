@@ -55,6 +55,7 @@ static BOOL jailbroken = YES;
 static BOOL hideStoriesButton = NO;
 static BOOL disableHomeSwiping = NO;
 static BOOL hideStoriesList = NO;
+static BOOL disableReadStories = NO;
 
 
 static BOOL enableNewInterface = NO;
@@ -117,6 +118,7 @@ static NSDictionary* loadPrefs() {
       hideStoriesButton = [prefs objectForKey:@"hide_stories_button"] ? [[prefs objectForKey:@"hide_stories_button"] boolValue] : NO;
       disableHomeSwiping = [prefs objectForKey:@"disable_home_swiping"] ? [[prefs objectForKey:@"disable_home_swiping"] boolValue] : NO;
       hideStoriesList = [prefs objectForKey:@"hide_stories_list"] ? [[prefs objectForKey:@"hide_stories_list"] boolValue] : NO;
+      disableReadStories = [prefs objectForKey:@"disable_read_story"] ? [[prefs objectForKey:@"disable_read_story"] boolValue] : NO;
 
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
 
@@ -209,11 +211,11 @@ static void saveMedia(NSURL *url) {
         });
       }];
     } else {
-      NSLog(@"GOT SAVE CALL");
+      // NSLog(@"GOT SAVE CALL");
       [InstaHelper saveRemoteVideo:url album:customAlbum completion:^(NSError *err) {
-        NSLog(@"COMPLETION CALLED");
+        // NSLog(@"COMPLETION CALLED");
         dispatch_sync(dispatch_get_main_queue(), ^{
-          NSLog(@"HIDING HUD??");
+          // NSLog(@"HIDING HUD??");
           status.customView = img;
           status.mode = MBProgressHUDModeCustomView;
           status.labelText = localizedString(@"SAVED");
@@ -697,6 +699,37 @@ static BOOL openExternalURL(NSURL* url) {
 //   return nil;
 // }
 // %end
+//
+static BOOL allowSeen = NO;
+%hook IGAlbumFullscreenItemController
+-(void)markItemAsSeen {
+  if (enabled && disableReadStories && !allowSeen) {
+    return; // nothing to do here..
+  } else {
+    allowSeen = NO;
+    return %orig;
+  }
+}
+%end
+
+%hook IGAlbumItemActionsController
+-(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
+  IGFeedItem *item = self.item;
+  if ([title isEqualToString:instaSave]) {
+    return saveFeedItem(item);
+  } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+    IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+    [del headerViewDidTapDismiss:nil];
+    return shareItem(item, shareMode);
+  } else if ([title isEqualToString:localizedString(@"MARK_SEEN")] && disableReadStories) {
+    // NSLog(@"CALLED!!");
+    IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+    allowSeen = YES;
+    [del markItemAsSeen];
+  }
+  %orig;
+}
+%end
 
 %hook IGShareViewController
 -(void)viewDidLoad {
@@ -1576,12 +1609,12 @@ return false;
 // action sheet manager
 %hook IGActionSheetCallbackProxy
 -(void)actionSheetDismissedWithButtonTitled:(NSString*)title {
-  NSLog(@"CALLED CALLBACK!!!");
+  // NSLog(@"CALLED CALLBACK!!!");
   if (enabled) {
     UIViewController *currentController = [InstaHelper currentController];
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
-    NSLog(@"HERE!!!!");
-    BOOL isAlbumView = [currentController isKindOfClass:[%c(IGAlbumViewerViewController) class]];
+    // NSLog(@"HERE!!!!");
+    // BOOL isAlbumView = [currentController isKindOfClass:[%c(IGAlbumViewerViewController) class]];
     if (isProfileView) {
       IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
       if ([title isEqualToString:instaMute]) {
@@ -1596,15 +1629,6 @@ return false;
         [prefs setValue:muted forKey:@"muted_users"];
         [prefs writeToFile:prefsLoc atomically:NO];
         return;
-      }
-    } else if (isAlbumView) {
-      NSLog(@"CALLED!!!!");
-      if ([title isEqualToString:instaSave]) {
-        IGAlbumViewerViewController *albumContrl = (IGAlbumViewerViewController *) currentController;
-        IGAlbumViewerViewModel *current = [albumContrl focusedModelItem];
-        NSLog(@"CURRENT %@", current);
-      } else if ([title isEqualToString:localizedString(@"SHARE")]) {
-
       }
     }
   }
@@ -1646,7 +1670,9 @@ return false;
 
     BOOL isProfileView = [currentController isKindOfClass:[%c(IGUserDetailViewController) class]];
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
+    BOOL isAlbumViewer = [currentController isKindOfClass:[%c(IGAlbumViewerViewController) class]];
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
+    NSLog(@"IS ALBUm/1?1?! %d", isAlbumViewer);
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
     BOOL respondsLabel = [self respondsToSelector:@selector(titleLabel)];
@@ -1681,6 +1707,7 @@ return false;
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
       }
+      NSLog(@"CALLED!!!!");
       if (saveActions && saveMode == 1) {
         if (responds) {
           [self addButtonWithTitle:instaSave style:0 image:nil accessibilityIdentifier:nil];
@@ -1696,6 +1723,15 @@ return false;
           } else {
             [self addButtonWithTitle:localizedString(@"SHARE") style:0];
           }
+        }
+      }
+      NSLog(@"SHOULD?!!? %d - %d", isAlbumViewer, disableReadStories);
+      if (isAlbumViewer && disableReadStories) {
+        NSLog(@"CALLED!!!");
+        if (responds) {
+          [self addButtonWithTitle:localizedString(@"MARK_SEEN") style:0 image:nil accessibilityIdentifier:nil];
+        } else {
+          [self addButtonWithTitle:localizedString(@"MARK_SEEN") style:0];
         }
       }
     }
@@ -1863,17 +1899,31 @@ return false;
 
 %hook IGMainFeedViewController
 -(NSArray*)itemsForListAdapter:(id)arg1 {
-  if (enabled && hideStoriesList) {
-    NSMutableArray *ori = [%orig mutableCopy];
-    id item = [ori objectAtIndex:0];
-
-    if ([item class] == [%c(IGAlbumDataController) class]) {
-      [ori removeObjectAtIndex:0];
+  if (!enabled) return %orig;
+  NSMutableArray *ori = [%orig mutableCopy];
+  NSMutableArray *removable = [[NSMutableArray alloc] init];
+  for (id item in ori) {
+    // hide stories if enabled
+    if (hideStoriesList && [item class] == [%c(IGAlbumDataController) class]) {
+      [removable addObject:item];
+    } else if ((muteFeed || hideSponsored) && [item class] == [%c(IGFeedItem) class]) {
+      IGFeedItem *feedItem = (IGFeedItem*)item;
+      BOOL contains = [muted containsObject:feedItem.user.username];
+      // blacklist, whitelist, sponsored post
+      if ((muteFeed && ((contains && muteMode == 0) || (!contains && muteMode == 1))) || (feedItem.sponsoredPostInfo && hideSponsored)) {
+        [removable addObject:feedItem];
+      }
+    // hide follower recommendations if ads are hidden
+    } else if ([item class] == [%c(IGHScrollAYMFBannerCell) class] && hideSponsored) {
+      [removable addObject:item];
     }
-    return [ori copy];
-  } else {
-    return %orig;
   }
+
+  for (id i in removable) {
+    [ori removeObject:i];
+  }
+
+  return [ori copy];
 }
 - (void)viewDidLoad {
   BOOL instaBroke = ![self respondsToSelector:@selector(feedLayout)];
