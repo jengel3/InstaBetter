@@ -9,7 +9,7 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = InstaBetter
 InstaBetter_FILES = InstaHelper.xm Tweak.xm instabetterprefs/InstaBetterPrefs.mm $(wildcard lib/*.m)
 InstaBetter_LDFLAGS += -Wl,-segalign,4000
-InstaBetter_FRAMEWORKS = UIKit AVFoundation Foundation CoreGraphics ImageIO Accelerate QuartzCore MapKit CoreLocation AssetsLibrary
+InstaBetter_FRAMEWORKS = UIKit AVFoundation Foundation CoreGraphics ImageIO Accelerate QuartzCore MapKit CoreLocation AssetsLibrary MobileCoreServices
 InstaBetter_WEAK_FRAMEWORKS = Photos
 InstaBetter_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
 

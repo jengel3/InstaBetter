@@ -248,6 +248,7 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fix settings crash
 - Fix startup grid crash
 - Remove grid feature (this is no longer possible with the current Instagram codebase)
+- Support Instagram 9.0 and older
 
 ### Release 1.7.1
 - Add toggle to hide navbar stories button
@@ -259,7 +260,9 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Hide "Suggested Followers" in main feed when advertisements are hidden
 - Add toggle for marking stories as seen, add button to manually mark story as seen
 
-- Support Instagram 9.0 and older
+- Compatible with Instagram 9.0.1 and older
+
+bar-button-story-plus
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.

@@ -828,8 +828,15 @@
 -(id)initWithOrigin:(int)arg1 videoInfo:(id)arg2 mediaMetadata:(id)arg3 ;
 @end
 
+@interface IGVideoConfiguration
+
+@end
+
 @interface IGVideoComposition
+@property (nonatomic,retain) NSArray * clips;
+-(id)initWithVideoConfiguration:(IGVideoConfiguration*)arg1 ;
 -(void)addClip:(id)arg1 ;
+
 @end
 
 @interface IGVideoClip
@@ -973,4 +980,34 @@
 
 @interface IGHScrollAYMFBannerCell : UICollectionViewCell
 
+@end
+
+@interface IGAlbumCameraViewController
+
+@end
+
+@interface IGAlbumCreationViewController : UIViewController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@property (nonatomic,readonly) IGAlbumCameraViewController * cameraViewController;
+-(void)cameraPreviewViewControllerDidTapShare:(id)arg1 asset:(id)arg2 albumModel:(id)arg3 ;
+-(void)albumCameraViewController:(id)arg1 didOutputAsset:(id)arg2 ;
+-(void)uploadContent:(id)sender; //new
+- (UIImage *)scaleImageToSize:(CGSize)newSize withImage:(UIImage*)image;
+@end
+
+@interface IGQuickCamOutputVideoAsset : NSObject
+@property (assign,nonatomic) BOOL isFromLibrary;
+@property (nonatomic,readonly) IGVideoClip * clip;
+@property (nonatomic,retain) IGVideoInfo * videoInfo;
+@property (nonatomic,retain) UIImage * displayImage;
+@property (nonatomic,retain) UIImage * croppedImage;
+@property (nonatomic,retain) UIImage * croppedImageWithEdits;
+@end
+
+@interface IGQuickCamOutputPhotoAsset : NSObject
+@property (nonatomic,retain) UIImage * displayImage;
+@property (nonatomic,retain) UIImage * fullSizeImage;
+@property (nonatomic,retain) UIImage * croppedImage;
+@property (nonatomic,retain) UIImage * croppedImageWithEdits;
+@property (assign,nonatomic) BOOL isFromLibrary;
+@property (nonatomic,readonly) BOOL isPhoto;
 @end

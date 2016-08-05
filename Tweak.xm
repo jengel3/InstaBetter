@@ -10,6 +10,7 @@
 #import <notify.h>
 #import <MapKit/MapKit.h>
 #import "InstaHelper.h"
+#import <MobileCoreServices/UTCoreTypes.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
@@ -56,7 +57,7 @@ static BOOL hideStoriesButton = NO;
 static BOOL disableHomeSwiping = NO;
 static BOOL hideStoriesList = NO;
 static BOOL disableReadStories = NO;
-
+static BOOL showUploadButton = NO;
 
 static BOOL enableNewInterface = NO;
 
@@ -119,6 +120,7 @@ static NSDictionary* loadPrefs() {
       disableHomeSwiping = [prefs objectForKey:@"disable_home_swiping"] ? [[prefs objectForKey:@"disable_home_swiping"] boolValue] : NO;
       hideStoriesList = [prefs objectForKey:@"hide_stories_list"] ? [[prefs objectForKey:@"hide_stories_list"] boolValue] : NO;
       disableReadStories = [prefs objectForKey:@"disable_read_story"] ? [[prefs objectForKey:@"disable_read_story"] boolValue] : NO;
+      showUploadButton = [prefs objectForKey:@"show_upload_button"] ? [[prefs objectForKey:@"show_upload_button"] boolValue] : NO;
 
       alertMode = [prefs objectForKey:@"alert_mode"] ? [[prefs objectForKey:@"alert_mode"] intValue] : 1;
 
@@ -700,6 +702,13 @@ static BOOL openExternalURL(NSURL* url) {
 // }
 // %end
 //
+//
+// %hook IGVideoComposition
+// -(id)initWithVideoConfiguration:(id)arg1 {
+//   %log;
+//   return %orig;
+// }
+// %end
 static BOOL allowSeen = NO;
 %hook IGAlbumFullscreenItemController
 -(void)markItemAsSeen {
@@ -709,6 +718,146 @@ static BOOL allowSeen = NO;
     allowSeen = NO;
     return %orig;
   }
+}
+%end
+
+static IGQuickCamOutputVideoAsset *cachedAsset;
+%hook IGAlbumCreationViewController
+-(void)viewDidLayoutSubviews{
+  if (!(enabled && showUploadButton)) return %orig;
+  UIButton *uploadButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIImage *uploadImg = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share-white@3x" ofType:@"png"]];
+
+  CGRect frame = CGRectMake(4, 4, 48, 48);
+  [uploadButton setFrame:frame];
+
+  [uploadButton setImage:uploadImg forState:UIControlStateNormal];
+  [uploadButton addTarget:self action:@selector(uploadContent:) forControlEvents:UIControlEventTouchUpInside];
+
+  [self.view addSubview:uploadButton];
+  %orig;
+}
+%new
+-(void)uploadContent:(id)sender {
+  UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+  // imagePicker.delegate = ;
+  imagePicker.delegate = self;
+  imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+  imagePicker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeMovie, (NSString*)kUTTypeImage, nil];
+
+  [[InstaHelper rootViewController] presentViewController:imagePicker animated:YES completion:nil];
+}
+
+%new
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+  NSLog(@"CALLED CHOSEN!!!!");
+  NSString *mediaType = [info objectForKey: UIImagePickerControllerMediaType];
+  [[InstaHelper rootViewController] dismissViewControllerAnimated:YES completion:nil];
+  if (CFStringCompare ((__bridge CFStringRef) mediaType, kUTTypeMovie, 0) == kCFCompareEqualTo) {
+    NSURL *videoUrl = (NSURL*)[info objectForKey:UIImagePickerControllerMediaURL];
+    // NSString *videoPath = [videoUrl path];
+
+    NSLog(@"VIDEO!!!");
+    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videoUrl options:@{}];
+    NSLog(@"PATH!! %@", [videoUrl path]);
+
+    IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
+
+    IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
+    composition.clips = @[clip];
+    IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
+    info.video = composition;
+    NSLog(@"CALLED %@", [composition clips]);
+    IGQuickCamOutputVideoAsset *outputAsset = [[%c(IGQuickCamOutputVideoAsset) alloc] init];
+    outputAsset.videoInfo = info;
+    cachedAsset = outputAsset;
+    // // NSLog(@"CALLED %@", outputAsset);
+
+    CGSize size = CGSizeMake(100, 100);
+    UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+    [[UIColor whiteColor] setFill];
+    UIRectFill(CGRectMake(0, 0, size.width, size.height));
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    outputAsset.displayImage = image;
+
+    outputAsset.isFromLibrary = NO;
+    NSLog(@"CONTRL %@", outputAsset);
+    [self albumCameraViewController:self.cameraViewController didOutputAsset:outputAsset];
+
+  } else {
+
+    UIImage *original = [info objectForKey:UIImagePickerControllerOriginalImage];
+    IGQuickCamOutputPhotoAsset *asset = [[%c(IGQuickCamOutputPhotoAsset) alloc] init];
+
+
+    CGRect bounds = [[UIScreen mainScreen] bounds];
+    CGFloat width = bounds.size.width;
+    CGFloat height = bounds.size.height;
+
+    // CGSize size = CGSizeMake(width, height);
+    // UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+    // [[UIColor blackColor] setFill];
+    // UIRectFill(CGRectMake(0, 0, size.width, size.height));
+    // UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    // UIGraphicsEndImageContext();
+
+    // float scale = width / original.size.width;
+    // NSLog(@"SCALE %f -- WIDTH: %f -- HEIGHT: %f -- %f -- %f -- %d", scale, (float)original.size.width, (float)original.size.height, original.size.width * scale, (float)height, (int)original.imageOrientation);
+    // UIGraphicsBeginImageContext(CGSizeMake(width, height));
+    // [[UIColor blackColor] setFill];
+    // UIRectFill(CGRectMake(0, 0, width, height));
+    UIImage *finished = [self scaleImageToSize:CGSizeMake(width, height) withImage:original];
+    // [temp drawInRect:CGRectMake(0, 0, temp.size.width, temp.size.height)];
+    // UIImage *finished = UIGraphicsGetImageFromCurrentImageContext();
+    // UIGraphicsEndImageContext();
+
+    asset.displayImage = finished;
+    // asset.fullSizeImage = finished;
+    asset.isFromLibrary = NO;
+
+    [self albumCameraViewController:self.cameraViewController didOutputAsset:asset];
+  }
+
+}
+%new
+- (UIImage *)scaleImageToSize:(CGSize)newSize withImage:(UIImage*)image {
+
+  CGRect scaledImageRect = CGRectZero;
+
+  CGFloat aspectWidth = newSize.width / image.size.width;
+  CGFloat aspectHeight = newSize.height / image.size.height;
+  CGFloat aspectRatio = MIN ( aspectWidth, aspectHeight );
+
+  scaledImageRect.size.width = image.size.width * aspectRatio;
+  scaledImageRect.size.height = image.size.height * aspectRatio;
+  scaledImageRect.origin.x = (newSize.width - scaledImageRect.size.width) / 2.0f;
+  scaledImageRect.origin.y = (newSize.height - scaledImageRect.size.height) / 2.0f;
+
+  CGRect bounds = [[UIScreen mainScreen] bounds];
+  CGFloat width = bounds.size.width;
+  CGFloat height = bounds.size.height;
+
+  UIGraphicsBeginImageContextWithOptions( CGSizeMake(width, height), NO, 0 );
+  [[UIColor blackColor] setFill];
+  UIRectFill(CGRectMake(0, 0, width, height));
+  [image drawInRect:scaledImageRect];
+  UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  return scaledImage;
+
+}
+
+// -(void)cameraPreviewViewControllerDidTapShare:(id)arg1 asset:(id)arg2 albumModel:(id)arg3 {
+//   %log;
+//   %orig;
+// }
+-(void)albumCameraViewController:(id)arg1 didOutputAsset:(id)arg2 {
+  cachedAsset = (IGQuickCamOutputVideoAsset*)arg2;
+  %log;
+  %orig;
 }
 %end
 
@@ -821,7 +970,7 @@ static BOOL allowSeen = NO;
           IGVideoComposition *composition = [[%c(IGVideoComposition) alloc] init];
 
           IGVideoClip *clip = [[%c(IGVideoClip) alloc] initWithAsset:asset position:0 sourceType:0];
-          [composition addClip:clip];
+          composition.clips = @[clip];
           IGVideoInfo *info = [[%c(IGVideoInfo) alloc] init];
           info.video = composition;
 
@@ -1084,10 +1233,16 @@ static BOOL allowSeen = NO;
 %hook IGFeedVideoPlayer
 - (void)setReadyToPlay:(BOOL)ready {
   if (enabled) {
-    if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
+    UIViewController *current = [InstaHelper currentController];
+    if ([current isKindOfClass:[%c(IGAlbumViewerViewController) class]]) {
+      NSLog(@"WE GOT PLAYER HERE!!");
       [self setAudioEnabled:YES];
-    } else if (audioMode == 0) {
-      [self setAudioEnabled:NO];
+    } else {
+      if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
+        [self setAudioEnabled:YES];
+      } else if (audioMode == 0) {
+        [self setAudioEnabled:NO];
+      }
     }
   }
   %orig;
@@ -1672,7 +1827,7 @@ return false;
     BOOL isWebView = [currentController isKindOfClass:[%c(IGWebViewController) class]];
     BOOL isAlbumViewer = [currentController isKindOfClass:[%c(IGAlbumViewerViewController) class]];
     IGUserDetailViewController *userView = (IGUserDetailViewController *) currentController;
-    NSLog(@"IS ALBUm/1?1?! %d", isAlbumViewer);
+    // NSLog(@"IS ALBUm/1?1?! %d", isAlbumViewer);
 
     BOOL responds = [self respondsToSelector:@selector(buttonWithTitle:style:image:accessibilityIdentifier:)];
     BOOL respondsLabel = [self respondsToSelector:@selector(titleLabel)];
@@ -1707,7 +1862,7 @@ return false;
       if (showRepost && cachedItem && cachedItem.user != current) {
         [self addButtonWithTitle:localizedString(@"REPOST") style:0 image:nil accessibilityIdentifier:nil];
       }
-      NSLog(@"CALLED!!!!");
+      // NSLog(@"CALLED!!!!");
       if (saveActions && saveMode == 1) {
         if (responds) {
           [self addButtonWithTitle:instaSave style:0 image:nil accessibilityIdentifier:nil];
@@ -1725,9 +1880,9 @@ return false;
           }
         }
       }
-      NSLog(@"SHOULD?!!? %d - %d", isAlbumViewer, disableReadStories);
+      // NSLog(@"SHOULD?!!? %d - %d", isAlbumViewer, disableReadStories);
       if (isAlbumViewer && disableReadStories) {
-        NSLog(@"CALLED!!!");
+        // NSLog(@"CALLED!!!");
         if (responds) {
           [self addButtonWithTitle:localizedString(@"MARK_SEEN") style:0 image:nil accessibilityIdentifier:nil];
         } else {
@@ -2220,11 +2375,9 @@ return false;
  * @param {id} sender
  */
  - (void)saveItem:(id)sender {
-  // %log;
   if (!saveConfirm) {
     return [self saveNow];
   }
-  // NSLog(@"GOT HERE!!");
   [UIAlertView showWithTitle:localizedString(@"SAVE_CONTENT")
     message:localizedString(@"DID_WANT_SAVE_CONTENT")
     cancelButtonTitle:nil
@@ -2239,28 +2392,22 @@ return false;
 %new
 - (void)saveNow {
   %log;
-  // [self feedItem];
   IGFeedItem *item = self.feedItem;
   saveFeedItem(item);
-  // NSLog(@"ITEM %@", item);
 }
 
 %new
 - (void)shareItem:(id)sender {
-  // [self feedItem
   IGFeedItem *item = self.feedItem;
-  // NSLog(@"ITEM %@", item);
   shareItem(item, shareMode);
 }
 
 %new
 - (IGFeedItem*)feedItem {
-  // NSLog(@"SUPER %@ -- %@ -- %@", self.superview, self.superview.superview, self.superview.superview.superview);
   return ((IGFeedItemActionCell*)self.superview.superview).feedItem;
 }
 
 %property (retain, nonatomic) UIButton *saveButton;
-// %property (retain, nonatomic) IGFeedItem *feedItem;
 %end
 
 // custom locations
