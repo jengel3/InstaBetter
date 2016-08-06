@@ -260,7 +260,22 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Hide "Suggested Followers" in main feed when advertisements are hidden
 - Add toggle for marking stories as seen, add button to manually mark story as seen
 - Fix stories not having sound
-- Add upload button to add photos and videos from your library to your story
+- Add upload button to better add photos from your library to your story (Videos are WIP)
+
+- Compatible with Instagram 9.0.2 and older
+
+### Release 1.7.2
+- Add toggle to hide navbar stories button
+- Add toggle to disable swiping between story camera/main feed/inbox
+- Fix saving/sharing photos/videos
+- Fix reposting photos (Videos are a WIP)
+- Add saving/sharing to stories
+- Fixed muting
+- Hide "Suggested Followers" in main feed when advertisements are hidden
+- Add toggle for marking stories as seen, add button to manually mark story as seen
+- Fix stories not having sound
+- Add upload button to better add photos from your library to your story (Videos are WIP)
+- Make the default video/photo upload allow choosing content older than 24hrs
 
 - Compatible with Instagram 9.0.2 and older
 

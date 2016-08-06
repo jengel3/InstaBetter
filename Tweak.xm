@@ -744,6 +744,7 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
   // imagePicker.delegate = ;
   imagePicker.delegate = self;
   imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+  // kUTTypeMovie
   imagePicker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString*)kUTTypeImage, nil];
 
   [[InstaHelper rootViewController] presentViewController:imagePicker animated:YES completion:nil];
@@ -863,6 +864,15 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
 -(id)initWithVideo:(id)arg1 displayImage:(id)arg2 frame:(CGRect)arg3 delegate:(id)arg4 {
   %log;
   return %orig;
+}
+%end
+
+// todo garbage
+%hook IGListCollectionView
+-(id)initWithFrame:(CGRect)arg1 collectionViewLayout:(id)arg2 {
+  %log;
+  return %orig;
+  // arg2 =
 }
 %end
 

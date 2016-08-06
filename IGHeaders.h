@@ -1025,3 +1025,7 @@
 @interface IGInlineGalleryPHDataSource : NSObject
 -(id)initWithFetchOptions:(PHFetchOptions*)arg1 ;
 @end
+
+@interface IGListCollectionView : UICollectionView
+-(id)initWithFrame:(CGRect)arg1 collectionViewLayout:(id)arg2 ;
+@end
