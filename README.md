@@ -259,10 +259,10 @@ The most comprehensive tweak for Instagram yet. With over 10 new features and tw
 - Fixed muting
 - Hide "Suggested Followers" in main feed when advertisements are hidden
 - Add toggle for marking stories as seen, add button to manually mark story as seen
+- Fix stories not having sound
+- Add upload button to add photos and videos from your library to your story
 
-- Compatible with Instagram 9.0.1 and older
-
-bar-button-story-plus
+- Compatible with Instagram 9.0.2 and older
 
 ## Building
 * Setup [theos](http://iphonedevwiki.net/index.php/Theos/Setup) on your system.
@@ -284,13 +284,11 @@ The most comprehensive tweak for Instagram yet, with over 15 new features.
 * Double tap on profile pictures to view a high-res version
 * Mute users from home and activity feeds
 * Hide Sponsored Ads
-* Select and name custom locations for media
 * Show follow status on user profile (Similar to Twitter)
 * Show like counts as percentages
 * Share actions for text and images
 * Open links in Instagram
 * View DMs without notifying the sender
-* Toggle grid layout with the press of a button
 * Confirm double-tap likes with an alert
 * Tap times to display timestamps
 * Enable or disable auto playing of video and sound

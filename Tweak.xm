@@ -11,6 +11,7 @@
 #import <MapKit/MapKit.h>
 #import "InstaHelper.h"
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <Photos/Photos.h>
 
 #define ibBundle @"/Library/Application Support/InstaBetter"
 NSBundle *bundle = [[NSBundle alloc] initWithPath:ibBundle];
@@ -743,7 +744,7 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
   // imagePicker.delegate = ;
   imagePicker.delegate = self;
   imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-  imagePicker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeMovie, (NSString*)kUTTypeImage, nil];
+  imagePicker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString*)kUTTypeImage, nil];
 
   [[InstaHelper rootViewController] presentViewController:imagePicker animated:YES completion:nil];
 }
@@ -770,21 +771,25 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
     NSLog(@"CALLED %@", [composition clips]);
     IGQuickCamOutputVideoAsset *outputAsset = [[%c(IGQuickCamOutputVideoAsset) alloc] init];
     outputAsset.videoInfo = info;
-    cachedAsset = outputAsset;
+    // cachedAsset = outputAsset;
     // // NSLog(@"CALLED %@", outputAsset);
 
-    CGSize size = CGSizeMake(100, 100);
+    CGRect bounds = [[UIScreen mainScreen] bounds];
+    CGFloat width = bounds.size.width;
+    CGFloat height = bounds.size.height;
+    CGSize size = CGSizeMake(width, height);
     UIGraphicsBeginImageContextWithOptions(size, YES, 0);
     [[UIColor whiteColor] setFill];
-    UIRectFill(CGRectMake(0, 0, size.width, size.height));
+    UIRectFill(CGRectMake(0, 0, width, height));
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+    UIImage *finalize = [[UIImage alloc] initWithData:UIImagePNGRepresentation(image) scale:1.0];
 
-    outputAsset.displayImage = image;
+    outputAsset.displayImage = finalize;
 
     outputAsset.isFromLibrary = NO;
     NSLog(@"CONTRL %@", outputAsset);
-    [self albumCameraViewController:self.cameraViewController didOutputAsset:outputAsset];
+    [self albumCameraViewController:self.cameraViewController didOutputAsset:cachedAsset];
 
   } else {
 
@@ -796,25 +801,10 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
     CGFloat width = bounds.size.width;
     CGFloat height = bounds.size.height;
 
-    // CGSize size = CGSizeMake(width, height);
-    // UIGraphicsBeginImageContextWithOptions(size, YES, 0);
-    // [[UIColor blackColor] setFill];
-    // UIRectFill(CGRectMake(0, 0, size.width, size.height));
-    // UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    // UIGraphicsEndImageContext();
-
-    // float scale = width / original.size.width;
-    // NSLog(@"SCALE %f -- WIDTH: %f -- HEIGHT: %f -- %f -- %f -- %d", scale, (float)original.size.width, (float)original.size.height, original.size.width * scale, (float)height, (int)original.imageOrientation);
-    // UIGraphicsBeginImageContext(CGSizeMake(width, height));
-    // [[UIColor blackColor] setFill];
-    // UIRectFill(CGRectMake(0, 0, width, height));
     UIImage *finished = [self scaleImageToSize:CGSizeMake(width, height) withImage:original];
-    // [temp drawInRect:CGRectMake(0, 0, temp.size.width, temp.size.height)];
-    // UIImage *finished = UIGraphicsGetImageFromCurrentImageContext();
-    // UIGraphicsEndImageContext();
-
-    asset.displayImage = finished;
-    // asset.fullSizeImage = finished;
+    UIImage *final = [[UIImage alloc] initWithData:UIImagePNGRepresentation(finished) scale:1.0];
+    asset.displayImage = final;
+    asset.fullSizeImage = final;
     asset.isFromLibrary = NO;
 
     [self albumCameraViewController:self.cameraViewController didOutputAsset:asset];
@@ -858,6 +848,21 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
   cachedAsset = (IGQuickCamOutputVideoAsset*)arg2;
   %log;
   %orig;
+}
+%end
+
+%hook IGInlineGalleryPHDataSource
+-(id)initWithFetchOptions:(PHFetchOptions*)options {
+  options.predicate = nil;
+  %log;
+  return %orig;
+}
+%end
+
+%hook IGAlbumSwipableFilterView
+-(id)initWithVideo:(id)arg1 displayImage:(id)arg2 frame:(CGRect)arg3 delegate:(id)arg4 {
+  %log;
+  return %orig;
 }
 %end
 
@@ -1234,10 +1239,11 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
 - (void)setReadyToPlay:(BOOL)ready {
   if (enabled) {
     UIViewController *current = [InstaHelper currentController];
+    // don't mute the stories..lots of people will complain
     if ([current isKindOfClass:[%c(IGAlbumViewerViewController) class]]) {
-      NSLog(@"WE GOT PLAYER HERE!!");
       [self setAudioEnabled:YES];
     } else {
+      // regular feed video
       if (audioMode == 2 || (audioMode == 1 && !ringerMuted)) {
         [self setAudioEnabled:YES];
       } else if (audioMode == 0) {

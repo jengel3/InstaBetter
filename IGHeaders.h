@@ -4,6 +4,7 @@
 #import "lib/NYTPhotoViewController.h"
 #import "lib/NYTPhotosViewController.h"
 #import <MapKit/MapKit.h>
+#import <Photos/Photos.h>
 
 @interface IGUser : NSObject
 @property (strong, nonatomic) NSString *username;
@@ -1005,9 +1006,22 @@
 
 @interface IGQuickCamOutputPhotoAsset : NSObject
 @property (nonatomic,retain) UIImage * displayImage;
+
 @property (nonatomic,retain) UIImage * fullSizeImage;
+@property (nonatomic,retain) UIImage * fullSizeImageWithEdits;
+
 @property (nonatomic,retain) UIImage * croppedImage;
 @property (nonatomic,retain) UIImage * croppedImageWithEdits;
+
 @property (assign,nonatomic) BOOL isFromLibrary;
 @property (nonatomic,readonly) BOOL isPhoto;
+@end
+
+
+@interface IGAlbumSwipableFilterView : UIView
+-(id)initWithVideo:(id)arg1 displayImage:(id)arg2 frame:(CGRect)arg3 delegate:(id)arg4 ;
+@end
+
+@interface IGInlineGalleryPHDataSource : NSObject
+-(id)initWithFetchOptions:(PHFetchOptions*)arg1 ;
 @end
