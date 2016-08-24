@@ -337,6 +337,15 @@
 @interface IGSimpleButton : UIButton
 @end
 
+@protocol IGAlbumFullscreenFooterViewDelegate <NSObject>
+@end
+
+@interface IGAlbumFullscreenFooterView : UIView
+@property (nonatomic,readonly) id<IGAlbumFullscreenFooterViewDelegate> delegate;
+- (void)download:(id)sender;
+- (void)share:(id)sender;
+@end
+
 @interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UIGestureRecognizerDelegate>
 @property (nonatomic, retain) IGUser *user;
 @property (assign,nonatomic) BOOL buttonDisabled;
@@ -976,6 +985,7 @@
 
 
 @interface IGAlbumFullscreenItemController : IGListItemController
+@property (nonatomic,retain) id<IGAlbumItemType> currentAlbumItem;
 @property (assign,nonatomic) id<IGAlbumFullScreenItemControllerDelegate> delegate;
 -(void)markItemAsSeen;
 -(void)headerViewDidTapDismiss:(id)arg1 ; // no arg needed, no crash

@@ -722,6 +722,66 @@ static BOOL allowSeen = NO;
 }
 %end
 
+%hook IGAlbumFullscreenFooterView
+-(void)layoutSubviews {
+  if (!(enabled && saveActions && saveMode == 0)) return %orig;
+  UIButton *uploadButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIImage *downloadImg = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"download-white@3x" ofType:@"png"]];
+
+  CGRect frame = CGRectMake(245, 0, 44, 44);
+  [uploadButton setFrame:frame];
+
+  [uploadButton setImage:downloadImg forState:UIControlStateNormal];
+  [uploadButton addTarget:self action:@selector(download:) forControlEvents:UIControlEventTouchUpInside];
+
+  [self addSubview:uploadButton];
+
+
+
+  UIButton *shareButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIImage *uploadImg = [UIImage imageWithContentsOfFile:[bundle pathForResource:@"share-white@3x" ofType:@"png"]];
+
+  CGRect fr = CGRectMake(210, 0, 44, 44);
+  [shareButton setFrame:fr];
+
+  [shareButton setImage:uploadImg forState:UIControlStateNormal];
+  [shareButton addTarget:self action:@selector(share:) forControlEvents:UIControlEventTouchUpInside];
+
+  [self addSubview:shareButton];
+
+  %orig;
+}
+
+// IGFeedItem *item = self.item;
+//   if ([title isEqualToString:instaSave]) {
+//     return saveFeedItem(item);
+//   } else if ([title isEqualToString:localizedString(@"SHARE")] && saveActions && saveMode == 1) {
+//     IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+//     [del headerViewDidTapDismiss:nil];
+//     return shareItem(item, shareMode);
+//   } else if ([title isEqualToString:localizedString(@"MARK_SEEN")] && disableReadStories) {
+//     // NSLog(@"CALLED!!");
+//     IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+//     allowSeen = YES;
+//     [del markItemAsSeen];
+//   }
+
+%new
+- (void)download:(id)sender {
+  IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+  IGFeedItem *item = (IGFeedItem*)del.currentAlbumItem;
+  saveFeedItem(item);
+}
+
+%new
+- (void)share:(id)sender {
+  IGAlbumFullscreenItemController *del = (IGAlbumFullscreenItemController*)self.delegate;
+  IGFeedItem *item = (IGFeedItem*)del.currentAlbumItem;
+  [del headerViewDidTapDismiss:nil];
+  return shareItem(item, shareMode);
+}
+%end
+
 static IGQuickCamOutputVideoAsset *cachedAsset;
 %hook IGAlbumCreationViewController
 -(void)viewDidLayoutSubviews{
@@ -1461,7 +1521,7 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
 // }
 
 - (void)profilePictureLongPressed:(id)arg1 {
-  if (!(enabled));
+  if (!(enabled)) return %orig;
   if (![self isCurrentUser]) {
     [self.profilePic displayProfilePic];
   } else {
