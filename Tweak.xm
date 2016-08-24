@@ -1455,6 +1455,20 @@ static IGQuickCamOutputVideoAsset *cachedAsset;
   }
 }
 
+
+// -(void)profilePictureTapped:(id)arg1 {
+
+// }
+
+- (void)profilePictureLongPressed:(id)arg1 {
+  if (!(enabled));
+  if (![self isCurrentUser]) {
+    [self.profilePic displayProfilePic];
+  } else {
+    %orig;
+  }
+}
+
 %property (nonatomic, retain) UILabel *statusLabel;
 %end
 
@@ -1690,56 +1704,57 @@ return false;
 %end
 
 %hook IGProfilePictureImageView
-- (void)didMoveToSuperview {
-  if (enabled) {
-    UIView *superView = (UIView*)[self nextResponder];
-    BOOL isProfileView = [superView isKindOfClass:[%c(IGUserDetailHeaderView) class]];
-    // check if picture should have gestures added for efficiency
-    if (!isProfileView) return %orig;
-    [self setDidTap:NO];
+// - (void)didMoveToSuperview {
+//   if (enabled) {
+//     UIView *superView = (UIView*)[self nextResponder];
+//     BOOL isProfileView = [superView isKindOfClass:[%c(IGUserDetailHeaderView) class]];
+//     // check if picture should have gestures added for efficiency
+//     if (!isProfileView) return %orig;
+//     [self setDidTap:NO];
 
-    [self setUserInteractionEnabled:YES];
-    self.buttonDisabled = NO;
+//     [self setUserInteractionEnabled:YES];
+//     self.buttonDisabled = NO;
 
-    // double tap
-    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
-    doubleTap.numberOfTapsRequired = 2;
-    [self addGestureRecognizer:doubleTap];
+//     // double tap
+//     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapped:)];
+//     doubleTap.numberOfTapsRequired = 2;
+//     [self addGestureRecognizer:doubleTap];
 
 
-    // single tap -- original
-    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapped:)];
-    singleTap.numberOfTapsRequired = 1;
-    [singleTap requireGestureRecognizerToFail: doubleTap];
+//     // single tap -- original
+//     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapped:)];
+//     singleTap.numberOfTapsRequired = 1;
+//     [singleTap requireGestureRecognizerToFail: doubleTap];
 
-    [self addGestureRecognizer:singleTap];
+//     [self addGestureRecognizer:singleTap];
 
-  } else {
-    %orig;
-  }
+//   } else {
+//     %orig;
+//   }
 
-}
+// }
 
-// basically overriding the original Instagram single tap
-%new
-- (void)singleTapped:(UITapGestureRecognizer *)longPress {
-  [self setDidTap:NO];
-  [self tapped:self.profilePicButton];
-}
+// // basically overriding the original Instagram single tap
+// %new
+// - (void)singleTapped:(UITapGestureRecognizer *)longPress {
+//   [self setDidTap:NO];
+//   [self tapped:self.profilePicButton];
+// }
 
-// add our own double tap gesture to open the profile picture
-%new
-- (void)doubleTapped:(UITapGestureRecognizer *)longPress {
-  [self setDidTap:YES];
-  [self displayProfilePic];
-}
+// // add our own double tap gesture to open the profile picture
+// %new
+// - (void)doubleTapped:(UITapGestureRecognizer *)longPress {
+//   [self setDidTap:YES];
+//   [self displayProfilePic];
+// }
 
 - (void)tapped:(id)recognizer {
+  NSLog(@"CALLED!!!");
   // will cancel all future actions, aka displaying the menu
-  if ([self didTap]) return;
-  // will go through with action and display the menu
-  %orig;
-  [self setDidTap:![self didTap]];
+  // if ([self didTap]) return;
+  // // will go through with action and display the menu
+  // %orig;
+  // [self setDidTap:![self didTap]];
 }
 
 %property (assign, nonatomic) BOOL isInProfile;

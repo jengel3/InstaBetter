@@ -331,17 +331,49 @@
 -(id)initWithURL:(id)arg1;
 @end
 
+@interface IGImageView : UIImageView
+@end
+
+@interface IGSimpleButton : UIButton
+@end
+
+@interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UIGestureRecognizerDelegate>
+@property (nonatomic, retain) IGUser *user;
+@property (assign,nonatomic) BOOL buttonDisabled;
+@property (nonatomic,readonly) IGSimpleButton * profilePicButton;
+@property (assign,nonatomic) BOOL isInProfile;
+@property (assign,nonatomic) BOOL didDoubleTap;
+@property (assign,nonatomic) BOOL didTap;
+- (void)updateHighlightedBackgroundColor;
+- (void)setHasHighlightedState:(BOOL)arg1 ;
+- (id)initWithFrame:(CGRect)arg1;
+- (id)initWithFrame:(CGRect)arg1 user:(id)arg2;
+- (void)tapped:(id)arg1;
+- (void)setButtonDisabled:(BOOL)arg1;
+- (BOOL)buttonDisabled;
+- (void)longPressed:(id)sender;
+- (void)displayProfilePic;
+@end
+
 @interface IGUserDetailHeaderView : UIView
 @property(retain, nonatomic) IGFollowButton *followButton;
 @property(retain, nonatomic) IGCoreTextView *infoLabelView;
 @property (nonatomic, retain) UIView *infoLabelContainerView;
 @property (assign,nonatomic) id delegate;
+@property (nonatomic,retain) UITapGestureRecognizer * profilePicTapGesture;                                                 //@synthesize profilePicTapGesture=_profilePicTapGesture - In the implementation block
+@property (nonatomic,retain) UILongPressGestureRecognizer * profilePicLongPressGesture;
+@property (nonatomic,retain) IGProfilePictureImageView * profilePic;
 - (void)coreTextView:(id)arg1 didTapOnString:(id)arg2 URL:(NSURL*)arg3;
 - (void)onFeedViewModeChanged:(int)arg1;
 - (void)onEditProfileTapped;
 - (void)switchUsersController:(id)arg1 tableViewDidSelectRowWithUser:(id)arg2;
 - (UILabel *)statusLabel;
 - (void)setStatusLabel:(UILabel *)value;
+- (void)profilePictureLongPressed:(id)arg1 ;
+- (void)profilePictureTapped:(id)arg1 ;
+
+-(void)setProfilePic:(IGProfilePictureImageView *)arg1 ;
+-(BOOL)isCurrentUser;
 @end
 
 @interface IGUserDetailViewController : IGViewController
@@ -478,9 +510,6 @@
 + (void)openExternalURL:(id)arg1 controller:(id)arg2 modal:(BOOL)arg3 controls:(BOOL)arg4 completionHandler:(/*^block*/id)arg5;
 @end
 
-@interface IGImageView : UIImageView
-@end
-
 @interface IGImageProgressView : UIView
 @property (nonatomic,readonly) IGImageView *photoImageView;
 @end
@@ -544,26 +573,6 @@
 -(void)feedPhotoDidDoubleTapToLike:(id)arg1 ;
 @end
 
-@interface IGSimpleButton : UIButton
-@end
-
-@interface IGProfilePictureImageView : IGImageView <UIGestureRecognizerDelegate, UIGestureRecognizerDelegate>
-@property (nonatomic, retain) IGUser *user;
-@property (assign,nonatomic) BOOL buttonDisabled;
-@property (nonatomic,readonly) IGSimpleButton * profilePicButton;
-@property (assign,nonatomic) BOOL isInProfile;
-@property (assign,nonatomic) BOOL didDoubleTap;
-@property (assign,nonatomic) BOOL didTap;
--(void)updateHighlightedBackgroundColor;
--(void)setHasHighlightedState:(BOOL)arg1 ;
-- (id)initWithFrame:(CGRect)arg1;
-- (id)initWithFrame:(CGRect)arg1 user:(id)arg2;
-- (void)tapped:(id)arg1;
-- (void)setButtonDisabled:(BOOL)arg1;
-- (BOOL)buttonDisabled;
-- (void)longPressed:(id)sender;
-- (void)displayProfilePic;
-@end
 
 @interface IGFeedToggleView : UIView
 + (id)feedToggleViewForUserHeader;
